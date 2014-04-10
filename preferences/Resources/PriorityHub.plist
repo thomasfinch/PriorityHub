@@ -1,0 +1,68 @@
+entry = {
+  icon = PriorityHub.png;
+  label = ClassicSwitcher;
+  cell = PSLinkCell;
+};
+title = "Priority Hub";
+items = (
+  {
+    cell = PSGroupCell;
+  },
+  {
+    cell = PSSwitchCell;
+    default = 1;
+    defaults = "com.thomasfinch.priorityhub";
+    key = showNumbers;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Show Numbers";
+  },
+  {
+    cell = PSGroupCell;
+  },
+  {
+    cell = PSLinkListCell;
+    detail = PSListItemsController;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
+    key = iconLocation;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Icon Location";
+    validValues = (
+      0,
+      1
+    );
+    validTitles = (
+      "Top",
+      "Bottom"
+    );
+  },
+  {
+    cell = PSGroupCell;
+    footerText = "If you like this tweak, please donate! It took a lot of work to make.";
+  },
+  {
+    cell = PSButtonCell;
+    action = DonateButtonTapped;
+    icon = "Paypal.png";
+    label = "Donate";
+  },
+  {
+    cell = PSGroupCell;
+  },
+  {
+    cell = PSButtonCell;
+    action = TFTwitterButtonTapped;
+    icon = "Twitter.png";
+    label = "Developed by @tomf64";
+  },
+  {
+    cell = PSButtonCell;
+    action = JGTwitterButtonTapped;
+    icon = "Twitter.png";
+    label = "Icon by @JeremyGoulet";
+  },
+  {
+    cell = PSGroupCell;
+    footerText = "© 2014 Thomas Finch";
+  }
+);

@@ -1,0 +1,11 @@
+Package: com.thomasfinch.priorityhub
+Name: Priority Hub
+Depends: mobilesubstrate, preferenceloader
+Conflicts: gsc.ipad
+Architecture: iphoneos-arm
+Description: An awesome MobileSubstrate tweak!
+Maintainer: Thomas Finch
+Author: Thomas Finch
+Section: Tweaks
+Version: 1.0-1
+Installed-Size: 244
