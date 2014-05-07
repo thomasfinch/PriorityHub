@@ -1,9 +1,9 @@
 Priority-Hub
 ============
 
-Sort lockscreen notifications on your iPhone!
+Sort lockscreen notifications on your iPhone by app!
 
-Please don't laugh at my code, I know it's a mess :P
+![screen1](https://raw.githubusercontent.com/thomasfinch/Priority-Hub/master/images/screenshot%201.png)
 
 
 License
