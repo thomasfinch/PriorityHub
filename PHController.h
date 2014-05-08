@@ -2,10 +2,10 @@
 
 @interface PHController : NSObject
 {
-    NSBundle *iconsBundle;
     NSMutableDictionary *appViewsDict;
     UIView *selectedView;
     UITableView* notificationsTableView;
+    id notificationsView;
 }
 
 @property (nonatomic, readonly) NSMutableDictionary *prefsDict;

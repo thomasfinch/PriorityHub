@@ -16,7 +16,6 @@
         appViewsDict = [[NSMutableDictionary alloc] init];
         curAppID = nil;
         appListView = [[UIScrollView alloc] init];
-        iconsBundle = [[NSBundle alloc] initWithPath:@"/Library/Application Support/PriorityHub/Icons.bundle"];
 
         selectedView = [[UIView alloc] init];
         selectedView.backgroundColor = [UIColor colorWithWhite:0.75f alpha:0.3f];
@@ -71,15 +70,13 @@
 
 - (UIImage *)iconForAppID:(NSString *)appID
 {
-    if (!iconsBundle)
-        iconsBundle = [[NSBundle alloc] initWithPath:@"/Library/Application Support/PriorityHub/Icons.bundle"];
-    
+    NSBundle *iconsBundle = [NSBundle  bundleWithPath:@"/Library/Application Support/PriorityHub/Icons.bundle"];
     UIImage *img = [UIImage imageNamed:[NSString stringWithFormat:@"%@.png",appID] inBundle:iconsBundle];
+
     if (img)
         return img;
     else
         return [[[objc_getClass("SBApplicationIcon") alloc] initWithApplication:[[objc_getClass("SBApplicationController") sharedInstance] applicationWithDisplayIdentifier:appID]] getIconImage:1];
-
 }
 
 - (void)layoutSubviews
@@ -106,7 +103,7 @@
 
 - (void)selectAppID:(NSString*)appId
 {
-    if (!appId || [appId isEqualToString:curAppID])
+    if (!appId)
     {
         curAppID = nil;
         [notificationsTableView reloadData];
@@ -118,10 +115,6 @@
     }
     else
     {
-        // if (shouldBlockFade && controller)
-        //     [MSHookIvar<id>(controller,"_notificationView") _resetAllFadeTimers];
-        // shouldBlockFade = YES;
-
         BOOL wasAppSelected = (curAppID != nil);
         curAppID = appId;
         [notificationsTableView reloadData];
@@ -178,7 +171,12 @@
 
 - (void)handleSingleTap:(UITapGestureRecognizer*)recognizer
 {
-    [self selectAppID:[appViewsDict allKeysForObject:recognizer.view][0]];
+    NSString *appId = [appViewsDict allKeysForObject:recognizer.view][0];
+    [notificationsView _resetAllFadeTimers];
+    if ([appId isEqualToString:curAppID])
+        [self selectAppID:nil];
+    else
+        [self selectAppID:appId];
 }
 
 - (void)removeNotificationForAppID:(NSString *)appId
@@ -191,13 +189,18 @@
     {
         [[appViewsDict objectForKey:appId] release];
         [appViewsDict removeObjectForKey:appId];
+        if ([curAppID isEqualToString:appId])
+            [self selectAppID:nil];
         [self layoutSubviews];
     }
 }
 
 - (void)removeAllNotificationsForAppID:(NSString *)appId
 {
+    [[appViewsDict objectForKey:appId] release];
     [appViewsDict removeObjectForKey:appId];
+    if ([curAppID isEqualToString:appId])
+        [self selectAppID:nil];
     [self layoutSubviews];
 }
 

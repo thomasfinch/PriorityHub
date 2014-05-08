@@ -26,6 +26,7 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
     %orig;
     UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
     UITableView *notificationTableView = MSHookIvar<UITableView*>(self, "_tableView");
+    MSHookIvar<id>(controller, "notificationsView") = self;
     MSHookIvar<UITableView*>(controller, "notificationsTableView") = notificationTableView;
 
     if ([[controller.prefsDict objectForKey:@"iconLocation"] intValue] == 0) //Icons are at top
