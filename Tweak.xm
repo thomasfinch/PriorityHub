@@ -4,6 +4,7 @@
 
 static PHController *controller;
 static BOOL isLocked = YES;
+static id notificationListController;
 
 static void prefsChanged(CFNotificationCenterRef center, void *observer,CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
@@ -23,8 +24,9 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 - (void)layoutSubviews
 {
     %orig;
-    UIView *containerView = MSHookIvar<UIView*>(self,"_containerView");
-    UITableView *notificationTableView = MSHookIvar<UITableView*>(self,"_tableView");
+    UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
+    UITableView *notificationTableView = MSHookIvar<UITableView*>(self, "_tableView");
+    MSHookIvar<UITableView*>(controller, "notificationsTableView") = notificationTableView;
 
     if ([[controller.prefsDict objectForKey:@"iconLocation"] intValue] == 0) //Icons are at top
     {
@@ -37,10 +39,17 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
         notificationTableView.frame = CGRectMake(0, 0, notificationTableView.frame.size.width, containerView.frame.size.height);
     }
 
-
     controller.appListView.frame =  ([[[controller prefsDict] objectForKey:@"iconLocation"] intValue] == 0) ? CGRectMake(0, containerView.frame.origin.y - [controller viewHeight] - 2.5, containerView.frame.size.width, [controller viewHeight]) : CGRectMake(0, containerView.frame.origin.y + containerView.frame.size.height + 2.5, containerView.frame.size.width, [controller viewHeight]);
     [controller layoutSubviews];
     [self addSubview:controller.appListView];
+}
+
+- (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
+{
+    if (![controller curAppID] || ![[controller curAppID] isEqualToString:[[[notificationListController listItemAtIndexPath:indexPath] activeBulletin] sectionID]])
+        return 0;
+    else
+        return %orig;
 }
 
 - (void)setInScreenOffMode:(BOOL)screenOff
@@ -57,6 +66,7 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 - (void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned long long)feed
 {
     %orig;
+    notificationListController = self;
     isLocked = YES;
     [controller addNotificationForAppID:[bulletin sectionID]];
 }
@@ -72,7 +82,7 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 %hook SBLockScreenManager
 - (void)_setUILocked:(BOOL)locked
 {
-    //When device is unlocked, clear all notifications and hide the views
+    //When device is unlocked, clear all notification views from the lockscreen
     if (!locked)
     {
         [controller removeAllNotifications];

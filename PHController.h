@@ -1,11 +1,3 @@
-//
-//  PHController.h
-//  
-//
-//  Created by Thomas Finch on 4/28/14.
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @interface PHController : NSObject
@@ -13,11 +5,12 @@
     NSBundle *iconsBundle;
     NSMutableDictionary *appViewsDict;
     UIView *selectedView;
+    UITableView* notificationsTableView;
 }
 
-@property (nonatomic) NSMutableDictionary *prefsDict;
-@property (nonatomic) UIScrollView *appListView;
-@property (nonatomic) NSString *curAppID;
+@property (nonatomic, readonly) NSMutableDictionary *prefsDict;
+@property (nonatomic, readonly) UIScrollView *appListView;
+@property (nonatomic, readonly) NSString *curAppID;
 
 - (id)init;
 
