@@ -4,7 +4,7 @@ Depends: mobilesubstrate, preferenceloader
 Conflicts: gsc.ipad
 Version: 1.0
 Architecture: iphoneos-arm
-Description: An awesome MobileSubstrate tweak!
+Description: Organize lockscreen notifications
 Maintainer: Thomas Finch
 Author: Thomas Finch
 Section: Tweaks

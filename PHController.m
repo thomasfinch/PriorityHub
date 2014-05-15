@@ -8,8 +8,22 @@
 @synthesize appListView;
 @synthesize curAppID;
 
+
+/*
+
+TO DO
+
+Add pull to clear for views
+Fix crashes
+
+*/
+
+void resetIdleTimer();
+void resetTableViewFadeTimers();
+
 - (id)init
 {
+    NSLog(@"CONTROLLER INIT");
     self = [super init];
     if (self)
     {
@@ -48,6 +62,7 @@
 
 - (void)updatePrefsDict
 {
+    NSLog(@"CONTROLLER UPDATE PREFS DICT");
     if (prefsDict)
         [prefsDict release];
     prefsDict = [[NSMutableDictionary alloc] init];
@@ -70,6 +85,7 @@
 
 - (UIImage *)iconForAppID:(NSString *)appID
 {
+    NSLog(@"CONTROLLER ICON FOR APP ID");
     NSBundle *iconsBundle = [NSBundle  bundleWithPath:@"/Library/Application Support/PriorityHub/Icons.bundle"];
     UIImage *img = [UIImage imageNamed:[NSString stringWithFormat:@"%@.png",appID] inBundle:iconsBundle];
 
@@ -81,11 +97,13 @@
 
 - (void)layoutSubviews
 {
+    NSLog(@"CONTROLLER LAYOUT SUBVIEWS");
     //Remove all subviews and start fresh
     for (UIView *v in [appListView subviews])
         [v removeFromSuperview];
 
     [appListView addSubview:selectedView];
+    selectedView.hidden = YES;
 
     //Put all app views in scroll view
     appListView.contentSize = CGSizeMake(0, [self viewHeight]);
@@ -95,14 +113,18 @@
         startX = 0;
     for (UIView *appView in [appViewsDict allValues])
     {
+        selectedView.hidden = NO;
         appView.frame = CGRectMake(startX + appListView.contentSize.width, 0, [self viewWidth], [self viewHeight]);
         appListView.contentSize = CGSizeMake(appListView.contentSize.width + [self viewWidth], [self viewHeight]);
         [appListView addSubview:appView];
     }
+
+    NSLog(@"CONTROLLER LAYOUT SUBVIEWS DONE");
 }
 
 - (void)selectAppID:(NSString*)appId
 {
+    NSLog(@"CONTROLLER SELECT APP ID");
     if (!appId)
     {
         curAppID = nil;
@@ -128,12 +150,16 @@
                 selectedView.frame = ((UIView*)[appViewsDict objectForKey:appId]).frame;
         }completion:^(BOOL completed){}];
     }
+
+    NSLog(@"CONTOLLER SELECT APP ID DONE");
 }
 
 - (void)addNotificationForAppID:(NSString *)appId
 {
+    NSLog(@"CONTROLLER ADD NOTIFICATION FOR APP ID");
     if (![appViewsDict objectForKey:appId])
     {
+        NSLog(@"NO INFO FOR APP ID, CREATING VIEWS");
         UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(appListView.contentSize.width, 0, [self viewWidth], [self viewHeight])];
         containerView.tag = 1;
         
@@ -155,7 +181,7 @@
         else
             iconImageView.frame = CGRectMake(([self viewHeight] - [self iconSize])/2, ([self viewWidth] - [self iconSize])/2, [self iconSize], [self iconSize]);
         
-        
+        NSLog(@"DONE CREATING VIEWS");
         [appViewsDict setObject:containerView forKey:appId];
         [self layoutSubviews];
     }
@@ -163,16 +189,20 @@
     {
         ((UIView*)[appViewsDict objectForKey:appId]).tag++;
         if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
-            ((UILabel*)[[appViewsDict objectForKey:appId] subviews][1]).text = [NSString stringWithFormat:@"%li",((UIView*)[appViewsDict objectForKey:appId]).tag];
+            ((UILabel*)[[appViewsDict objectForKey:appId] subviews][1]).text = [NSString stringWithFormat:@"%ld",((UIView*)[appViewsDict objectForKey:appId]).tag];
     }
 
     [self selectAppID:appId];
+
+    NSLog(@"CONTROLLER ADD NOTIFICATION DONE");
 }
 
 - (void)handleSingleTap:(UITapGestureRecognizer*)recognizer
 {
+    NSLog(@"CONTROLLER HANDLE SINGLE TAP");
+    resetTableViewFadeTimers();
+    resetIdleTimer();
     NSString *appId = [appViewsDict allKeysForObject:recognizer.view][0];
-    [notificationsView _resetAllFadeTimers];
     if ([appId isEqualToString:curAppID])
         [self selectAppID:nil];
     else
@@ -181,9 +211,10 @@
 
 - (void)removeNotificationForAppID:(NSString *)appId
 {
+    NSLog(@"CONTROLLER REMOVE NOTIFICATION");
     ((UIView*)[appViewsDict objectForKey:appId]).tag--;
         if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
-            ((UILabel*)[[appViewsDict objectForKey:appId] subviews][1]).text = [NSString stringWithFormat:@"%li",((UIView*)[appViewsDict objectForKey:appId]).tag];
+            ((UILabel*)[[appViewsDict objectForKey:appId] subviews][1]).text = [NSString stringWithFormat:@"%ld",((UIView*)[appViewsDict objectForKey:appId]).tag];
 
     if (((UIView*)[appViewsDict objectForKey:appId]).tag == 0)
     {
@@ -197,6 +228,7 @@
 
 - (void)removeAllNotificationsForAppID:(NSString *)appId
 {
+    NSLog(@"CONTROLLER REMOVE NOTIFICATIONS FOR APP ID");
     [[appViewsDict objectForKey:appId] release];
     [appViewsDict removeObjectForKey:appId];
     if ([curAppID isEqualToString:appId])
@@ -206,6 +238,7 @@
 
 - (void)removeAllNotifications
 {
+    NSLog(@"CONTROLLER REMOVE ALL NOTIFICATIONS");
     for (UIView *appView in [appViewsDict allValues])
         [appView removeFromSuperview];
 
