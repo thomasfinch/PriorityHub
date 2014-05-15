@@ -1,4 +1,0 @@
-Reminders & calendar for lockscreen compatibility
-Passbook compatibility
-Phone call crashes
-Subtle lock layout

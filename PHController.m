@@ -14,12 +14,17 @@
 TO DO
 
 Add pull to clear for views
-Fix crashes
+
+Reminders & calendar for lockscreen compatibility
+Passbook compatibility
+Phone call crashes
+Subtle lock layout
 
 */
 
 void resetIdleTimer();
 void resetTableViewFadeTimers();
+void removeBulletinsForAppID(NSString* appID);
 
 - (id)init
 {
@@ -122,10 +127,10 @@ void resetTableViewFadeTimers();
     NSLog(@"CONTROLLER LAYOUT SUBVIEWS DONE");
 }
 
-- (void)selectAppID:(NSString*)appId
+- (void)selectAppID:(NSString*)appID
 {
     NSLog(@"CONTROLLER SELECT APP ID");
-    if (!appId)
+    if (!appID)
     {
         curAppID = nil;
         [notificationsTableView reloadData];
@@ -138,26 +143,26 @@ void resetTableViewFadeTimers();
     else
     {
         BOOL wasAppSelected = (curAppID != nil);
-        curAppID = appId;
+        curAppID = appID;
         [notificationsTableView reloadData];
         if (!wasAppSelected)
-            selectedView.frame = ((UIView*)[appViewsDict objectForKey:appId]).frame;
+            selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
         
         [UIView animateWithDuration:0.15f animations:^{
             selectedView.alpha = 1.0f;
             notificationsTableView.alpha = 1.0f;
             if (wasAppSelected)
-                selectedView.frame = ((UIView*)[appViewsDict objectForKey:appId]).frame;
+                selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
         }completion:^(BOOL completed){}];
     }
 
     NSLog(@"CONTOLLER SELECT APP ID DONE");
 }
 
-- (void)addNotificationForAppID:(NSString *)appId
+- (void)addNotificationForAppID:(NSString *)appID
 {
     NSLog(@"CONTROLLER ADD NOTIFICATION FOR APP ID");
-    if (![appViewsDict objectForKey:appId])
+    if (![appViewsDict objectForKey:appID])
     {
         NSLog(@"NO INFO FOR APP ID, CREATING VIEWS");
         UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(appListView.contentSize.width, 0, [self viewWidth], [self viewHeight])];
@@ -166,7 +171,7 @@ void resetTableViewFadeTimers();
         UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
         [containerView addGestureRecognizer:singleFingerTap];
         
-        UIImageView *iconImageView = [[UIImageView alloc] initWithImage:[self iconForAppID:appId]];
+        UIImageView *iconImageView = [[UIImageView alloc] initWithImage:[self iconForAppID:appID]];
         iconImageView.frame = CGRectMake(([self viewWidth] - [self iconSize])/2, 5, [self iconSize], [self iconSize]);
         [containerView addSubview:iconImageView];
         
@@ -182,17 +187,17 @@ void resetTableViewFadeTimers();
             iconImageView.frame = CGRectMake(([self viewHeight] - [self iconSize])/2, ([self viewWidth] - [self iconSize])/2, [self iconSize], [self iconSize]);
         
         NSLog(@"DONE CREATING VIEWS");
-        [appViewsDict setObject:containerView forKey:appId];
+        [appViewsDict setObject:containerView forKey:appID];
         [self layoutSubviews];
     }
     else
     {
-        ((UIView*)[appViewsDict objectForKey:appId]).tag++;
+        ((UIView*)[appViewsDict objectForKey:appID]).tag++;
         if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
-            ((UILabel*)[[appViewsDict objectForKey:appId] subviews][1]).text = [NSString stringWithFormat:@"%ld",((UIView*)[appViewsDict objectForKey:appId]).tag];
+            ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%ld",((UIView*)[appViewsDict objectForKey:appID]).tag];
     }
 
-    [self selectAppID:appId];
+    [self selectAppID:appID];
 
     NSLog(@"CONTROLLER ADD NOTIFICATION DONE");
 }
@@ -202,38 +207,34 @@ void resetTableViewFadeTimers();
     NSLog(@"CONTROLLER HANDLE SINGLE TAP");
     resetTableViewFadeTimers();
     resetIdleTimer();
-    NSString *appId = [appViewsDict allKeysForObject:recognizer.view][0];
-    if ([appId isEqualToString:curAppID])
+    NSString *appID = [appViewsDict allKeysForObject:recognizer.view][0];
+    if ([appID isEqualToString:curAppID])
         [self selectAppID:nil];
     else
-        [self selectAppID:appId];
+        [self selectAppID:appID];
 }
 
-- (void)removeNotificationForAppID:(NSString *)appId
+- (void)removeNotificationForAppID:(NSString *)appID
 {
     NSLog(@"CONTROLLER REMOVE NOTIFICATION");
-    ((UIView*)[appViewsDict objectForKey:appId]).tag--;
+    ((UIView*)[appViewsDict objectForKey:appID]).tag--;
         if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
-            ((UILabel*)[[appViewsDict objectForKey:appId] subviews][1]).text = [NSString stringWithFormat:@"%ld",((UIView*)[appViewsDict objectForKey:appId]).tag];
+            ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%ld",((UIView*)[appViewsDict objectForKey:appID]).tag];
 
-    if (((UIView*)[appViewsDict objectForKey:appId]).tag == 0)
+    if (((UIView*)[appViewsDict objectForKey:appID]).tag == 0)
     {
-        [[appViewsDict objectForKey:appId] release];
-        [appViewsDict removeObjectForKey:appId];
-        if ([curAppID isEqualToString:appId])
+        [[appViewsDict objectForKey:appID] release];
+        [appViewsDict removeObjectForKey:appID];
+        if ([curAppID isEqualToString:appID])
             [self selectAppID:nil];
         [self layoutSubviews];
     }
 }
 
-- (void)removeAllNotificationsForAppID:(NSString *)appId
+- (void)removeAllNotificationsForAppID:(NSString *)appID
 {
     NSLog(@"CONTROLLER REMOVE NOTIFICATIONS FOR APP ID");
-    [[appViewsDict objectForKey:appId] release];
-    [appViewsDict removeObjectForKey:appId];
-    if ([curAppID isEqualToString:appId])
-        [self selectAppID:nil];
-    [self layoutSubviews];
+    removeBulletinsForAppID(appID);
 }
 
 - (void)removeAllNotifications

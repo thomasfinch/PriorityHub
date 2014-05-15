@@ -22,10 +22,10 @@
 - (UIImage *)iconForAppID:(NSString *)appID;
 
 - (void)layoutSubviews;
-- (void)selectAppID:(NSString*)appId;
-- (void)addNotificationForAppID:(NSString *)appId;
-- (void)removeNotificationForAppID:(NSString *)appId;
-- (void)removeAllNotificationsForAppID:(NSString *)appId;
+- (void)selectAppID:(NSString*)appID;
+- (void)addNotificationForAppID:(NSString *)appID;
+- (void)removeNotificationForAppID:(NSString *)appID;
+- (void)removeAllNotificationsForAppID:(NSString *)appID;
 - (void)removeAllNotifications;
 
 @end
