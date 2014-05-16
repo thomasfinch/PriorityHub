@@ -37,11 +37,8 @@ extern "C" void resetTableViewFadeTimers()
 
 extern "C" void removeBulletinsForAppID(NSString* appID)
 {
-    NSLog(@"Observer: %@",bulletinObserver);
-    NSLog(@"List controller: %@",notificationListController);
-    for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems"))
-        if ([[[listItem activeBulletin] sectionID] isEqualToString:appID])
-            [notificationListController observer:MSHookIvar<id>(notificationListController, "_observer") removeBulletin:[listItem activeBulletin]];
+    NSLog(@"REMOVE FULLETINS FOR APP ID");
+    [MSHookIvar<id>(notificationListController, "_observer") clearSection:appID];
 }
 
 static void prefsChanged(CFNotificationCenterRef center, void *observer,CFStringRef name, const void *object, CFDictionaryRef userInfo)
@@ -97,8 +94,8 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 - (void)handlePullToClear
 {
     NSLog(@"PULL TO CLEAR");
-    [controller removeAllNotificationsForAppID:controller.curAppID];
     [refreshControl endRefreshing];
+    [controller removeAllNotificationsForAppID:controller.curAppID];
 }
 
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath

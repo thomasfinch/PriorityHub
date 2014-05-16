@@ -13,8 +13,6 @@
 
 TO DO
 
-Add pull to clear for views
-
 Reminders & calendar for lockscreen compatibility
 Passbook compatibility
 Phone call crashes
@@ -194,7 +192,7 @@ void removeBulletinsForAppID(NSString* appID);
     {
         ((UIView*)[appViewsDict objectForKey:appID]).tag++;
         if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
-            ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%ld",((UIView*)[appViewsDict objectForKey:appID]).tag];
+            ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%ld",(long)((UIView*)[appViewsDict objectForKey:appID]).tag];
     }
 
     [self selectAppID:appID];
@@ -218,8 +216,8 @@ void removeBulletinsForAppID(NSString* appID);
 {
     NSLog(@"CONTROLLER REMOVE NOTIFICATION");
     ((UIView*)[appViewsDict objectForKey:appID]).tag--;
-        if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
-            ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%ld",((UIView*)[appViewsDict objectForKey:appID]).tag];
+    if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
+        ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%ld",((UIView*)[appViewsDict objectForKey:appID]).tag];
 
     if (((UIView*)[appViewsDict objectForKey:appID]).tag == 0)
     {
