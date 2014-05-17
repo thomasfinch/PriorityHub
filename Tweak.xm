@@ -41,6 +41,15 @@ extern "C" void removeBulletinsForAppID(NSString* appID)
     [MSHookIvar<id>(notificationListController, "_observer") clearSection:appID];
 }
 
+extern "C" int numNotificationsForAppID(NSString* appID)
+{
+    int count = 0;
+    for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems"))
+        if ([[[listItem activeBulletin] sectionID] isEqualToString:appID])
+            count++;
+    return count;
+}
+
 static void prefsChanged(CFNotificationCenterRef center, void *observer,CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
     [controller updatePrefsDict];

@@ -23,6 +23,7 @@ Subtle lock layout
 void resetIdleTimer();
 void resetTableViewFadeTimers();
 void removeBulletinsForAppID(NSString* appID);
+int numNotificationsForAppID(NSString* appID);
 
 - (id)init
 {
@@ -160,6 +161,11 @@ void removeBulletinsForAppID(NSString* appID);
 - (void)addNotificationForAppID:(NSString *)appID
 {
     NSLog(@"CONTROLLER ADD NOTIFICATION FOR APP ID");
+
+    //Needed for compatibility with GroupQuiet
+    if (numNotificationsForAppID(appID) == 0)
+        return;
+
     if (![appViewsDict objectForKey:appID])
     {
         NSLog(@"NO INFO FOR APP ID, CREATING VIEWS");
@@ -190,9 +196,9 @@ void removeBulletinsForAppID(NSString* appID);
     }
     else
     {
-        ((UIView*)[appViewsDict objectForKey:appID]).tag++;
+        int notificationCount = numNotificationsForAppID(appID);
         if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
-            ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%ld",(long)((UIView*)[appViewsDict objectForKey:appID]).tag];
+            ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%i", notificationCount];
     }
 
     [self selectAppID:appID];
@@ -215,13 +221,13 @@ void removeBulletinsForAppID(NSString* appID);
 - (void)removeNotificationForAppID:(NSString *)appID
 {
     NSLog(@"CONTROLLER REMOVE NOTIFICATION");
-    ((UIView*)[appViewsDict objectForKey:appID]).tag--;
+    int notificationCount = numNotificationsForAppID(appID);
     if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
-        ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%ld",((UIView*)[appViewsDict objectForKey:appID]).tag];
+        ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%i", notificationCount];
 
-    if (((UIView*)[appViewsDict objectForKey:appID]).tag == 0)
+    if (notificationCount == 0)
     {
-        [[appViewsDict objectForKey:appID] release];
+        [[appViewsDict objectForKey:appID] removeFromSuperview];
         [appViewsDict removeObjectForKey:appID];
         if ([curAppID isEqualToString:appID])
             [self selectAppID:nil];
