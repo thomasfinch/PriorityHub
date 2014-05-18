@@ -1,10 +1,12 @@
 #import <Foundation/Foundation.h>
+#import <CoreTelephony/CTCallCenter.h>
 
 @interface PHController : NSObject
 {
     NSMutableDictionary *appViewsDict;
     UIView *selectedView;
     UITableView* notificationsTableView;
+    CTCallCenter *callCenter;
 }
 
 @property (nonatomic, readonly) NSMutableDictionary *prefsDict;

@@ -8,7 +8,8 @@ include theos/makefiles/common.mk
 
 TWEAK_NAME = PriorityHub
 PriorityHub_FILES = Tweak.xm PHController.m
-PriorityHub_FRAMEWORKS = UIKit CoreGraphics
+PriorityHub_FRAMEWORKS = UIKit CoreGraphics CoreTelephony
+PriorityHub_PRIVATE_FRAMEWORKS = IMAVCore
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 SUBPROJECTS += preferences

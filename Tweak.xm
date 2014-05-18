@@ -143,6 +143,18 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 	[controller removeNotificationForAppID:[bulletin sectionID]];
 }
 
+- (void)prepareForTeardown
+{
+    NSLog(@"LIST CONTROLLER PREPARE FOR TEARDOWN");
+    %orig;
+}
+
+- (void)unlockUIWithActionContext:(id)arg1
+{
+    NSLog(@"UNLOCK UI WITH ACTION CONTEXT");
+    %orig;
+}
+
 %end
 
 %hook SBLockScreenManager

@@ -15,7 +15,6 @@ TO DO
 
 Reminders & calendar for lockscreen compatibility
 Passbook compatibility
-Phone call crashes
 Subtle lock layout
 
 */
@@ -34,6 +33,7 @@ int numNotificationsForAppID(NSString* appID);
         appViewsDict = [[NSMutableDictionary alloc] init];
         curAppID = nil;
         appListView = [[UIScrollView alloc] init];
+        callCenter = [[CTCallCenter alloc] init];
 
         selectedView = [[UIView alloc] init];
         selectedView.backgroundColor = [UIColor colorWithWhite:0.75f alpha:0.3f];
@@ -128,7 +128,7 @@ int numNotificationsForAppID(NSString* appID);
 
 - (void)selectAppID:(NSString*)appID
 {
-    NSLog(@"CONTROLLER SELECT APP ID");
+    NSLog(@"CONTROLLER SELECT APP ID: %@",appID);
     if (!appID)
     {
         curAppID = nil;
@@ -160,7 +160,7 @@ int numNotificationsForAppID(NSString* appID);
 
 - (void)addNotificationForAppID:(NSString *)appID
 {
-    NSLog(@"CONTROLLER ADD NOTIFICATION FOR APP ID");
+    NSLog(@"CONTROLLER ADD NOTIFICATION FOR APP ID: %@",appID);
 
     //Needed for compatibility with GroupQuiet
     if (numNotificationsForAppID(appID) == 0)
@@ -201,7 +201,8 @@ int numNotificationsForAppID(NSString* appID);
             ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%i", notificationCount];
     }
 
-    [self selectAppID:appID];
+    if (!callCenter.currentCalls && ![[objc_getClass("IMAVCallManager") sharedInstance] hasActiveCall]) //If there are no active phone or facetime calls (causes crashes otherwise)
+        [self selectAppID:appID];
 
     NSLog(@"CONTROLLER ADD NOTIFICATION DONE");
 }
@@ -220,7 +221,7 @@ int numNotificationsForAppID(NSString* appID);
 
 - (void)removeNotificationForAppID:(NSString *)appID
 {
-    NSLog(@"CONTROLLER REMOVE NOTIFICATION");
+    NSLog(@"CONTROLLER REMOVE NOTIFICATION FOR APP ID: %@",appID);
     int notificationCount = numNotificationsForAppID(appID);
     if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
         ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%i", notificationCount];
