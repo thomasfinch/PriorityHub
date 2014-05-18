@@ -6,6 +6,7 @@ static PHController *controller;
 static id notificationListView, notificationListController;
 static NSTimer *idleResetTimer;
 static UIRefreshControl* refreshControl;
+static BOOL isUnlocked = YES;
 
 extern "C" void resetIdleTimer()
 {
@@ -55,10 +56,18 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
     [controller updatePrefsDict];
 }
 
+static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+    isUnlocked = !isUnlocked;
+	NSLog(@"TWEAK.XM LOCK STATE CHANGE");
+    if (isUnlocked)
+        [controller removeAllNotifications];
+}
+
 %ctor
 {
 	controller = [[PHController alloc] init];
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, prefsChanged, CFSTR("com.thomasfinch.priorityhub-prefschanged"), NULL,CFNotificationSuspensionBehaviorDeliverImmediately);
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, lockStateChanged, CFSTR("com.apple.springboard.lockstate"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 	[controller updatePrefsDict];
 }
 
@@ -155,18 +164,6 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
     %orig;
 }
 
-%end
-
-%hook SBLockScreenManager
-- (void)_setUILocked:(BOOL)locked
-{
-    NSLog(@"TWEAK.XM SET UI LOCKED");
-    //When device is unlocked, clear all notification views from the lockscreen
-    if (!locked)
-        [controller removeAllNotifications];
-
-    %orig;
-}
 %end
 
 %hook SBLockScreenNotificationCell
