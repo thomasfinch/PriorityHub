@@ -88,6 +88,7 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
         [refreshControl release];
     refreshControl = [[UIRefreshControl alloc] init];
     refreshControl.tintColor = [UIColor whiteColor];
+    // MSHookIvar<double>(refreshControl, "_snappingHeight") = MSHookIvar<double>(refreshControl, "_snappingHeight")
     [refreshControl addTarget:self action:@selector(handlePullToClear) forControlEvents:UIControlEventValueChanged];
     [notificationsTableView addSubview:refreshControl];
 
@@ -119,6 +120,7 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     NSLog(@"TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
+    NSLog(@"ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
     if (![controller curAppID] || ![[controller curAppID] isEqualToString:[[[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] activeBulletin] sectionID]])
         return 0;
     else
@@ -174,4 +176,15 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
     return orig;
 }
+%end
+
+%hook UIRefreshControl
+
+- (double)_visibleHeightForContentOffset:(struct CGPoint)arg1 origin:(struct CGPoint)arg2
+{
+    if (self == refreshControl && [UIScreen mainScreen].bounds.size.height == 480)
+        return %orig*2;
+    return %orig;
+}
+
 %end
