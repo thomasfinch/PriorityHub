@@ -14,6 +14,8 @@ static NSTimer *idleResetTimer;
 static UIRefreshControl* refreshControl;
 static BOOL isUnlocked = YES;
 
+//Used to reset the idle timer when an app's view is tapped in priority hub.
+//This prevents the phone from locking while you're tapping through your notifications.
 extern "C" void resetIdleTimer()
 {
     NSLog(@"RESET IDLE TIMER");
@@ -36,6 +38,8 @@ extern "C" void resetIdleTimer()
     }
 }
 
+//When a new notification comes in, all the other ones are faded out temporarily.
+//This resets them when a different app's view is selected.
 extern "C" void resetTableViewFadeTimers()
 {
     NSLog(@"RESET TABLE VIEW FADE TIMERS");
@@ -48,6 +52,7 @@ extern "C" void removeBulletinsForAppID(NSString* appID)
     [MSHookIvar<id>(notificationListController, "_observer") clearSection:appID];
 }
 
+//Returns the number of lock screen notifications stored for the given app ID
 extern "C" int numNotificationsForAppID(NSString* appID)
 {
     int count = 0;
@@ -57,11 +62,13 @@ extern "C" int numNotificationsForAppID(NSString* appID)
     return count;
 }
 
+//Called when any preference is changed in the settings app
 static void prefsChanged(CFNotificationCenterRef center, void *observer,CFStringRef name, const void *object, CFDictionaryRef userInfo)
 {
     [controller updatePrefsDict];
 }
 
+//Called when the device is locked/unlocked. Resets views if device was unlocked.
 static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
     isUnlocked = !isUnlocked;
 	NSLog(@"TWEAK.XM LOCK STATE CHANGE");
@@ -71,11 +78,15 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 %ctor
 {
+    //Initialize controller and set up Darwin notifications for preference changes and lock state changes
 	controller = [[PHController alloc] init];
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, prefsChanged, CFSTR("com.thomasfinch.priorityhub-prefschanged"), NULL,CFNotificationSuspensionBehaviorDeliverImmediately);
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, lockStateChanged, CFSTR("com.apple.springboard.lockstate"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 	[controller updatePrefsDict];
 
+    //dlopen'ing subtlelock causes its dylib to be loaded and executed first
+    //This fixes a lot of layout problems because then priority hub's layout code runs last and
+    //has the last say in the layout of some views.
     dlopen("/Library/MobileSubstrate/DynamicLibraries/SubtleLock.dylib", RTLD_NOW);
 }
 
@@ -102,9 +113,11 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     [refreshControl addTarget:self action:@selector(handlePullToClear) forControlEvents:UIControlEventValueChanged];
     [notificationsTableView addSubview:refreshControl];
 
+    //Adjust the height of containerView if subtlelock is installed
     CGFloat containerOffset = [controller isTweakInstalled:@"SubtleLock"] ? [controller viewHeight] : 0;
 
-    if ([[controller.prefsDict objectForKey:@"iconLocation"] intValue] == 0) //Icons are at top
+    //Adjust the heights and locations of the container view and table view based on the icon location
+    if ([[controller.prefsDict objectForKey:@"iconLocation"] intValue] == 0) //If icons are at the top
     {
         containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + [controller viewHeight] + 2.5, containerView.frame.size.width, containerView.frame.size.height - [controller viewHeight] - containerOffset);
         notificationsTableView.frame = CGRectMake(0, 0, notificationsTableView.frame.size.width, containerView.frame.size.height);
@@ -115,7 +128,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
         notificationsTableView.frame = CGRectMake(0, 0, notificationsTableView.frame.size.width, containerView.frame.size.height);
     }
 
-    if ([[[controller prefsDict] objectForKey:@"iconLocation"] intValue] == 0)
+    //Set the frame for the app icon view based on its location
+    if ([[[controller prefsDict] objectForKey:@"iconLocation"] intValue] == 0) //If icons are at the top
         controller.appListView.frame = CGRectMake(0, containerView.frame.origin.y - [controller viewHeight] - 2.5, containerView.frame.size.width, [controller viewHeight]);
     else
         controller.appListView.frame = CGRectMake(0, containerView.frame.origin.y + containerView.frame.size.height + 2.5, containerView.frame.size.width, [controller viewHeight]);
@@ -133,6 +147,7 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     [controller removeAllNotificationsForAppID:controller.curAppID];
 }
 
+//Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     NSLog(@"TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
@@ -170,21 +185,11 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 	[controller removeNotificationForAppID:[bulletin sectionID]];
 }
 
-- (void)prepareForTeardown
-{
-    NSLog(@"LIST CONTROLLER PREPARE FOR TEARDOWN");
-    %orig;
-}
-
-- (void)unlockUIWithActionContext:(id)arg1
-{
-    NSLog(@"UNLOCK UI WITH ACTION CONTEXT");
-    %orig;
-}
-
 %end
 
 %hook SBLockScreenNotificationCell
+
+//Removes the lines between notification items. Not really necessary, I just thought it looked better.
 - (id)initWithStyle:(long long)arg1 reuseIdentifier:(id)arg2
 {
     id orig = %orig;
@@ -192,10 +197,12 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
     return orig;
 }
+
 %end
 
 %hook UIRefreshControl
 
+//Makes the pull-to-clear refresh control more "sensitive" (i.e., you don't have to pull down as far to clear) on shorter devices (iPhone 4 & 4S)
 - (double)_visibleHeightForContentOffset:(struct CGPoint)arg1 origin:(struct CGPoint)arg2
 {
     if (self == refreshControl && [UIScreen mainScreen].bounds.size.height == 480)
