@@ -2,6 +2,12 @@
 #import <substrate.h>
 #import "PHController.h"
 
+#define DEBUG
+
+#ifndef DEBUG
+#define NSLog 
+#endif
+
 static PHController *controller;
 static id notificationListView, notificationListController;
 static NSTimer *idleResetTimer;
@@ -69,6 +75,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, prefsChanged, CFSTR("com.thomasfinch.priorityhub-prefschanged"), NULL,CFNotificationSuspensionBehaviorDeliverImmediately);
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, lockStateChanged, CFSTR("com.apple.springboard.lockstate"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 	[controller updatePrefsDict];
+
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/SubtleLock.dylib", RTLD_NOW);
 }
 
 
@@ -85,25 +93,33 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
     //Add refresh control for clearing notifications
     if (refreshControl)
+    {
+        [refreshControl removeFromSuperview];
         [refreshControl release];
+    }
     refreshControl = [[UIRefreshControl alloc] init];
     refreshControl.tintColor = [UIColor whiteColor];
-    // MSHookIvar<double>(refreshControl, "_snappingHeight") = MSHookIvar<double>(refreshControl, "_snappingHeight")
     [refreshControl addTarget:self action:@selector(handlePullToClear) forControlEvents:UIControlEventValueChanged];
     [notificationsTableView addSubview:refreshControl];
 
+    CGFloat containerOffset = [controller isTweakInstalled:@"SubtleLock"] ? [controller viewHeight] : 0;
+
     if ([[controller.prefsDict objectForKey:@"iconLocation"] intValue] == 0) //Icons are at top
     {
-        containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + [controller viewHeight] + 2.5, containerView.frame.size.width, containerView.frame.size.height - [controller viewHeight]);
+        containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + [controller viewHeight] + 2.5, containerView.frame.size.width, containerView.frame.size.height - [controller viewHeight] - containerOffset);
         notificationsTableView.frame = CGRectMake(0, 0, notificationsTableView.frame.size.width, containerView.frame.size.height);
     }
     else
     {
-        containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y, containerView.frame.size.width, containerView.frame.size.height - [controller viewHeight] - 2.5);
+        containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y, containerView.frame.size.width, containerView.frame.size.height - [controller viewHeight] - 2.5 - containerOffset);
         notificationsTableView.frame = CGRectMake(0, 0, notificationsTableView.frame.size.width, containerView.frame.size.height);
     }
 
-    controller.appListView.frame =  ([[[controller prefsDict] objectForKey:@"iconLocation"] intValue] == 0) ? CGRectMake(0, containerView.frame.origin.y - [controller viewHeight] - 2.5, containerView.frame.size.width, [controller viewHeight]) : CGRectMake(0, containerView.frame.origin.y + containerView.frame.size.height + 2.5, containerView.frame.size.width, [controller viewHeight]);
+    if ([[[controller prefsDict] objectForKey:@"iconLocation"] intValue] == 0)
+        controller.appListView.frame = CGRectMake(0, containerView.frame.origin.y - [controller viewHeight] - 2.5, containerView.frame.size.width, [controller viewHeight]);
+    else
+        controller.appListView.frame = CGRectMake(0, containerView.frame.origin.y + containerView.frame.size.height + 2.5, containerView.frame.size.width, [controller viewHeight]);
+
     [controller layoutSubviews];
     [self addSubview:controller.appListView];
     NSLog(@"TWEAK.XM DONE LAYOUT OUT SUBVIEWS");
@@ -183,7 +199,7 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 - (double)_visibleHeightForContentOffset:(struct CGPoint)arg1 origin:(struct CGPoint)arg2
 {
     if (self == refreshControl && [UIScreen mainScreen].bounds.size.height == 480)
-        return %orig*2;
+        return %orig * 2;
     return %orig;
 }
 

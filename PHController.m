@@ -2,6 +2,10 @@
 
 #define kPrefsPath @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist"
 
+#ifndef DEBUG
+#define NSLog 
+#endif
+
 @implementation PHController
 
 @synthesize prefsDict;

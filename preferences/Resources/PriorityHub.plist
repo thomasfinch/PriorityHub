@@ -51,6 +51,15 @@ items = (
   },
   {
     cell = PSButtonCell;
+    action = GithubButtonTapped;
+    icon = "Github.png";
+    label = "View Source on GitHub";
+  },
+  {
+    cell = PSGroupCell;
+  },
+  {
+    cell = PSButtonCell;
     action = TFTwitterButtonTapped;
     icon = "Twitter.png";
     label = "Developed by @tomf64";

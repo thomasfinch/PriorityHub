@@ -45,6 +45,12 @@
     [[UIApplication sharedApplication] openURL:donateURL];
 }
 
+-(void)GithubButtonTapped
+{
+    NSURL *githubURL = [NSURL URLWithString:@"https://github.com/thomasfinch/Priority-Hub"];
+    [[UIApplication sharedApplication] openURL:githubURL];
+}
+
 - (id)specifiers {
 	if(_specifiers == nil) {
 		_specifiers = [[self loadSpecifiersFromPlistName:@"PriorityHub" target:self] retain];
@@ -53,5 +59,3 @@
 }
 
 @end
-
-// vim:ft=objc
