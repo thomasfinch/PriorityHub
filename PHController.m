@@ -19,7 +19,6 @@ TO DO
 
 Reminders & calendar for lockscreen compatibility
 Passbook compatibility
-Subtle lock layout
 
 */
 
