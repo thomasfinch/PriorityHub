@@ -113,8 +113,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     [refreshControl addTarget:self action:@selector(handlePullToClear) forControlEvents:UIControlEventValueChanged];
     [notificationsTableView addSubview:refreshControl];
 
-    //Adjust the height of containerView if subtlelock is installed
-    CGFloat containerOffset = [controller isTweakInstalled:@"SubtleLock"] ? [controller viewHeight] : 0;
+    //Adjust the height of containerView if subtlelock is installed and enabled
+    CGFloat containerOffset = ([controller isTweakInstalled:@"SubtleLock"] && [[[NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.michaelpoole.subtlelock.plist"] objectForKey:@"Enabled"] intValue] == 1) ? [controller viewHeight] : 0;
 
     //Adjust the heights and locations of the container view and table view based on the icon location
     if ([[controller.prefsDict objectForKey:@"iconLocation"] intValue] == 0) //If icons are at the top
