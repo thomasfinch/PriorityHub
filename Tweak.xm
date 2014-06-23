@@ -2,7 +2,7 @@
 #import <substrate.h>
 #import "PHController.h"
 
-#define DEBUG
+// #define DEBUG
 
 #ifndef DEBUG
 #define NSLog 
