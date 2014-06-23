@@ -152,6 +152,9 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 {
     NSLog(@"TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
     NSLog(@"ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
+    if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
+        return 0;
+
     if (![controller curAppID] || ![[controller curAppID] isEqualToString:[[[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] activeBulletin] sectionID]])
         return 0;
     else
