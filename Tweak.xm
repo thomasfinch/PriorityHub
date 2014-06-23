@@ -2,7 +2,7 @@
 #import <substrate.h>
 #import "PHController.h"
 
-#define DEBUG
+// #define DEBUG
 
 #ifndef DEBUG
 #define NSLog 
@@ -71,7 +71,7 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 //Called when the device is locked/unlocked. Resets views if device was unlocked.
 static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
     isUnlocked = !isUnlocked;
-	NSLog(@"TWEAK.XM LOCK STATE CHANGE");
+    NSLog(@"TWEAK.XM LOCK STATE CHANGE");
     if (isUnlocked)
         [controller removeAllNotifications];
 }
@@ -79,10 +79,10 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 %ctor
 {
     //Initialize controller and set up Darwin notifications for preference changes and lock state changes
-	controller = [[PHController alloc] init];
-	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, prefsChanged, CFSTR("com.thomasfinch.priorityhub-prefschanged"), NULL,CFNotificationSuspensionBehaviorDeliverImmediately);
+    controller = [[PHController alloc] init];
+    CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, prefsChanged, CFSTR("com.thomasfinch.priorityhub-prefschanged"), NULL,CFNotificationSuspensionBehaviorDeliverImmediately);
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, lockStateChanged, CFSTR("com.apple.springboard.lockstate"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
-	[controller updatePrefsDict];
+    [controller updatePrefsDict];
 
     //dlopen'ing subtlelock causes its dylib to be loaded and executed first
     //This fixes a lot of layout problems because then priority hub's layout code runs last and
@@ -152,6 +152,9 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 {
     NSLog(@"TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
     NSLog(@"ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
+    if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
+        return 0;
+
     if (![controller curAppID] || ![[controller curAppID] isEqualToString:[[[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] activeBulletin] sectionID]])
         return 0;
     else
@@ -181,8 +184,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 - (void)observer:(id)observer removeBulletin:(id)bulletin
 {
     NSLog(@"TWEAK.XM OBSERVER REMOVE BULLETIN");
-	%orig;
-	[controller removeNotificationForAppID:[bulletin sectionID]];
+    %orig;
+    [controller removeNotificationForAppID:[bulletin sectionID]];
 }
 
 %end
