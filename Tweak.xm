@@ -5,7 +5,7 @@
 // #define DEBUG
 
 #ifndef DEBUG
-#define NSLog 
+#define NSLog
 #endif
 
 static PHController *controller;
@@ -56,9 +56,13 @@ extern "C" void removeBulletinsForAppID(NSString* appID)
 extern "C" int numNotificationsForAppID(NSString* appID)
 {
     int count = 0;
-    for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems"))
-        if ([[[listItem activeBulletin] sectionID] isEqualToString:appID])
-            count++;
+    for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems")) {
+      if ([listItem isKindOfClass:[SBAwayBulletinListItem class]] &&[[[bulletinItem activeBulletin] sectionID] isEqualToString:appID]) {
+        count++;
+      } else {
+        NSLog(@"LIST ITEM CLASS: %@",NSStringFromClass([id class]));
+      }
+    }
     return count;
 }
 
@@ -155,7 +159,10 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
         return 0;
 
-    if (![controller curAppID] || ![[controller curAppID] isEqualToString:[[[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] activeBulletin] sectionID]])
+    id *modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
+    if (![controller curAppID])
+        return 0;
+    else if ([modelItem isKindOfClass:[SBAwayBulletinListItem class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]])
         return 0;
     else
         return %orig;
