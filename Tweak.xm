@@ -2,7 +2,7 @@
 #import <substrate.h>
 #import "PHController.h"
 
-// #define DEBUG
+//#define DEBUG
 
 #ifndef DEBUG
 #define NSLog
@@ -57,7 +57,7 @@ extern "C" int numNotificationsForAppID(NSString* appID)
 {
     int count = 0;
     for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems")) {
-      if ([listItem isKindOfClass:[SBAwayBulletinListItem class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
+      if ([listItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
         count++;
       } else {
         NSLog(@"LIST ITEM CLASS: %@",NSStringFromClass([listItem class]));
@@ -162,7 +162,7 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     id modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
     if (![controller curAppID])
         return 0;
-    else if ([modelItem isKindOfClass:[SBAwayBulletinListItem class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]])
+    else if ([modelItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]])
         return 0;
     else
         return %orig;
