@@ -2,10 +2,10 @@
 #import <substrate.h>
 #import "PHController.h"
 
-// #define DEBUG
+#define DEBUG
 
 #ifndef DEBUG
-#define NSLog 
+#define NSLog
 #endif
 
 static PHController *controller;
@@ -155,7 +155,7 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
         return 0;
 
-    if (![controller curAppID] || ![[controller curAppID] isEqualToString:[[[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] activeBulletin] sectionID]])
+     if (![controller curAppID] || ![[controller curAppID] isEqualToString:[[[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] activeBulletin] sectionID]])
         return 0;
     else
         return %orig;
@@ -199,6 +199,23 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
     MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
     return orig;
+}
+
+%end
+
+/*v1.1.3 of this tweak has/had a bug where if a user tried to dismiss a notification by swiping down the NC, 
+the NC would stutter and refuse to open on the first try, then open completely on the second try and dismiss
+the notification, but leave the PriorityHub view on-screen. Hooking these two methods (called when the NC is
+presented) prevents this issue.*/
+
+%hook SBNotificationCenterViewController
+
+-(void)hostWillPresent {
+  %orig;
+  if (controller) {
+    [controller removeAllNotifications];
+
+  }
 }
 
 %end
