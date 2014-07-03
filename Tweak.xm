@@ -203,7 +203,10 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 %end
 
-/*v1.1.1 of this tweak has/had a bug where if a user tried to dismiss a notification by swiping down the NC, the NC would stutter and refuse to open on the first try, then open completely on the second try and dismiss the notification, but leave the PriorityHub view on-screen. Hooking these two methods (called when the NC is presented) prevents this issue.*/
+/*v1.1.3 of this tweak has/had a bug where if a user tried to dismiss a notification by swiping down the NC, 
+the NC would stutter and refuse to open on the first try, then open completely on the second try and dismiss
+the notification, but leave the PriorityHub view on-screen. Hooking these two methods (called when the NC is
+presented) prevents this issue.*/
 
 %hook SBNotificationCenterViewController
 
@@ -212,17 +215,6 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
   if (controller) {
     [controller removeAllNotifications];
 
-  }
-}
-
-%end
-
-%hook SBNotificationCenterController
-
--(void)presentAnimated:(BOOL)animated completion:(id)completion {
-  %orig;
-  if (controller) {
-    [controller removeAllNotifications];
   }
 }
 
