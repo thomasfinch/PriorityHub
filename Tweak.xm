@@ -180,7 +180,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 - (void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned long long)feed
 {
-    NSLog(@"TWEAK.XM OBSERVER ADD BULLETIN");
+    NSLog(@"TWEAK.XM OBSERVER: %@ ADDING BULLETIN: %@",observer,bulletin);
+    //NSLog(@"TWEAK.XM OBSERVER ADD BULLETIN");
     %orig;
     notificationListController = self;
     [controller addNotificationForAppID:[bulletin sectionID]];
@@ -188,7 +189,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 - (void)observer:(id)observer removeBulletin:(id)bulletin
 {
-    NSLog(@"TWEAK.XM OBSERVER REMOVE BULLETIN");
+    NSLog(@"TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
+    //NSLog(@"TWEAK.XM OBSERVER REMOVE BULLETIN");
     %orig;
     [controller removeNotificationForAppID:[bulletin sectionID]];
 }
@@ -197,10 +199,10 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 %hook SBLockScreenNotificationCell
 
-//Removes the lines between notification items. Not really necessary, I just thought it looked better.
+//Removes the lines between notification items. Not really necessary, I just thought it looked better. (Now opt-out via settings panel)
 - (id)initWithStyle:(long long)arg1 reuseIdentifier:(id)arg2
 {
-    if (!controller.showSeparators) {
+    if (!controller.showSeparators || [[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 0) {
       id orig = %orig;
       MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
       MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
@@ -212,10 +214,10 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 %end
 
-/*v1.1.1 of this tweak has/had a bug where if a user tried to dismiss a notification by swiping down the NC,
-the NC would stutter and refuse to open on the first try, then open completely on the second try and dismiss
-the notification, but leave the PriorityHub view on-screen. Hooking this method (called when the NC is
-presented) prevents this issue.*/
+/*v1.1.3 of this tweak and its predecessors has/had a bug where if a user tried to dismiss a notification by
+swiping down the NC, the NC would stutter and refuse to open on the first try, then open completely on the
+second try and dismiss the notification, but leave the PriorityHub view on-screen. Hooking this method (called
+when the NC is presented) and removing the view from the screen prevents this issue.*/
 
 %hook SBNotificationCenterViewController
 
