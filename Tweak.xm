@@ -200,10 +200,14 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 //Removes the lines between notification items. Not really necessary, I just thought it looked better.
 - (id)initWithStyle:(long long)arg1 reuseIdentifier:(id)arg2
 {
-    id orig = %orig;
-    MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
-    MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
-    return orig;
+    if (!controller.showSeparators) {
+      id orig = %orig;
+      MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
+      MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
+      return orig;
+    } else {
+      return %orig;
+    }
 }
 
 %end
