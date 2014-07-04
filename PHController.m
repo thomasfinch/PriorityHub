@@ -3,7 +3,7 @@
 #define kPrefsPath @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist"
 
 #ifndef DEBUG
-#define NSLog 
+#define NSLog
 #endif
 
 @implementation PHController
@@ -73,15 +73,16 @@ int numNotificationsForAppID(NSString* appID);
     if (prefsDict)
         [prefsDict release];
     prefsDict = [[NSMutableDictionary alloc] init];
-    if ([NSDictionary dictionaryWithContentsOfFile:kPrefsPath])
+    if ([NSDictionary dictionaryWithContentsOfFile:kPrefsPath]) {
         [prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:kPrefsPath]];
-    
+    }
+
     //Add preferences if they don't already exist
     if (![prefsDict objectForKey:@"showNumbers"])
         [prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"showNumbers"];
     if (![prefsDict objectForKey:@"iconLocation"])
         [prefsDict setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
-    
+
     [prefsDict writeToFile:kPrefsPath atomically:YES];
 }
 
@@ -149,7 +150,7 @@ int numNotificationsForAppID(NSString* appID);
         [notificationsTableView reloadData];
         if (!wasAppSelected)
             selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
-        
+
         [UIView animateWithDuration:0.15f animations:^{
             selectedView.alpha = 1.0f;
             notificationsTableView.alpha = 1.0f;
@@ -174,14 +175,14 @@ int numNotificationsForAppID(NSString* appID);
         NSLog(@"NO INFO FOR APP ID, CREATING VIEWS");
         UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(appListView.contentSize.width, 0, [self viewWidth], [self viewHeight])];
         containerView.tag = 1;
-        
+
         UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
         [containerView addGestureRecognizer:singleFingerTap];
-        
+
         UIImageView *iconImageView = [[UIImageView alloc] initWithImage:[self iconForAppID:appID]];
         iconImageView.frame = CGRectMake(([self viewWidth] - [self iconSize])/2, 5, [self iconSize], [self iconSize]);
         [containerView addSubview:iconImageView];
-        
+
         if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
         {
             UILabel *numberLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, iconImageView.frame.origin.y + iconImageView.frame.size.height + ((containerView.frame.size.height - (iconImageView.frame.origin.y + iconImageView.frame.size.height)) - 15) / 2, [self viewWidth], 15)];
@@ -192,7 +193,7 @@ int numNotificationsForAppID(NSString* appID);
         }
         else
             iconImageView.frame = CGRectMake(([self viewHeight] - [self iconSize])/2, ([self viewWidth] - [self iconSize])/2, [self iconSize], [self iconSize]);
-        
+
         NSLog(@"DONE CREATING VIEWS");
         [appViewsDict setObject:containerView forKey:appID];
         [self layoutSubviews];

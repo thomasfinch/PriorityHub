@@ -2,10 +2,10 @@
 #import <substrate.h>
 #import "PHController.h"
 
-// #define DEBUG
+//#define DEBUG
 
 #ifndef DEBUG
-#define NSLog 
+#define NSLog
 #endif
 
 static PHController *controller;
@@ -56,9 +56,13 @@ extern "C" void removeBulletinsForAppID(NSString* appID)
 extern "C" int numNotificationsForAppID(NSString* appID)
 {
     int count = 0;
-    for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems"))
-        if ([[[listItem activeBulletin] sectionID] isEqualToString:appID])
-            count++;
+    for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems")) {
+      if ([listItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
+        count++;
+      } else {
+        NSLog(@"LIST ITEM CLASS: %@",NSStringFromClass([listItem class]));
+      }
+    }
     return count;
 }
 
@@ -155,7 +159,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
         return 0;
 
-    if (![controller curAppID] || ![[controller curAppID] isEqualToString:[[[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] activeBulletin] sectionID]])
+    id modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
+    if (![controller curAppID] || ([modelItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]))
         return 0;
     else
         return %orig;
@@ -175,7 +180,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 - (void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned long long)feed
 {
-    NSLog(@"TWEAK.XM OBSERVER ADD BULLETIN");
+    NSLog(@"TWEAK.XM OBSERVER: %@ ADDING BULLETIN: %@",observer,bulletin);
+    //NSLog(@"TWEAK.XM OBSERVER ADD BULLETIN");
     %orig;
     notificationListController = self;
     [controller addNotificationForAppID:[bulletin sectionID]];
@@ -183,7 +189,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 - (void)observer:(id)observer removeBulletin:(id)bulletin
 {
-    NSLog(@"TWEAK.XM OBSERVER REMOVE BULLETIN");
+    NSLog(@"TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
+    //NSLog(@"TWEAK.XM OBSERVER REMOVE BULLETIN");
     %orig;
     [controller removeNotificationForAppID:[bulletin sectionID]];
 }
@@ -195,10 +202,10 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 //Removes the lines between notification items. Not really necessary, I just thought it looked better.
 - (id)initWithStyle:(long long)arg1 reuseIdentifier:(id)arg2
 {
-    id orig = %orig;
-    MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
-    MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
-    return orig;
+      id orig = %orig;
+      MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
+      MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
+      return orig;
 }
 
 %end
