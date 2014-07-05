@@ -1,4 +1,5 @@
 #import "PHController.h"
+#import "UIImage+AverageColor.h"
 
 #define kPrefsPath @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist"
 
@@ -11,7 +12,9 @@
 @synthesize prefsDict;
 @synthesize appListView;
 @synthesize curAppID;
-
+@synthesize enableBlurs;
+@synthesize appSelected;
+@synthesize showSeparators;
 
 /*
 
@@ -19,6 +22,8 @@ TO DO
 
 Reminders & calendar for lockscreen compatibility
 Passbook compatibility
+iPad support
+7.1.2 compatibility
 
 */
 
@@ -40,7 +45,7 @@ int numNotificationsForAppID(NSString* appID);
 
         selectedView = [[UIView alloc] init];
         selectedView.backgroundColor = [UIColor colorWithWhite:0.75f alpha:0.3f];
-        selectedView.layer.cornerRadius = 10.0f;
+        selectedView.layer.cornerRadius = 10.0;
         selectedView.layer.masksToBounds = YES;
     }
     return self;
@@ -49,9 +54,9 @@ int numNotificationsForAppID(NSString* appID);
 - (float)iconSize
 {
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) //if device is an ipad
-        return 40.0f;
+        return 40.0;
     else
-        return 30.0f;
+        return 30.0;
 }
 
 - (float)viewWidth
@@ -75,12 +80,19 @@ int numNotificationsForAppID(NSString* appID);
     prefsDict = [[NSMutableDictionary alloc] init];
     if ([NSDictionary dictionaryWithContentsOfFile:kPrefsPath]) {
         [prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:kPrefsPath]];
-        
+
         NSNumber *sepStatus = prefsDict[@"showSeparators"];
         if (sepStatus.intValue == 0) {
-          _showSeparators = NO;
+          showSeparators = NO;
         } else {
-          _showSeparators = YES;
+          showSeparators = YES;
+        }
+
+        NSNumber *blurStatus = prefsDict[@"enableBlurs"];
+        if (blurStatus.intValue == 0) {
+          enableBlurs = NO;
+        } else {
+          enableBlurs = YES;
         }
     }
 
@@ -89,7 +101,11 @@ int numNotificationsForAppID(NSString* appID);
         [prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"showNumbers"];
     if (![prefsDict objectForKey:@"showSeparators"]) {
         [prefsDict setObject:[NSNumber numberWithBool:NO] forKey:@"showSeparators"];
-        _showSeparators = NO;
+        showSeparators = NO;
+    }
+    if (![prefsDict objectForKey:@"enableBlurs"]) {
+        [prefsDict setObject:[NSNumber numberWithBool:NO] forKey:@"enableBlurs"];
+        enableBlurs = NO;
     }
     if (![prefsDict objectForKey:@"iconLocation"])
         [prefsDict setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
@@ -148,26 +164,30 @@ int numNotificationsForAppID(NSString* appID);
     {
         curAppID = nil;
         [notificationsTableView reloadData];
-
-        [UIView animateWithDuration:0.15f animations:^{
-            selectedView.alpha = 0.0f;
-            notificationsTableView.alpha = 0.0f;
-        }completion:^(BOOL completed){}];
+        [UIView animateWithDuration:0.15 animations:^{
+            selectedView.alpha = 0.0;
+            notificationsTableView.alpha = 0.0;
+        } completion:nil];
     }
     else
     {
         BOOL wasAppSelected = (curAppID != nil);
         curAppID = appID;
         [notificationsTableView reloadData];
-        if (!wasAppSelected)
+        if (!wasAppSelected) {
             selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
+            appSelected = NO;
+        }
 
-        [UIView animateWithDuration:0.15f animations:^{
-            selectedView.alpha = 1.0f;
-            notificationsTableView.alpha = 1.0f;
-            if (wasAppSelected)
+        [UIView animateWithDuration:0.15 animations:^{
+            selectedView.alpha = 1.0;
+            notificationsTableView.alpha = 1.0;
+            if (wasAppSelected) {
+                appSelected = YES;
+                [selectedView setBackgroundColor:[[self iconFromAppID:appID] averageColor]]; //colorize selectedView FlagPaint7-style (suggestion by /u/NetwonLAD on reddit)
                 selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
-        }completion:^(BOOL completed){}];
+            }
+        } completion:nil];
     }
 
     NSLog(@"CONTOLLER SELECT APP ID DONE");

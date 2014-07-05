@@ -7,7 +7,7 @@ GO_EASY_ON_ME = 1
 include theos/makefiles/common.mk
 
 TWEAK_NAME = PriorityHub
-PriorityHub_FILES = Tweak.xm PHController.m
+PriorityHub_FILES = Tweak.xm PHController.m UIImage+AverageColor.m
 PriorityHub_FRAMEWORKS = UIKit CoreGraphics CoreTelephony
 PriorityHub_PRIVATE_FRAMEWORKS = IMAVCore
 

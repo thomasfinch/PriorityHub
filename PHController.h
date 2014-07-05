@@ -9,6 +9,8 @@
     CTCallCenter *callCenter;
 }
 
+@property (nonatomic, readonly) BOOL enableBlurs;
+@property (nonatomic, readonly) BOOL appSelected;
 @property (nonatomic, readonly) BOOL showSeparators;
 @property (nonatomic, readonly) NSMutableDictionary *prefsDict;
 @property (nonatomic, readonly) UIScrollView *appListView;

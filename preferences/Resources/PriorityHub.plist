@@ -25,6 +25,14 @@ items = (
     label = "Show Notification Separators";
   },
   {
+    cell = PSSwitchCell;
+    default = 1;
+    defaults = "com.thomasfinch.priorityhub";
+    key = enableBlurs;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Blur LS when showing notifications";
+  },
+  {
     cell = PSGroupCell;
   },
   {

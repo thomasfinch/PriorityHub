@@ -57,10 +57,10 @@ extern "C" int numNotificationsForAppID(NSString* appID)
 {
     int count = 0;
     for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems")) {
-      if ([listItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
-        count++;
-      } else {
-        NSLog(@"LIST ITEM CLASS: %@",NSStringFromClass([listItem class]));
+      if ([listItem isKindfClass:[objc_getClass("SBAwayBulletinListItem") class]]) {
+        if ([appID isEqualToString:[[listItem activeBulletin] sectionID]]) {
+         count++;
+        }
       }
     }
     return count;
@@ -160,10 +160,17 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
         return 0;
 
     id modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
-    if (![controller curAppID] || ([modelItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]))
+    if (![controller curAppID]){
+      return 0;
+    } else if ([modelItem isKindfClass:[objc_getClass("SBAwayBulletinListItem") class]]) {
+      if (![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]) {
         return 0;
-    else
+      } else {
         return %orig;
+      }
+    } else {
+        return %orig;
+    }
 }
 
 - (void)setInScreenOffMode:(BOOL)screenOff
@@ -214,7 +221,7 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 %end
 
-/*v1.1.3 of this tweak and its predecessors has/had a bug where if a user tried to dismiss a notification by
+/*v1.1.4 of this tweak and its predecessors has/had a bug where if a user tried to dismiss a notification by
 swiping down the NC, the NC would stutter and refuse to open on the first try, then open completely on the
 second try and dismiss the notification, but leave the PriorityHub view on-screen. Hooking this method (called
 when the NC is presented) and removing the view from the screen prevents this issue.*/
@@ -238,8 +245,38 @@ when the NC is presented) and removing the view from the screen prevents this is
 - (double)_visibleHeightForContentOffset:(struct CGPoint)arg1 origin:(struct CGPoint)arg2
 {
     if (self == refreshControl && [UIScreen mainScreen].bounds.size.height == 480)
-        return %orig * 2;
+        return %orig * 2.5;
     return %orig;
+}
+
+%end
+
+//Enables blur only when notifications are displayed (suggestion by /u/jiznon on Reddit)
+%hook SBLockOverlayStyleProperties
+
+-(double)blurRadius {
+  if ([[controller.prefsDict objectForKey:@"enableBlurs"] intValue] == 0) {
+    if (controller.appSelected) {
+      return %orig;
+    } else {
+      return 0;
+    }
+  } else {
+    return %orig;
+  }
+
+}
+
+-(double)tintAlpha {
+  if ([[controller.prefsDict objectForKey:@"enableBlurs"] intValue] == 0) {
+    if (controller.appSelected) {
+      return %orig;
+    } else {
+      return 0;
+    }
+  } else {
+    return %orig;
+  }
 }
 
 %end
