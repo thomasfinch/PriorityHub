@@ -75,6 +75,7 @@ int numNotificationsForAppID(NSString* appID);
     prefsDict = [[NSMutableDictionary alloc] init];
     if ([NSDictionary dictionaryWithContentsOfFile:kPrefsPath]) {
         [prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:kPrefsPath]];
+        
         NSNumber *sepStatus = prefsDict[@"showSeparators"];
         if (sepStatus.intValue == 0) {
           _showSeparators = NO;
