@@ -56,9 +56,13 @@ extern "C" void removeBulletinsForAppID(NSString* appID)
 extern "C" int numNotificationsForAppID(NSString* appID)
 {
     int count = 0;
-    for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems"))
-        if ([[[listItem activeBulletin] sectionID] isEqualToString:appID])
-            count++;
+    for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems")) {
+      if ([listItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
+        count++;
+      } else {
+        NSLog(@"LIST ITEM CLASS: %@",NSStringFromClass([listItem class]));
+      }
+    }
     return count;
 }
 
@@ -155,7 +159,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
         return 0;
 
-     if (![controller curAppID] || ![[controller curAppID] isEqualToString:[[[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] activeBulletin] sectionID]])
+    id modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
+    if (![controller curAppID] || ([modelItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]))
         return 0;
     else
         return %orig;
@@ -175,7 +180,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 - (void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned long long)feed
 {
-    NSLog(@"TWEAK.XM OBSERVER ADD BULLETIN");
+    NSLog(@"TWEAK.XM OBSERVER: %@ ADDING BULLETIN: %@",observer,bulletin);
+    //NSLog(@"TWEAK.XM OBSERVER ADD BULLETIN");
     %orig;
     notificationListController = self;
     [controller addNotificationForAppID:[bulletin sectionID]];
@@ -183,7 +189,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 - (void)observer:(id)observer removeBulletin:(id)bulletin
 {
-    NSLog(@"TWEAK.XM OBSERVER REMOVE BULLETIN");
+    NSLog(@"TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
+    //NSLog(@"TWEAK.XM OBSERVER REMOVE BULLETIN");
     %orig;
     [controller removeNotificationForAppID:[bulletin sectionID]];
 }
@@ -192,29 +199,34 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 %hook SBLockScreenNotificationCell
 
-//Removes the lines between notification items. Not really necessary, I just thought it looked better.
+//Removes the lines between notification items. Not really necessary, I just thought it looked better. (Now opt-out via settings panel)
 - (id)initWithStyle:(long long)arg1 reuseIdentifier:(id)arg2
 {
-    id orig = %orig;
-    MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
-    MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
-    return orig;
+    if (!controller.showSeparators || [[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 0) {
+      id orig = %orig;
+      MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
+      MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
+      return orig;
+    } else {
+      return %orig;
+    }
 }
 
 %end
 
-/*v1.1.3 of this tweak has/had a bug where if a user tried to dismiss a notification by swiping down the NC, 
-the NC would stutter and refuse to open on the first try, then open completely on the second try and dismiss
-the notification, but leave the PriorityHub view on-screen. Hooking these two methods (called when the NC is
-presented) prevents this issue.*/
+/*v1.1.3 of this tweak and its predecessors has/had a bug where if a user tried to dismiss a notification by
+swiping down the NC, the NC would stutter and refuse to open on the first try, then open completely on the
+second try and dismiss the notification, but leave the PriorityHub view on-screen. Hooking this method (called
+when the NC is presented) and removing the view from the screen prevents this issue.*/
 
 %hook SBNotificationCenterViewController
 
 -(void)hostWillPresent {
   %orig;
   if (controller) {
+    NSLog(@"TWEAK.XM DISMISS ALL NOTIFICATIONS BEFORE NCVC PRESENT");
     [controller removeAllNotifications];
-
+    [controller.appListView removeFromSuperview];
   }
 }
 
