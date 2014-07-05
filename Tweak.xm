@@ -57,10 +57,10 @@ extern "C" int numNotificationsForAppID(NSString* appID)
 {
     int count = 0;
     for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems")) {
-      if ([listItem isKindfClass:[objc_getClass("SBAwayBulletinListItem") class]]) {
-        if ([appID isEqualToString:[[listItem activeBulletin] sectionID]]) {
-         count++;
-        }
+      if ([listItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
+        count++;
+      } else {
+        NSLog(@"LIST ITEM CLASS: %@",NSStringFromClass([listItem class]));
       }
     }
     return count;
@@ -160,17 +160,10 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
         return 0;
 
     id modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
-    if (![controller curAppID]){
-      return 0;
-    } else if ([modelItem isKindfClass:[objc_getClass("SBAwayBulletinListItem") class]]) {
-      if (![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]) {
+    if (![controller curAppID] || ([modelItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]))
         return 0;
-      } else {
+    else
         return %orig;
-      }
-    } else {
-        return %orig;
-    }
 }
 
 - (void)setInScreenOffMode:(BOOL)screenOff
@@ -255,20 +248,7 @@ when the NC is presented) and removing the view from the screen prevents this is
 %hook SBLockOverlayStyleProperties
 
 -(double)blurRadius {
-  if ([[controller.prefsDict objectForKey:@"enableBlurs"] intValue] == 0) {
-    if (controller.appSelected) {
-      return %orig;
-    } else {
-      return 0;
-    }
-  } else {
-    return %orig;
-  }
-
-}
-
--(double)tintAlpha {
-  if ([[controller.prefsDict objectForKey:@"enableBlurs"] intValue] == 0) {
+  if ([[controller.prefsDict objectForKey:@"enableBlurs"] intValue] == 1) {
     if (controller.appSelected) {
       return %orig;
     } else {

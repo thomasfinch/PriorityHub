@@ -3,6 +3,8 @@
 
 #define kPrefsPath @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist"
 
+#define DEBUG
+
 #ifndef DEBUG
 #define NSLog
 #endif
@@ -44,7 +46,7 @@ int numNotificationsForAppID(NSString* appID);
         callCenter = [[CTCallCenter alloc] init];
 
         selectedView = [[UIView alloc] init];
-        selectedView.backgroundColor = [UIColor colorWithWhite:0.75f alpha:0.3f];
+        selectedView.backgroundColor = [UIColor colorWithWhite:0.75 alpha:0.3];
         selectedView.layer.cornerRadius = 10.0;
         selectedView.layer.masksToBounds = YES;
     }
@@ -146,12 +148,21 @@ int numNotificationsForAppID(NSString* appID);
     float startX = (appListView.frame.size.width - totalViewWidth)/2;
     if (startX < 0)
         startX = 0;
-    for (UIView *appView in [appViewsDict allValues])
+    /*for (UIView *appView in [appViewsDict allValues])
     {
         selectedView.hidden = NO;
         appView.frame = CGRectMake(startX + appListView.contentSize.width, 0, [self viewWidth], [self viewHeight]);
         appListView.contentSize = CGSizeMake(appListView.contentSize.width + [self viewWidth], [self viewHeight]);
         [appListView addSubview:appView];
+    }*/
+
+    for (int i = 0; i < appViewsDict.allValues.count; i++) {
+      UIView *appView = appViewsDict.allValues[i];
+      NSString *appID = appViewsDict.allKeys[i];
+      selectedView.hidden = NO;
+      appView.frame = CGRectMake(startX + appListView.contentSize.width, 0, [self viewWidth], [self viewHeight]);
+      appListView.contentSize = CGSizeMake(appListView.contentSize.width + [self viewWidth], [self viewHeight]);
+      [appListView addSubview:appView];
     }
 
     NSLog(@"CONTROLLER LAYOUT SUBVIEWS DONE");
@@ -167,12 +178,14 @@ int numNotificationsForAppID(NSString* appID);
         [UIView animateWithDuration:0.15 animations:^{
             selectedView.alpha = 0.0;
             notificationsTableView.alpha = 0.0;
+            [selectedView setBackgroundColor:[UIColor colorWithWhite:0.75 alpha:0.3]];
         } completion:nil];
     }
     else
     {
         BOOL wasAppSelected = (curAppID != nil);
         curAppID = appID;
+        [selectedView setBackgroundColor:[[self iconForAppID:appID] averageColor]];
         [notificationsTableView reloadData];
         if (!wasAppSelected) {
             selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
@@ -182,10 +195,11 @@ int numNotificationsForAppID(NSString* appID);
         [UIView animateWithDuration:0.15 animations:^{
             selectedView.alpha = 1.0;
             notificationsTableView.alpha = 1.0;
+            //[selectedView setBackgroundColor:[[self iconForAppID:appID] averageColor]];
             if (wasAppSelected) {
                 appSelected = YES;
-                [selectedView setBackgroundColor:[[self iconFromAppID:appID] averageColor]]; //colorize selectedView FlagPaint7-style (suggestion by /u/NetwonLAD on reddit)
                 selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
+                [selectedView setBackgroundColor:[((UIImageView*)[[appViewsDict objectForKey:appID] subviews][0]).image averageColor]];
             }
         } completion:nil];
     }

@@ -26,11 +26,11 @@ items = (
   },
   {
     cell = PSSwitchCell;
-    default = 1;
+    default = 0;
     defaults = "com.thomasfinch.priorityhub";
     key = enableBlurs;
     PostNotification = com.thomasfinch.priorityhub-prefschanged;
-    label = "Blur LS when showing notifications";
+    label = "Blur LS for notifications only";
   },
   {
     cell = PSGroupCell;
