@@ -2,7 +2,7 @@
 #import <substrate.h>
 #import "PHController.h"
 
-#define DEBUG
+//#define DEBUG
 
 #ifndef DEBUG
 #define NSLog
@@ -18,11 +18,11 @@ static BOOL isUnlocked = YES;
 //This prevents the phone from locking while you're tapping through your notifications.
 extern "C" void resetIdleTimer()
 {
-    NSLog(@"RESET IDLE TIMER");
+    NSLog(@"PRIORITYHUB - TWEAK.XM RESET IDLE TIMER");
 
     if (![idleResetTimer isValid])
     {
-        NSLog(@"SETTING TIMER");
+        NSLog(@"PRIORITYHUB - TWEAK.XM SETTING TIMER");
         [notificationListView _disableIdleTimer:YES];
 
         //NSInvocation needed to send BOOL argument to notificationListView when the timer ends
@@ -32,8 +32,8 @@ extern "C" void resetIdleTimer()
         [invocation setSelector:@selector(_disableIdleTimer:)];
         BOOL no = NO;
         [invocation setArgument:&no atIndex:2];
-        if (idleResetTimer)
-            [idleResetTimer release];
+        /*if (idleResetTimer)
+            [idleResetTimer release];*/
         idleResetTimer = [[NSTimer scheduledTimerWithTimeInterval:3 invocation:invocation repeats:NO] retain];
     }
 }
@@ -42,13 +42,13 @@ extern "C" void resetIdleTimer()
 //This resets them when a different app's view is selected.
 extern "C" void resetTableViewFadeTimers()
 {
-    NSLog(@"RESET TABLE VIEW FADE TIMERS");
+    NSLog(@"PRIORITYHUB - TWEAK.XM RESET TABLE VIEW FADE TIMERS");
     [notificationListView _resetAllFadeTimers];
 }
 
 extern "C" void removeBulletinsForAppID(NSString* appID)
 {
-    NSLog(@"REMOVE FULLETINS FOR APP ID");
+    NSLog(@"PRIORITYHUB - TWEAK.XM REMOVE BULLETINS FOR APP ID");
     [MSHookIvar<id>(notificationListController, "_observer") clearSection:appID];
 }
 
@@ -60,7 +60,7 @@ extern "C" int numNotificationsForAppID(NSString* appID)
       if ([listItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
         count++;
       } else {
-        NSLog(@"LIST ITEM CLASS: %@",NSStringFromClass([listItem class]));
+        NSLog(@"PRIORITYHUB - TWEAK.XM LIST ITEM CLASS: %@",NSStringFromClass([listItem class]));
       }
     }
     return count;
@@ -75,7 +75,7 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 //Called when the device is locked/unlocked. Resets views if device was unlocked.
 static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
     isUnlocked = !isUnlocked;
-    NSLog(@"TWEAK.XM LOCK STATE CHANGE");
+    NSLog(@"PRIORITYHUB - TWEAK.XM LOCK STATE CHANGE");
     if (isUnlocked)
         [controller removeAllNotifications];
 }
@@ -99,7 +99,7 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 - (void)layoutSubviews
 {
-    NSLog(@"TWEAK.XM LAYOUT SUBVIEWS");
+    NSLog(@"PRIORITYHUB - TWEAK.XM LAYOUT SUBVIEWS");
     %orig;
     notificationListView = self;
     UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
@@ -110,7 +110,7 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     if (refreshControl)
     {
         [refreshControl removeFromSuperview];
-        [refreshControl release];
+        //[refreshControl release];
     }
     refreshControl = [[UIRefreshControl alloc] init];
     refreshControl.tintColor = [UIColor whiteColor];
@@ -123,30 +123,37 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     //Adjust the heights and locations of the container view and table view based on the icon location
     if ([[controller.prefsDict objectForKey:@"iconLocation"] intValue] == 0) //If icons are at the top
     {
+      //Top
         containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + [controller viewHeight] + 2.5, containerView.frame.size.width, containerView.frame.size.height - [controller viewHeight] - containerOffset);
-        notificationsTableView.frame = CGRectMake(0, 0, notificationsTableView.frame.size.width, containerView.frame.size.height);
     }
     else
     {
+      //Bottom
         containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y, containerView.frame.size.width, containerView.frame.size.height - [controller viewHeight] - 2.5 - containerOffset);
-        notificationsTableView.frame = CGRectMake(0, 0, notificationsTableView.frame.size.width, containerView.frame.size.height);
+
     }
 
+    notificationsTableView.frame = CGRectMake(0, 0, notificationsTableView.frame.size.width, containerView.frame.size.height);
+
+    [containerView.layer setBorderWidth:1.0];
+    [containerView.layer setBorderColor:[UIColor blueColor].CGColor];
+
     //Set the frame for the app icon view based on its location
-    if ([[[controller prefsDict] objectForKey:@"iconLocation"] intValue] == 0) //If icons are at the top
+    if ([[[controller prefsDict] objectForKey:@"iconLocation"] intValue] == 0) { //If icons are at the top
         controller.appListView.frame = CGRectMake(0, containerView.frame.origin.y - [controller viewHeight] - 2.5, containerView.frame.size.width, [controller viewHeight]);
-    else
+    } else {
         controller.appListView.frame = CGRectMake(0, containerView.frame.origin.y + containerView.frame.size.height + 2.5, containerView.frame.size.width, [controller viewHeight]);
+    }
 
     [controller layoutSubviews];
     [self addSubview:controller.appListView];
-    NSLog(@"TWEAK.XM DONE LAYOUT OUT SUBVIEWS");
+    NSLog(@"PRIORITYHUB - TWEAK.XM DONE LAYOUT OUT SUBVIEWS");
 }
 
 %new
 - (void)handlePullToClear
 {
-    NSLog(@"PULL TO CLEAR");
+    NSLog(@"PRIORITYHUB - TWEAK.XM PULL TO CLEAR");
     [refreshControl endRefreshing];
     [controller removeAllNotificationsForAppID:controller.curAppID];
 }
@@ -154,8 +161,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 //Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    NSLog(@"TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
-    NSLog(@"ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
+    NSLog(@"PRIORITYHUB - TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
+    NSLog(@"PRIORITYHUB - TWEAK.XM ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
     if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
         return 0;
 
@@ -166,9 +173,13 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
         return %orig;
 }
 
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+  return NO;
+}
+
 - (void)setInScreenOffMode:(BOOL)screenOff
 {
-    NSLog(@"SET IN SCREEN OFF MODE");
+    NSLog(@"PRIORITYHUB - TWEAK.XM SET IN SCREEN OFF MODE");
     if (screenOff)
         [controller selectAppID:nil];
     %orig;
@@ -180,8 +191,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 - (void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned long long)feed
 {
-    NSLog(@"TWEAK.XM OBSERVER: %@ ADDING BULLETIN: %@",observer,bulletin);
-    //NSLog(@"TWEAK.XM OBSERVER ADD BULLETIN");
+    NSLog(@"PRIORITYHUB - TWEAK.XM OBSERVER: %@ ADDING BULLETIN: %@",observer,bulletin);
+    //NSLog(@"PRIORITYHUB - TWEAK.XM OBSERVER ADD BULLETIN");
     %orig;
     notificationListController = self;
     [controller addNotificationForAppID:[bulletin sectionID]];
@@ -189,8 +200,8 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 - (void)observer:(id)observer removeBulletin:(id)bulletin
 {
-    NSLog(@"TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
-    //NSLog(@"TWEAK.XM OBSERVER REMOVE BULLETIN");
+    NSLog(@"PRIORITYHUB - TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
+    //NSLog(@"PRIORITYHUB - TWEAK.XM OBSERVER REMOVE BULLETIN");
     %orig;
     [controller removeNotificationForAppID:[bulletin sectionID]];
 }
@@ -224,7 +235,7 @@ when the NC is presented) and removing the view from the screen prevents this is
 -(void)hostWillPresent {
   %orig;
   if (controller) {
-    NSLog(@"TWEAK.XM DISMISS ALL NOTIFICATIONS BEFORE NCVC PRESENT");
+    NSLog(@"PRIORITYHUB - TWEAK.XM DISMISS ALL NOTIFICATIONS BEFORE NCVC PRESENT");
     [controller removeAllNotifications];
     [controller.appListView removeFromSuperview];
   }
