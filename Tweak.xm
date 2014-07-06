@@ -135,9 +135,6 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
     notificationsTableView.frame = CGRectMake(0, 0, notificationsTableView.frame.size.width, containerView.frame.size.height);
 
-    [containerView.layer setBorderWidth:1.0];
-    [containerView.layer setBorderColor:[UIColor blueColor].CGColor];
-
     //Set the frame for the app icon view based on its location
     if ([[[controller prefsDict] objectForKey:@"iconLocation"] intValue] == 0) { //If icons are at the top
         controller.appListView.frame = CGRectMake(0, containerView.frame.origin.y - [controller viewHeight] - 2.5, containerView.frame.size.width, [controller viewHeight]);
