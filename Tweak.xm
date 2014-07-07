@@ -199,13 +199,41 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 %hook SBLockScreenNotificationCell
 
-//Removes the lines between notification items. Not really necessary, I just thought it looked better.
+//Removes the lines between notification items. Not really necessary, I just thought it looked better. (Now opt-out via settings panel)
 - (id)initWithStyle:(long long)arg1 reuseIdentifier:(id)arg2
 {
+<<<<<<< HEAD
+=======
+    if (!controller.showSeparators || [[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 0) {
+>>>>>>> 6763810b8e81571f667c3da3e26e7823c6fd4835
       id orig = %orig;
       MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
       MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
       return orig;
+<<<<<<< HEAD
+=======
+    } else {
+      return %orig;
+    }
+}
+
+%end
+
+/*v1.1.3 of this tweak and its predecessors has/had a bug where if a user tried to dismiss a notification by
+swiping down the NC, the NC would stutter and refuse to open on the first try, then open completely on the
+second try and dismiss the notification, but leave the PriorityHub view on-screen. Hooking this method (called
+when the NC is presented) and removing the view from the screen prevents this issue.*/
+
+%hook SBNotificationCenterViewController
+
+-(void)hostWillPresent {
+  %orig;
+  if (controller) {
+    NSLog(@"TWEAK.XM DISMISS ALL NOTIFICATIONS BEFORE NCVC PRESENT");
+    [controller removeAllNotifications];
+    [controller.appListView removeFromSuperview];
+  }
+>>>>>>> 6763810b8e81571f667c3da3e26e7823c6fd4835
 }
 
 %end
