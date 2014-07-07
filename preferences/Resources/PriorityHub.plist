@@ -17,6 +17,14 @@ items = (
     label = "Show Numbers";
   },
   {
+    cell = PSSwitchCell;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
+    key = showSeparators;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Show Notification Separators";
+  },
+  {
     cell = PSGroupCell;
   },
   {

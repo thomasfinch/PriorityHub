@@ -75,11 +75,24 @@ int numNotificationsForAppID(NSString* appID);
     prefsDict = [[NSMutableDictionary alloc] init];
     if ([NSDictionary dictionaryWithContentsOfFile:kPrefsPath]) {
         [prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:kPrefsPath]];
+<<<<<<< HEAD
+=======
+        NSNumber *sepStatus = prefsDict[@"showSeparators"];
+        if (sepStatus.intValue == 0) {
+          _showSeparators = NO;
+        } else {
+          _showSeparators = YES;
+        }
+>>>>>>> 6763810b8e81571f667c3da3e26e7823c6fd4835
     }
 
     //Add preferences if they don't already exist
     if (![prefsDict objectForKey:@"showNumbers"])
         [prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"showNumbers"];
+    if (![prefsDict objectForKey:@"showSeparators"]) {
+        [prefsDict setObject:[NSNumber numberWithBool:NO] forKey:@"showSeparators"];
+        _showSeparators = NO;
+    }
     if (![prefsDict objectForKey:@"iconLocation"])
         [prefsDict setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
 
