@@ -202,16 +202,11 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 //Removes the lines between notification items. Not really necessary, I just thought it looked better. (Now opt-out via settings panel)
 - (id)initWithStyle:(long long)arg1 reuseIdentifier:(id)arg2
 {
-<<<<<<< HEAD
-=======
     if (!controller.showSeparators || [[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 0) {
->>>>>>> 6763810b8e81571f667c3da3e26e7823c6fd4835
       id orig = %orig;
       MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
       MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
       return orig;
-<<<<<<< HEAD
-=======
     } else {
       return %orig;
     }
@@ -233,7 +228,6 @@ when the NC is presented) and removing the view from the screen prevents this is
     [controller removeAllNotifications];
     [controller.appListView removeFromSuperview];
   }
->>>>>>> 6763810b8e81571f667c3da3e26e7823c6fd4835
 }
 
 %end
