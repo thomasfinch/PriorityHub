@@ -237,7 +237,7 @@ when the NC is presented) and removing the view from the screen prevents this is
 //Makes the pull-to-clear refresh control more "sensitive" (i.e., you don't have to pull down as far to clear) on shorter devices (iPhone 4 & 4S)
 - (double)_visibleHeightForContentOffset:(struct CGPoint)arg1 origin:(struct CGPoint)arg2
 {
-    if (self == refreshControl && [UIScreen mainScreen].bounds.size.height == 480)
+    if (self == refreshControl && [UIScreen mainScreen].bounds.size.height == 300)
         return %orig * 2;
     return %orig;
 }
