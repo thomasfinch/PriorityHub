@@ -170,10 +170,6 @@ id modelItem;
         return %orig;
 }
 
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
-  return NO;
-}
-
 - (void)setInScreenOffMode:(BOOL)screenOff
 {
     NSLog(@"PRIORITYHUB - TWEAK.XM SET IN SCREEN OFF MODE");
@@ -200,6 +196,7 @@ id modelItem;
     NSLog(@"PRIORITYHUB - TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
     //NSLog(@"PRIORITYHUB - TWEAK.XM OBSERVER REMOVE BULLETIN");
     %orig;
+    notificationListController = self;
     [controller removeNotificationForAppID:[bulletin sectionID]];
 }
 
@@ -208,10 +205,11 @@ id modelItem;
 %hook SBLockScreenNotificationCell
 
 //Removes the lines between notification items. Not really necessary, I just thought it looked better. (Now opt-out via settings panel)
+id orig;
 - (id)initWithStyle:(long long)arg1 reuseIdentifier:(id)arg2
 {
     if (!controller.showSeparators || [[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 0) {
-      id orig = %orig;
+      orig = %orig;
       MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
       MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
       return orig;
