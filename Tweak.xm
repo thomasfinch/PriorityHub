@@ -1,7 +1,6 @@
 #import <objc/runtime.h>
 #import <substrate.h>
 #import "PHController.h"
-
 //#define DEBUG
 
 #ifndef DEBUG
@@ -57,7 +56,7 @@ extern "C" int numNotificationsForAppID(NSString* appID)
 {
     int count = 0;
     for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems")) {
-      if ([listItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
+      if ([listItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
         count++;
       } else {
         NSLog(@"PRIORITYHUB - TWEAK.XM LIST ITEM CLASS: %@",NSStringFromClass([listItem class]));
@@ -156,16 +155,17 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 }
 
 //Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
+id modelItem;
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     NSLog(@"PRIORITYHUB - TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
-    NSLog(@"PRIORITYHUB - TWEAK.XM ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
+    modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
+    NSLog(@"PRIORITYHUB - TWEAK.XM ITEM: %@",modelItem);
     if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
-        return 0;
+        return 0.0;
 
-    id modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
-    if (![controller curAppID] || ([modelItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]))
-        return 0;
+    if (![controller curAppID] || ([modelItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]))
+        return 0.0;
     else
         return %orig;
 }

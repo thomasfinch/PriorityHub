@@ -26,7 +26,6 @@ TO DO
 Reminders & calendar for lockscreen compatibility
 Passbook compatibility
 iPad support
-7.1.2 compatibility
 
 */
 
