@@ -1,6 +1,7 @@
 #import "PHController.h"
 #import "UIImage+AverageColor.h"
 #import <objc/runtime.h>
+#import <UIKit/UIImage+Private.h>
 
 #define kPrefsPath @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist"
 
@@ -15,7 +16,6 @@
 @synthesize prefsDict;
 @synthesize appListView;
 @synthesize curAppID;
-@synthesize enableBlurs;
 @synthesize appSelected;
 @synthesize showSeparators;
 
@@ -53,7 +53,7 @@ int numNotificationsForAppID(NSString* appID);
     return self;
 }
 
-- (float)iconSize
+- (CGFloat)iconSize
 {
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) //if device is an ipad
         return 40.0;
@@ -61,12 +61,12 @@ int numNotificationsForAppID(NSString* appID);
         return 30.0;
 }
 
-- (float)viewWidth
+- (CGFloat)viewWidth
 {
     return [self iconSize] * 1.55;
 }
 
-- (float)viewHeight
+- (CGFloat)viewHeight
 {
     if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
         return [self iconSize] * 1.85;
@@ -77,8 +77,6 @@ int numNotificationsForAppID(NSString* appID);
 - (void)updatePrefsDict
 {
     NSLog(@"PRIORITYHUB - PHCONTROLLER.M UPDATE PREFS DICT");
-    /*if (prefsDict)
-        [prefsDict release];*/
     prefsDict = [[NSMutableDictionary alloc] init];
     if ([NSDictionary dictionaryWithContentsOfFile:kPrefsPath]) {
         [prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:kPrefsPath]];
@@ -89,13 +87,6 @@ int numNotificationsForAppID(NSString* appID);
         } else {
           showSeparators = YES;
         }
-
-        NSNumber *blurStatus = prefsDict[@"enableBlurs"];
-        if (blurStatus.intValue == 0) {
-          enableBlurs = NO;
-        } else {
-          enableBlurs = YES;
-        }
     }
 
     //Add preferences if they don't already exist
@@ -104,10 +95,6 @@ int numNotificationsForAppID(NSString* appID);
     if (![prefsDict objectForKey:@"showSeparators"]) {
         [prefsDict setObject:[NSNumber numberWithBool:NO] forKey:@"showSeparators"];
         showSeparators = NO;
-    }
-    if (![prefsDict objectForKey:@"enableBlurs"]) {
-        [prefsDict setObject:[NSNumber numberWithBool:NO] forKey:@"enableBlurs"];
-        enableBlurs = NO;
     }
     if (![prefsDict objectForKey:@"iconLocation"])
         [prefsDict setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
@@ -144,8 +131,8 @@ int numNotificationsForAppID(NSString* appID);
 
     //Put all app views in scroll view
     appListView.contentSize = CGSizeMake(0, [self viewHeight]);
-    float totalViewWidth = [[appViewsDict allKeys] count] * [self viewWidth];
-    float startX = (appListView.frame.size.width - totalViewWidth)/2;
+    CGFloat totalViewWidth = [[appViewsDict allKeys] count] * [self viewWidth];
+    CGFloat startX = (appListView.frame.size.width - totalViewWidth)/2;
     if (startX < 0)
         startX = 0;
     for (UIView *appView in [appViewsDict allValues])
@@ -238,9 +225,6 @@ int numNotificationsForAppID(NSString* appID);
         if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
             ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%i", notificationCount];
     }
-
-    if (!callCenter.currentCalls && ![[objc_getClass("IMAVCallManager") sharedInstance] hasActiveCall]) //If there are no active phone or facetime calls (causes crashes otherwise)
-        [self selectAppID:appID];
 
     NSLog(@"PRIORITYHUB - PHCONTROLLER.M ADD NOTIFICATION DONE");
 }

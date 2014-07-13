@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <CoreTelephony/CTCallCenter.h>
+#import <CoreGraphics/CoreGraphics.h>
 
 @interface PHController : NSObject
 {
@@ -9,7 +10,6 @@
     CTCallCenter *callCenter;
 }
 
-@property (nonatomic, readonly) BOOL enableBlurs;
 @property (nonatomic, readonly) BOOL appSelected;
 @property (nonatomic, readonly) BOOL showSeparators;
 @property (nonatomic, readonly) NSMutableDictionary *prefsDict;
@@ -18,9 +18,9 @@
 
 - (id)init;
 
-- (float)iconSize;
-- (float)viewWidth;
-- (float)viewHeight;
+- (CGFloat)iconSize;
+- (CGFloat)viewWidth;
+- (CGFloat)viewHeight;
 
 - (void)updatePrefsDict;
 - (BOOL)isTweakInstalled:(NSString *)name;

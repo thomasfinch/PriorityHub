@@ -1,10 +1,12 @@
 #import <objc/runtime.h>
 #import <substrate.h>
+#import <UIKit/UIKit.h>
 #import "PHController.h"
-//#define DEBUG
 
-#ifndef DEBUG
-#define NSLog
+#ifdef DEBUG
+    #define PRLog(fmt, ...) NSLog((@"[PRIORITYHUB] [Line %d] %s" fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
+#else
+    #define PRLog(fmt, ...)
 #endif
 
 static PHController *controller;
@@ -13,27 +15,34 @@ static NSTimer *idleResetTimer;
 static UIRefreshControl* refreshControl;
 static BOOL isUnlocked = YES;
 
+NSInvocation *timerInvocation;
 //Used to reset the idle timer when an app's view is tapped in priority hub.
 //This prevents the phone from locking while you're tapping through your notifications.
 extern "C" void resetIdleTimer()
 {
-    NSLog(@"PRIORITYHUB - TWEAK.XM RESET IDLE TIMER");
+    PRLog(@"TWEAK.XM RESET IDLE TIMER");
 
-    if (![idleResetTimer isValid])
+    if ([idleResetTimer isKindOfClass:[NSString class]] && ![idleResetTimer isValid])
     {
-        NSLog(@"PRIORITYHUB - TWEAK.XM SETTING TIMER");
-        [notificationListView _disableIdleTimer:YES];
+        PRLog(@"TWEAK.XM SETTING TIMER");
+        [notificationListView resetTimers];
 
-        //NSInvocation needed to send BOOL argument to notificationListView when the timer ends
-        //So complicated and messy :(
-        NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:[[notificationListView class] instanceMethodSignatureForSelector:@selector(_disableIdleTimer:)]];
-        [invocation setTarget:notificationListView];
-        [invocation setSelector:@selector(_disableIdleTimer:)];
+        if (timerInvocation) {
+          timerInvocation = nil;
+        }
+        if (idleResetTimer) {
+          idleResetTimer = nil;
+        }
+
         BOOL no = NO;
-        [invocation setArgument:&no atIndex:2];
-        /*if (idleResetTimer)
-            [idleResetTimer release];*/
-        idleResetTimer = [[NSTimer scheduledTimerWithTimeInterval:3 invocation:invocation repeats:NO] retain];
+        timerInvocation = [NSInvocation invocationWithMethodSignature:[notificationListView methodSignatureForSelector:@selector(_disableIdleTimer:)]];
+        [timerInvocation setSelector:@selector(_disableIdleTimer:)];
+        [timerInvocation setTarget:notificationListView];
+        [timerInvocation setArgument:&no atIndex:2];
+
+        idleResetTimer = [NSTimer scheduledTimerWithTimeInterval:3.0 invocation:timerInvocation repeats:NO];
+    } else {
+      [notificationListView resetTimers];
     }
 }
 
@@ -41,25 +50,30 @@ extern "C" void resetIdleTimer()
 //This resets them when a different app's view is selected.
 extern "C" void resetTableViewFadeTimers()
 {
-    NSLog(@"PRIORITYHUB - TWEAK.XM RESET TABLE VIEW FADE TIMERS");
+    PRLog(@"TWEAK.XM RESET TABLE VIEW FADE TIMERS");
     [notificationListView _resetAllFadeTimers];
 }
 
 extern "C" void removeBulletinsForAppID(NSString* appID)
 {
-    NSLog(@"PRIORITYHUB - TWEAK.XM REMOVE BULLETINS FOR APP ID");
+    PRLog(@"TWEAK.XM REMOVE BULLETINS FOR APP ID");
     [MSHookIvar<id>(notificationListController, "_observer") clearSection:appID];
 }
 
 //Returns the number of lock screen notifications stored for the given app ID
+int count;
 extern "C" int numNotificationsForAppID(NSString* appID)
 {
-    int count = 0;
-    for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController, "_listItems")) {
+    count = 0;
+    for (int i = 0; i < MSHookIvar<NSMutableArray*>(notificationListController,"_listItems").count; i++) {
+      id listItem = [notificationListController listItemAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
       if ([listItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
         count++;
+      } else if ([listItem isKindOfClass:[%c(SBAwayListItem) class]] || [listItem isKindOfClass:[%c(SBAwaySystemAlertItem) class]]) {
+        PRLog(@"TWEAK.XM - LIST ITEM UNLOCK CONTEXT IDENTIFIER: %@", [MSHookIvar<id>(listItem,"_unlockContext") identifier]);
       } else {
-        NSLog(@"PRIORITYHUB - TWEAK.XM LIST ITEM CLASS: %@",NSStringFromClass([listItem class]));
+        //Do nothing
+        PRLog(@"TWEAK.XM - LISTITEM: %@",listItem);
       }
     }
     return count;
@@ -74,7 +88,7 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 //Called when the device is locked/unlocked. Resets views if device was unlocked.
 static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
     isUnlocked = !isUnlocked;
-    NSLog(@"PRIORITYHUB - TWEAK.XM LOCK STATE CHANGE");
+    PRLog(@"TWEAK.XM LOCK STATE CHANGE");
     if (isUnlocked)
         [controller removeAllNotifications];
 }
@@ -96,21 +110,22 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
 %hook SBLockScreenNotificationListView
 
+UIView *containerView;
+UITableView *notificationsTableView;
+
 - (void)layoutSubviews
 {
-    NSLog(@"PRIORITYHUB - TWEAK.XM LAYOUT SUBVIEWS");
+    PRLog(@"TWEAK.XM LAYOUT SUBVIEWS");
     %orig;
     notificationListView = self;
-    UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
-    UITableView *notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
+    containerView = MSHookIvar<UIView*>(self, "_containerView");
+    notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
     MSHookIvar<UITableView*>(controller, "notificationsTableView") = notificationsTableView;
 
     //Add refresh control for clearing notifications
     if (refreshControl)
-    {
-        [refreshControl removeFromSuperview];
-        //[refreshControl release];
-    }
+      [refreshControl removeFromSuperview];
+
     refreshControl = [[UIRefreshControl alloc] init];
     refreshControl.tintColor = [UIColor whiteColor];
     [refreshControl addTarget:self action:@selector(handlePullToClear) forControlEvents:UIControlEventValueChanged];
@@ -124,9 +139,7 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
     {
       //Top
         containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + [controller viewHeight] + 2.5, containerView.frame.size.width, containerView.frame.size.height - [controller viewHeight] - containerOffset);
-    }
-    else
-    {
+    } else {
       //Bottom
         containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y, containerView.frame.size.width, containerView.frame.size.height - [controller viewHeight] - 2.5 - containerOffset);
 
@@ -143,28 +156,37 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 
     [controller layoutSubviews];
     [self addSubview:controller.appListView];
-    NSLog(@"PRIORITYHUB - TWEAK.XM DONE LAYOUT OUT SUBVIEWS");
+    PRLog(@"TWEAK.XM DONE LAYOUT OUT SUBVIEWS");
 }
 
 %new
 - (void)handlePullToClear
 {
-    NSLog(@"PRIORITYHUB - TWEAK.XM PULL TO CLEAR");
+    PRLog(@"TWEAK.XM PULL TO CLEAR");
     [refreshControl endRefreshing];
     [controller removeAllNotificationsForAppID:controller.curAppID];
 }
 
+%new
+-(void)resetTimers {
+  [self _disableIdleTimer:YES];
+  [self _resetAllFadeTimers];
+}
+
+
 //Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
 id modelItem;
+BOOL isValidItem;
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    NSLog(@"PRIORITYHUB - TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
+    PRLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
     modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
-    NSLog(@"PRIORITYHUB - TWEAK.XM ITEM: %@",modelItem);
+    PRLog(@"TWEAK.XM ITEM: %@",modelItem);
+    isValidItem = ([modelItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] || [modelItem isKindOfClass:[%c(SBSnoozedAlarmBulletinListItem) class]]);
     if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
         return 0.0;
 
-    if (![controller curAppID] || ([modelItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]))
+    if (![controller curAppID] || (isValidItem && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]) || !isValidItem)
         return 0.0;
     else
         return %orig;
@@ -172,7 +194,7 @@ id modelItem;
 
 - (void)setInScreenOffMode:(BOOL)screenOff
 {
-    NSLog(@"PRIORITYHUB - TWEAK.XM SET IN SCREEN OFF MODE");
+    PRLog(@"TWEAK.XM SET IN SCREEN OFF MODE");
     if (screenOff)
         [controller selectAppID:nil];
     %orig;
@@ -182,22 +204,34 @@ id modelItem;
 
 %hook SBLockScreenNotificationListController
 
+-(void)loadView {
+  %orig;
+  PRLog(@"TWEAK.XM INITIALIZE NOTIFICATIONLISTCONTROLLER IF NEEDED");
+  if (notificationListController)
+    notificationListController = nil;
+}
+
+BOOL currentCallsExist;
 - (void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned long long)feed
 {
-    NSLog(@"PRIORITYHUB - TWEAK.XM OBSERVER: %@ ADDING BULLETIN: %@",observer,bulletin);
-    //NSLog(@"PRIORITYHUB - TWEAK.XM OBSERVER ADD BULLETIN");
-    %orig;
-    notificationListController = self;
-    [controller addNotificationForAppID:[bulletin sectionID]];
+  currentCallsExist = ([MSHookIvar<CTCallCenter*>(controller,"callCenter") currentCalls] || [[MSHookIvar<CTCallCenter*>(controller,"callCenter") currentCalls] count] > 0);
+
+  PRLog(@"TWEAK.XM OBSERVER: %@ ADDING BULLETIN: %@",observer,bulletin);
+
+  notificationListController = self;
+  %orig;
+  [controller addNotificationForAppID:[bulletin sectionID]];
+
+
+  if (!currentCallsExist && ![[%c(IMAVCallManager) sharedInstance] hasActiveCall]) //If there are no active phone or facetime calls (causes crashes otherwise)
+    [controller selectAppID:[bulletin sectionID]];
 }
 
 - (void)observer:(id)observer removeBulletin:(id)bulletin
 {
-    NSLog(@"PRIORITYHUB - TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
-    //NSLog(@"PRIORITYHUB - TWEAK.XM OBSERVER REMOVE BULLETIN");
-    %orig;
-    notificationListController = self;
+    PRLog(@"TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
     [controller removeNotificationForAppID:[bulletin sectionID]];
+    %orig;
 }
 
 %end
@@ -208,14 +242,12 @@ id modelItem;
 id orig;
 - (id)initWithStyle:(long long)arg1 reuseIdentifier:(id)arg2
 {
-    if (!controller.showSeparators || [[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 0) {
-      orig = %orig;
-      MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
-      MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
-      return orig;
-    } else {
-      return %orig;
-    }
+  orig = %orig;
+  if (!controller.showSeparators || [[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 0) {
+    MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
+    MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
+  }
+  return orig;
 }
 
 %end
@@ -230,7 +262,7 @@ when the NC is presented) and removing the view from the screen prevents this is
 -(void)hostWillPresent {
   %orig;
   if (controller) {
-    NSLog(@"PRIORITYHUB - TWEAK.XM DISMISS ALL NOTIFICATIONS BEFORE NCVC PRESENT");
+    PRLog(@"TWEAK.XM DISMISS ALL NOTIFICATIONS BEFORE NCVC PRESENT");
     [controller removeAllNotifications];
     [controller.appListView removeFromSuperview];
   }
@@ -243,26 +275,11 @@ when the NC is presented) and removing the view from the screen prevents this is
 //Makes the pull-to-clear refresh control more "sensitive" (i.e., you don't have to pull down as far to clear) on shorter devices (iPhone 4 & 4S)
 - (double)_visibleHeightForContentOffset:(struct CGPoint)arg1 origin:(struct CGPoint)arg2
 {
-    if (self == refreshControl && [UIScreen mainScreen].bounds.size.height == 480)
-        return %orig * 2.5;
-    return %orig;
-}
-
-%end
-
-//Enables blur only when notifications are displayed (suggestion by /u/jiznon on Reddit)
-%hook SBLockOverlayStyleProperties
-
--(double)blurRadius {
-  if ([[controller.prefsDict objectForKey:@"enableBlurs"] intValue] == 1) {
-    if (controller.appSelected) {
-      return %orig;
+    if ([self isEqual:refreshControl] && [UIScreen mainScreen].bounds.size.height == 480) {
+        return %orig * 3;
     } else {
-      return 0;
+      return %orig;
     }
-  } else {
-    return %orig;
-  }
 }
 
 %end
