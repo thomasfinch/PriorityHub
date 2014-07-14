@@ -221,9 +221,12 @@ int numNotificationsForAppID(NSString* appID);
     }
     else
     {
-        int notificationCount = numNotificationsForAppID(appID);
-        if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
-            ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%i", notificationCount];
+      NSLog(@"PRIORITYHUB - PHCONTROLLER.M NOTIFICATIONS VIEW FOR APP: %@ EXISTS",appID);
+      int notificationCount = numNotificationsForAppID(appID);
+      if ([[prefsDict objectForKey:@"showNumbers"] boolValue]) {
+        NSLog(@"PRIORITYHUB - PHCONTROLLER.M ADD NUMBER");
+        ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%i", notificationCount];
+      }
     }
 
     NSLog(@"PRIORITYHUB - PHCONTROLLER.M ADD NOTIFICATION DONE");
@@ -272,6 +275,15 @@ int numNotificationsForAppID(NSString* appID);
 
     [appViewsDict removeAllObjects];
     [self layoutSubviews];
+}
+
+-(void)dealloc {
+  [super dealloc];
+  appViewsDict = nil;
+  curAppID = nil;
+  appListView = nil;
+  callCenter = nil;
+  selectedView = nil;
 }
 
 @end

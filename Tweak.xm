@@ -4,46 +4,44 @@
 #import "PHController.h"
 
 #ifdef DEBUG
-    #define PRLog(fmt, ...) NSLog((@"[PRIORITYHUB] [Line %d] %s" fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
+    #define PRLog(fmt, ...) NSLog((@"[PRIORITYHUB] [Line %d] %s: "  fmt), __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__)
 #else
     #define PRLog(fmt, ...)
 #endif
 
 static PHController *controller;
 static id notificationListView, notificationListController;
-static NSTimer *idleResetTimer;
 static UIRefreshControl* refreshControl;
 static BOOL isUnlocked = YES;
 
 NSInvocation *timerInvocation;
+NSTimer *idleResetTimer;
 //Used to reset the idle timer when an app's view is tapped in priority hub.
 //This prevents the phone from locking while you're tapping through your notifications.
 extern "C" void resetIdleTimer()
 {
     PRLog(@"TWEAK.XM RESET IDLE TIMER");
 
-    if ([idleResetTimer isKindOfClass:[NSString class]] && ![idleResetTimer isValid])
-    {
-        PRLog(@"TWEAK.XM SETTING TIMER");
-        [notificationListView resetTimers];
+    //if (!idleResetTimer || ![idleResetTimer isValid] || [idleResetTimer isKindOfClass:[NSTimer class]])
+    //{
+    PRLog(@"TWEAK.XM SETTING TIMER");
+    [notificationListView resetTimers];
 
-        if (timerInvocation) {
-          timerInvocation = nil;
-        }
-        if (idleResetTimer) {
-          idleResetTimer = nil;
-        }
-
-        BOOL no = NO;
-        timerInvocation = [NSInvocation invocationWithMethodSignature:[notificationListView methodSignatureForSelector:@selector(_disableIdleTimer:)]];
-        [timerInvocation setSelector:@selector(_disableIdleTimer:)];
-        [timerInvocation setTarget:notificationListView];
-        [timerInvocation setArgument:&no atIndex:2];
-
-        idleResetTimer = [NSTimer scheduledTimerWithTimeInterval:3.0 invocation:timerInvocation repeats:NO];
-    } else {
-      [notificationListView resetTimers];
+    if (timerInvocation) {
+      timerInvocation = nil;
     }
+    if (idleResetTimer) {
+      idleResetTimer = nil;
+    }
+
+    BOOL no = NO;
+    timerInvocation = [NSInvocation invocationWithMethodSignature:[notificationListView methodSignatureForSelector:@selector(_disableIdleTimer:)]];
+    [timerInvocation setSelector:@selector(_disableIdleTimer:)];
+    [timerInvocation setTarget:notificationListView];
+    [timerInvocation setArgument:&no atIndex:2];
+
+    idleResetTimer = [NSTimer scheduledTimerWithTimeInterval:3.0 invocation:timerInvocation repeats:NO];
+    //}
 }
 
 //When a new notification comes in, all the other ones are faded out temporarily.
@@ -65,15 +63,13 @@ int count;
 extern "C" int numNotificationsForAppID(NSString* appID)
 {
     count = 0;
-    for (int i = 0; i < MSHookIvar<NSMutableArray*>(notificationListController,"_listItems").count; i++) {
-      id listItem = [notificationListController listItemAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
-      if ([listItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] && [[[listItem activeBulletin] sectionID] isEqualToString:appID]) {
+    PRLog(@"TWEAK.XM - START COUNTING NOTIFICATIONS");
+    for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController,"_listItems")) {
+      if (([listItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] || [listItem isKindOfClass:[%c(SBSnoozedAlarmBulletinListItem) class]]) && [[[listItem activeBulletin] sectionID] isEqual:appID]) {
+        PRLog(@"TWEAK.XM - SBAWAYBULLETINLISTITEM ADDED");
         count++;
-      } else if ([listItem isKindOfClass:[%c(SBAwayListItem) class]] || [listItem isKindOfClass:[%c(SBAwaySystemAlertItem) class]]) {
-        PRLog(@"TWEAK.XM - LIST ITEM UNLOCK CONTEXT IDENTIFIER: %@", [MSHookIvar<id>(listItem,"_unlockContext") identifier]);
       } else {
-        //Do nothing
-        PRLog(@"TWEAK.XM - LISTITEM: %@",listItem);
+        PRLog(@"TWEAK.XM - ITEM IS NOT VALID: %@", listItem);
       }
     }
     return count;
@@ -183,13 +179,17 @@ BOOL isValidItem;
     modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
     PRLog(@"TWEAK.XM ITEM: %@",modelItem);
     isValidItem = ([modelItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] || [modelItem isKindOfClass:[%c(SBSnoozedAlarmBulletinListItem) class]]);
-    if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
-        return 0.0;
 
-    if (![controller curAppID] || (isValidItem && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]) || !isValidItem)
+    if (![controller curAppID])
+      return 0.0;
+    else {
+      if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
         return 0.0;
-    else
+      else if (!isValidItem || (isValidItem && ![[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]]))
+        return 0.0;
+      else
         return %orig;
+    }
 }
 
 - (void)setInScreenOffMode:(BOOL)screenOff
