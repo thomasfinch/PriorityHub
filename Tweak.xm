@@ -171,21 +171,19 @@ UITableView *notificationsTableView;
 
 
 //Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
-id modelItem;
-BOOL isValidItem;
+//id modelItem;
+//BOOL isValidItem;
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     PRLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
-    modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
-    PRLog(@"TWEAK.XM ITEM: %@",modelItem);
-    isValidItem = ([modelItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] || [modelItem isKindOfClass:[%c(SBSnoozedAlarmBulletinListItem) class]]);
+    PRLog(@"TWEAK.XM ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
 
     if (![controller curAppID])
       return 0.0;
     else {
       if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
         return 0.0;
-      else if (!isValidItem || (isValidItem && ![[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]]))
+      else if (!([[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] isKindOfClass:[%c(SBAwayBulletinListItem) class]] || [[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] isKindOfClass:[%c(SBSnoozedAlarmBulletinListItem) class]]) || (([[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] isKindOfClass:[%c(SBAwayBulletinListItem) class]] || [[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] isKindOfClass:[%c(SBSnoozedAlarmBulletinListItem) class]]) && ![[controller curAppID] isEqual:[[[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] activeBulletin] sectionID]]))
         return 0.0;
       else
         return %orig;
