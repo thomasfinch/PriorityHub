@@ -152,7 +152,7 @@ UITableView *notificationsTableView;
 
     [controller layoutSubviews];
     [self addSubview:controller.appListView];
-    PRLog(@"TWEAK.XM DONE LAYOUT OUT SUBVIEWS");
+    PRLog(@"TWEAK.XM DONE LAYOUT SUBVIEWS");
 }
 
 %new
