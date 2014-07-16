@@ -18,7 +18,6 @@
 @synthesize appListView;
 @synthesize curAppID;
 @synthesize appSelected;
-@synthesize showSeparators;
 
 /*
 
@@ -81,13 +80,6 @@ int numNotificationsForAppID(NSString* appID);
     prefsDict = [[NSMutableDictionary alloc] init];
     if ([NSDictionary dictionaryWithContentsOfFile:kPrefsPath]) {
         [prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:kPrefsPath]];
-
-        NSNumber *sepStatus = prefsDict[@"showSeparators"];
-        if (sepStatus.intValue == 0) {
-          showSeparators = NO;
-        } else {
-          showSeparators = YES;
-        }
     }
 
     //Add preferences if they don't already exist
@@ -95,8 +87,9 @@ int numNotificationsForAppID(NSString* appID);
         [prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"showNumbers"];
     if (![prefsDict objectForKey:@"showSeparators"]) {
         [prefsDict setObject:[NSNumber numberWithBool:NO] forKey:@"showSeparators"];
-        showSeparators = NO;
     }
+    if (![prefsDict objectForKey:@"colorizeSelected"])
+        [prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"colorizeSelected"];
     if (![prefsDict objectForKey:@"iconLocation"])
         [prefsDict setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
 
@@ -176,7 +169,9 @@ int numNotificationsForAppID(NSString* appID);
             if (wasAppSelected) {
                 appSelected = YES;
                 selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
-                [selectedView setBackgroundColor:[((UIImageView*)[[appViewsDict objectForKey:appID] subviews][0]).image averageColor]];
+                if ([[prefsDict objectForKey:@"colorizeSelected"] boolValue] == YES) {
+                  [selectedView setBackgroundColor:[((UIImageView*)[[appViewsDict objectForKey:appID] subviews][0]).image averageColor]];
+                }
             }
         } completion:nil];
     }

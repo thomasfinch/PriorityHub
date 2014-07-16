@@ -1,8 +1,12 @@
 //Headers.h
-#import <SpringBoard/SBLockScreenNotificationModel.h>
 #import <SpringBoard/SBApplicationIcon.h>
+#import <SpringBoard/SBAwayListItem.h>
 #import <SpringBoard/SBApplicationController.h>
 #import <CoreGraphics/CoreGraphics.h>
+
+@protocol SBLockScreenNotificationModel
+- (SBAwayListItem *)listItemAtIndexPath:(NSIndexPath *)arg1;
+@end
 
 @interface BBBulletin
 @property(copy, nonatomic) NSString *sectionID; // @synthesize sectionID=_sectionID;

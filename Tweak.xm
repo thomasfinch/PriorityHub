@@ -173,7 +173,7 @@ UITableView *notificationsTableView;
 
 //Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
 id modelItem;
-double height;
+CGFloat height;
 //BOOL isValidItem;
 -(CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
@@ -199,6 +199,7 @@ double height;
         [controller selectAppID:nil];
     %orig;
 }
+
 
 %end
 
@@ -243,7 +244,7 @@ id orig;
 - (id)initWithStyle:(long long)arg1 reuseIdentifier:(NSString*)arg2
 {
   orig = %orig;
-  if (!controller.showSeparators || [[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 0) {
+  if ([[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 0) {
     MSHookIvar<UIView*>(orig,"_topSeparatorView") = nil;
     MSHookIvar<UIView*>(orig,"_bottomSeparatorView") = nil;
   }

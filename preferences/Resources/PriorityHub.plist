@@ -17,6 +17,14 @@ items = (
     label = "Show Numbers";
   },
   {
+  cell = PSSwitchCell;
+  default = 1;
+  defaults = "com.thomasfinch.priorityhub";
+  key = colorizeSelected;
+  PostNotification = com.thomasfinch.priorityhub-prefschanged;
+  label = "Colorize Selected Background";
+  },
+  {
     cell = PSSwitchCell;
     default = 0;
     defaults = "com.thomasfinch.priorityhub";
