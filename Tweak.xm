@@ -2,6 +2,7 @@
 #import <substrate.h>
 #import <UIKit/UIKit.h>
 #import "PHController.h"
+#import "Headers.h"
 
 #ifdef DEBUG
     #define PRLog(fmt, ...) NSLog((@"[PRIORITYHUB] [Line %d] %s: "  fmt), __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__)
@@ -55,7 +56,7 @@ extern "C" void resetTableViewFadeTimers()
 extern "C" void removeBulletinsForAppID(NSString* appID)
 {
     PRLog(@"TWEAK.XM REMOVE BULLETINS FOR APP ID");
-    [MSHookIvar<id>(notificationListController, "_observer") clearSection:appID];
+    [MSHookIvar<BBObserver*>(notificationListController, "_observer") clearSection:appID];
 }
 
 //Returns the number of lock screen notifications stored for the given app ID
@@ -65,7 +66,7 @@ extern "C" int numNotificationsForAppID(NSString* appID)
     count = 0;
     PRLog(@"TWEAK.XM - START COUNTING NOTIFICATIONS");
     for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController,"_listItems")) {
-      if (([listItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] || [listItem isKindOfClass:[%c(SBSnoozedAlarmBulletinListItem) class]]) && [[[listItem activeBulletin] sectionID] isEqual:appID]) {
+      if (([listItem isKindOfClass:[%c(SBAwayBulletinListItem) class]]) && [[[listItem activeBulletin] sectionID] isEqual:appID]) {
         PRLog(@"TWEAK.XM - SBAWAYBULLETINLISTITEM ADDED");
         count++;
       } else {
@@ -171,23 +172,24 @@ UITableView *notificationsTableView;
 
 
 //Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
-//id modelItem;
+id modelItem;
+double height;
 //BOOL isValidItem;
-- (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
+-(CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-    PRLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
-    PRLog(@"TWEAK.XM ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
+  PRLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
+  height = 0.0;
+  modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
+  PRLog(@"TWEAK.XM ITEM: %@",modelItem);
 
-    if (![controller curAppID])
-      return 0.0;
-    else {
-      if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
-        return 0.0;
-      else if (!([[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] isKindOfClass:[%c(SBAwayBulletinListItem) class]] || [[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] isKindOfClass:[%c(SBSnoozedAlarmBulletinListItem) class]]) || (([[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] isKindOfClass:[%c(SBAwayBulletinListItem) class]] || [[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] isKindOfClass:[%c(SBSnoozedAlarmBulletinListItem) class]]) && ![[controller curAppID] isEqual:[[[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath] activeBulletin] sectionID]]))
-        return 0.0;
-      else
-        return %orig;
+  if ([modelItem respondsToSelector:@selector(activeBulletin)] && [modelItem activeBulletin] && [controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]]) {
+    if ([[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]])  {
+      height = %orig;
     }
+  }
+
+  modelItem = nil;
+  return height;
 }
 
 - (void)setInScreenOffMode:(BOOL)screenOff
@@ -210,7 +212,7 @@ UITableView *notificationsTableView;
 }
 
 BOOL currentCallsExist;
-- (void)observer:(id)observer addBulletin:(id)bulletin forFeed:(unsigned long long)feed
+- (void)observer:(BBObserver*)observer addBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)feed
 {
   currentCallsExist = ([MSHookIvar<CTCallCenter*>(controller,"callCenter") currentCalls] || [[MSHookIvar<CTCallCenter*>(controller,"callCenter") currentCalls] count] > 0);
 
@@ -225,7 +227,7 @@ BOOL currentCallsExist;
     [controller selectAppID:[bulletin sectionID]];
 }
 
-- (void)observer:(id)observer removeBulletin:(id)bulletin
+- (void)observer:(BBObserver*)observer removeBulletin:(BBBulletin*)bulletin
 {
     PRLog(@"TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
     [controller removeNotificationForAppID:[bulletin sectionID]];
@@ -238,7 +240,7 @@ BOOL currentCallsExist;
 
 //Removes the lines between notification items. Not really necessary, I just thought it looked better. (Now opt-out via settings panel)
 id orig;
-- (id)initWithStyle:(long long)arg1 reuseIdentifier:(id)arg2
+- (id)initWithStyle:(long long)arg1 reuseIdentifier:(NSString*)arg2
 {
   orig = %orig;
   if (!controller.showSeparators || [[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 0) {
