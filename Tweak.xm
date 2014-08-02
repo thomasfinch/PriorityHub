@@ -224,7 +224,7 @@ BOOL currentCallsExist;
   [controller addNotificationForAppID:[bulletin sectionID]];
 
 
-  if (!currentCallsExist && ![[%c(IMAVCallManager) sharedInstance] hasActiveCall]) //If there are no active phone or facetime calls (causes crashes otherwise)
+  if ([[controller.prefsDict objectForKey:@"privacyModeEnabled"] intValue] == 0  &&(!currentCallsExist && ![[%c(IMAVCallManager) sharedInstance] hasActiveCall])) //If there are no active phone or facetime calls (causes crashes otherwise)
     [controller selectAppID:[bulletin sectionID]];
 }
 

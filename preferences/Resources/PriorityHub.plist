@@ -25,6 +25,14 @@ items = (
   label = "Colorize Selected Background";
   },
   {
+  cell = PSSwitchCell;
+  default = 0;
+  defaults = "com.thomasfinch.priorityhub";
+  key = privacyModeEnabled;
+  PostNotification = com.thomasfinch.priorityhub-prefschanged;
+  label = "Privacy Mode";
+  },
+  {
     cell = PSSwitchCell;
     default = 0;
     defaults = "com.thomasfinch.priorityhub";
