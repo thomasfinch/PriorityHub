@@ -174,12 +174,15 @@ UITableView *notificationsTableView;
 //Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
 id modelItem;
 CGFloat height;
+__weak id model;
 //BOOL isValidItem;
 -(CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
   PRLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
+  modelItem = nil;
   height = 0.0;
-  modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
+  model = MSHookIvar<id>(self, "_model");
+  modelItem = [model listItemAtIndexPath:indexPath];
   PRLog(@"TWEAK.XM ITEM: %@",modelItem);
 
   if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)] && [modelItem activeBulletin] && [controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]]) {
@@ -188,8 +191,7 @@ CGFloat height;
     }
   }
 
-  modelItem = nil;
-  if (height) {
+  if (height && height != 0.0) {
     return height;
   } else {
     return 0.0;
@@ -228,8 +230,9 @@ BOOL currentCallsExist;
   [controller addNotificationForAppID:[bulletin sectionID]];
 
 
-  if ([[controller.prefsDict objectForKey:@"privacyModeEnabled"] intValue] == 0  &&(!currentCallsExist && ![[%c(IMAVCallManager) sharedInstance] hasActiveCall])) //If there are no active phone or facetime calls (causes crashes otherwise)
+  if ([[controller.prefsDict objectForKey:@"privacyModeEnabled"] intValue] == 0  && (!currentCallsExist && ![[%c(IMAVCallManager) sharedInstance] hasActiveCall])) {//If there are no active phone or facetime calls (causes crashes otherwise)
     [controller selectAppID:[bulletin sectionID]];
+  }
 }
 
 - (void)observer:(BBObserver*)observer removeBulletin:(BBBulletin*)bulletin
