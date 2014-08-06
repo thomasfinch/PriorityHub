@@ -155,11 +155,11 @@ static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFS
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
     NSLog(@"TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
-    NSLog(@"ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
+    // NSLog(@"ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
     if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
         return 0;
 
-    id modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
+    id modelItem = [self.model listItemAtIndexPath:indexPath];
     if (![controller curAppID] || ([modelItem isKindOfClass:[objc_getClass("SBAwayBulletinListItem") class]] && ![[controller curAppID] isEqualToString:[[modelItem activeBulletin] sectionID]]))
         return 0;
     else
