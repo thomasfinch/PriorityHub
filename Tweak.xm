@@ -174,18 +174,14 @@ UITableView *notificationsTableView;
 //Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
 id modelItem;
 CGFloat height;
-__weak id model;
 //BOOL isValidItem;
 -(CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
   PRLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
   modelItem = nil;
   height = 0.0;
-  PRLog(@"TWEAK.XM PRE-MODEL");
-  model = MSHookIvar<id>(self, "_model");
-  PRLog(@"TWEAK.XM POST-MODEL");
   PRLog(@"TWEAK.XM PRE-MODELITEM");
-  modelItem = [model listItemAtIndexPath:indexPath];
+  modelItem = [self.model listItemAtIndexPath:indexPath];
   PRLog(@"TWEAK.XM POST-MODELITEM: %@",modelItem);
 
   if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)] && [modelItem activeBulletin] && [controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]]) {
