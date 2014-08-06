@@ -181,9 +181,12 @@ __weak id model;
   PRLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
   modelItem = nil;
   height = 0.0;
+  PRLog(@"TWEAK.XM PRE-MODEL");
   model = MSHookIvar<id>(self, "_model");
+  PRLog(@"TWEAK.XM POST-MODEL");
+  PRLog(@"TWEAK.XM PRE-MODELITEM");
   modelItem = [model listItemAtIndexPath:indexPath];
-  PRLog(@"TWEAK.XM ITEM: %@",modelItem);
+  PRLog(@"TWEAK.XM POST-MODELITEM: %@",modelItem);
 
   if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)] && [modelItem activeBulletin] && [controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]]) {
     if ([[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]])  {
