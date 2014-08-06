@@ -5,9 +5,9 @@
 #import "Headers.h"
 
 #ifdef DEBUG
-    #define PRLog(fmt, ...) NSLog((@"[PRIORITYHUB] [Line %d] %s: "  fmt), __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__)
+    #define PHLog(fmt, ...) NSLog((@"[PRIORITYHUB] [Line %d] %s: "  fmt), __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__)
 #else
-    #define PRLog(fmt, ...)
+    #define PHLog(fmt, ...)
 #endif
 
 static PHController *controller;
@@ -21,11 +21,8 @@ NSTimer *idleResetTimer;
 //This prevents the phone from locking while you're tapping through your notifications.
 extern "C" void resetIdleTimer()
 {
-    PRLog(@"TWEAK.XM RESET IDLE TIMER");
-
-    //if (!idleResetTimer || ![idleResetTimer isValid] || [idleResetTimer isKindOfClass:[NSTimer class]])
-    //{
-    PRLog(@"TWEAK.XM SETTING TIMER");
+    PHLog(@"TWEAK.XM RESET IDLE TIMER");
+    PHLog(@"TWEAK.XM SETTING TIMER");
     [notificationListView resetTimers];
 
     if (timerInvocation) {
@@ -49,13 +46,13 @@ extern "C" void resetIdleTimer()
 //This resets them when a different app's view is selected.
 extern "C" void resetTableViewFadeTimers()
 {
-    PRLog(@"TWEAK.XM RESET TABLE VIEW FADE TIMERS");
+    PHLog(@"TWEAK.XM RESET TABLE VIEW FADE TIMERS");
     [notificationListView _resetAllFadeTimers];
 }
 
 extern "C" void removeBulletinsForAppID(NSString* appID)
 {
-    PRLog(@"TWEAK.XM REMOVE BULLETINS FOR APP ID");
+    PHLog(@"TWEAK.XM REMOVE BULLETINS FOR APP ID");
     [MSHookIvar<BBObserver*>(notificationListController, "_observer") clearSection:appID];
 }
 
@@ -64,13 +61,13 @@ int count;
 extern "C" int numNotificationsForAppID(NSString* appID)
 {
     count = 0;
-    PRLog(@"TWEAK.XM - START COUNTING NOTIFICATIONS");
+    PHLog(@"TWEAK.XM - START COUNTING NOTIFICATIONS");
     for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController,"_listItems")) {
       if (([listItem isKindOfClass:[%c(SBAwayBulletinListItem) class]]) && [[[listItem activeBulletin] sectionID] isEqual:appID]) {
-        PRLog(@"TWEAK.XM - SBAWAYBULLETINLISTITEM ADDED");
+        PHLog(@"TWEAK.XM - SBAWAYBULLETINLISTITEM ADDED");
         count++;
       } else {
-        PRLog(@"TWEAK.XM - ITEM IS NOT VALID: %@", listItem);
+        PHLog(@"TWEAK.XM - ITEM IS NOT VALID: %@", listItem);
       }
     }
     return count;
@@ -85,7 +82,7 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 //Called when the device is locked/unlocked. Resets views if device was unlocked.
 static void lockStateChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
     isUnlocked = !isUnlocked;
-    PRLog(@"TWEAK.XM LOCK STATE CHANGE");
+    PHLog(@"TWEAK.XM LOCK STATE CHANGE");
     if (isUnlocked)
         [controller removeAllNotifications];
 }
@@ -112,7 +109,7 @@ UITableView *notificationsTableView;
 
 - (void)layoutSubviews
 {
-    PRLog(@"TWEAK.XM LAYOUT SUBVIEWS");
+    PHLog(@"TWEAK.XM LAYOUT SUBVIEWS");
     %orig;
     notificationListView = self;
     containerView = MSHookIvar<UIView*>(self, "_containerView");
@@ -153,13 +150,13 @@ UITableView *notificationsTableView;
 
     [controller layoutSubviews];
     [self addSubview:controller.appListView];
-    PRLog(@"TWEAK.XM DONE LAYOUT SUBVIEWS");
+    PHLog(@"TWEAK.XM DONE LAYOUT SUBVIEWS");
 }
 
 %new
 - (void)handlePullToClear
 {
-    PRLog(@"TWEAK.XM PULL TO CLEAR");
+    PHLog(@"TWEAK.XM PULL TO CLEAR");
     [refreshControl endRefreshing];
     [controller removeAllNotificationsForAppID:controller.curAppID];
 }
@@ -174,26 +171,26 @@ UITableView *notificationsTableView;
 //Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
 id modelItem;
 CGFloat height;
-//BOOL isValidItem;
+
 -(CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-  PRLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
+  PHLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
   modelItem = nil;
   height = 0.0;
-  PRLog(@"TWEAK.XM PRE-MODELITEM");
+  PHLog(@"TWEAK.XM PRE-MODELITEM");
   modelItem = [self.model listItemAtIndexPath:indexPath];
-  PRLog(@"TWEAK.XM POST-MODELITEM: %@",modelItem);
+  PHLog(@"TWEAK.XM POST-MODELITEM: %@",modelItem);
 
   if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)] && [modelItem activeBulletin] && [controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]]) {
-    PRLog(@"TWEAK.XM MODELITEM IS VALID");
+    PHLog(@"TWEAK.XM MODELITEM IS VALID");
     if ([[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]])  {
-      PRLog(@"TWEAK.XM MODELITEM HAS CURRENT APP ID");
+      PHLog(@"TWEAK.XM MODELITEM HAS CURRENT APP ID");
       height = %orig;
     }
-    PRLog(@"TWEAK.XM MODELITEM CREATING HEIGHT OF %f",height);
+    PHLog(@"TWEAK.XM MODELITEM CREATING HEIGHT OF %f",height);
   }
 
-  PRLog(@"TWEAK.XM RETURN HEIGHT");
+  PHLog(@"TWEAK.XM RETURN HEIGHT");
   if (height && height != 0.0) {
     return height;
   } else {
@@ -203,7 +200,7 @@ CGFloat height;
 
 - (void)setInScreenOffMode:(BOOL)screenOff
 {
-    PRLog(@"TWEAK.XM SET IN SCREEN OFF MODE");
+    PHLog(@"TWEAK.XM SET IN SCREEN OFF MODE");
     if (screenOff)
         [controller selectAppID:nil];
     %orig;
@@ -216,7 +213,7 @@ CGFloat height;
 
 -(void)loadView {
   %orig;
-  PRLog(@"TWEAK.XM INITIALIZE NOTIFICATIONLISTCONTROLLER IF NEEDED");
+  PHLog(@"TWEAK.XM INITIALIZE NOTIFICATIONLISTCONTROLLER IF NEEDED");
   if (notificationListController)
     notificationListController = nil;
 }
@@ -226,7 +223,7 @@ BOOL currentCallsExist;
 {
   currentCallsExist = ([MSHookIvar<CTCallCenter*>(controller,"callCenter") currentCalls] || [[MSHookIvar<CTCallCenter*>(controller,"callCenter") currentCalls] count] > 0);
 
-  PRLog(@"TWEAK.XM OBSERVER: %@ ADDING BULLETIN: %@",observer,bulletin);
+  PHLog(@"TWEAK.XM OBSERVER: %@ ADDING BULLETIN: %@",observer,bulletin);
 
   notificationListController = self;
   %orig;
@@ -240,7 +237,7 @@ BOOL currentCallsExist;
 
 - (void)observer:(BBObserver*)observer removeBulletin:(BBBulletin*)bulletin
 {
-    PRLog(@"TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
+    PHLog(@"TWEAK.XM OBSERVER: %@ REMOVING BULLETIN: %@",observer,bulletin);
     [controller removeNotificationForAppID:[bulletin sectionID]];
     %orig;
 }
@@ -273,7 +270,7 @@ when the NC is presented) and removing the view from the screen prevents this is
 -(void)hostWillPresent {
   %orig;
   if (controller) {
-    PRLog(@"TWEAK.XM DISMISS ALL NOTIFICATIONS BEFORE NCVC PRESENT");
+    PHLog(@"TWEAK.XM DISMISS ALL NOTIFICATIONS BEFORE NCVC PRESENT");
     [controller removeAllNotifications];
     [controller.appListView removeFromSuperview];
   }
