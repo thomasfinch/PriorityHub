@@ -182,7 +182,7 @@ CGFloat height;
   modelItem = [MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath];
   PRLog(@"TWEAK.XM ITEM: %@",modelItem);
 
-  if ([modelItem respondsToSelector:@selector(activeBulletin)] && [modelItem activeBulletin] && [controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]]) {
+  if (modelItem && height && [modelItem respondsToSelector:@selector(activeBulletin)] && [modelItem activeBulletin] && [controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]]) {
     if ([[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]])  {
       height = %orig;
     }
