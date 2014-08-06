@@ -189,11 +189,15 @@ __weak id model;
   PRLog(@"TWEAK.XM POST-MODELITEM: %@",modelItem);
 
   if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)] && [modelItem activeBulletin] && [controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]]) {
+    PRLog(@"TWEAK.XM MODELITEM IS VALID");
     if ([[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]])  {
+      PRLog(@"TWEAK.XM MODELITEM HAS CURRENT APP ID");
       height = %orig;
     }
+    PRLog(@"TWEAK.XM MODELITEM CREATING HEIGHT OF %f",height);
   }
 
+  PRLog(@"TWEAK.XM RETURN HEIGHT");
   if (height && height != 0.0) {
     return height;
   } else {
