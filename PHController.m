@@ -261,6 +261,11 @@ int numNotificationsForAppID(NSString* appID);
 {
     NSLog(@"PRIORITYHUB - PHCONTROLLER.M REMOVE NOTIFICATIONS FOR APP ID");
     removeBulletinsForAppID(appID);
+    [[appViewsDict objectForKey:appID] removeFromSuperview];
+    [appViewsDict removeObjectForKey:appID];
+    if ([curAppID isEqualToString:appID])
+        [self selectAppID:nil];
+    [self layoutSubviews];
 }
 
 - (void)removeAllNotifications

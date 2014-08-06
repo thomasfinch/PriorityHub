@@ -52,7 +52,7 @@ extern "C" void resetTableViewFadeTimers()
 
 extern "C" void removeBulletinsForAppID(NSString* appID)
 {
-    PHLog(@"TWEAK.XM REMOVE BULLETINS FOR APP ID");
+    PHLog(@"TWEAK.XM REMOVE BULLETINS FOR APP ID: %@",appID);
     [MSHookIvar<BBObserver*>(notificationListController, "_observer") clearSection:appID];
 }
 
