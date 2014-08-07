@@ -17,7 +17,7 @@ static BOOL isUnlocked = YES;
 
 NSInvocation *timerInvocation;
 NSTimer *idleResetTimer;
-//Used to reset the idle timer when an app's view is tapped in priority hub.
+//Used to reset the idle timer when an app's view is tapped in Priority Hub.
 //This prevents the phone from locking while you're tapping through your notifications.
 extern "C" void resetIdleTimer()
 {
@@ -183,10 +183,10 @@ CGFloat height;
 
   PHLog(@"TWEAK.XM START MODELITEM FILTER");
 
-  if (![[controller curAppID] isEqual:nil] && [[controller curAppID] isKindOfClass:[NSString class]]) {
-    PHLog(@"TWEAK.XM CURAPPID IS VALID: %@",[controller curAppID]);
-    if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)]) {
-      PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
+  if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)]) {
+    PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
+    if (![[controller curAppID] isEqual:nil] && [[controller curAppID] isKindOfClass:[NSString class]]) {
+      PHLog(@"TWEAK.XM CURAPPID IS VALID: %@",[controller curAppID]);
       if ([[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]])  {
         PHLog(@"TWEAK.XM MODELITEM HAS CURAPPID: %@ WITH ACTIVEBULLETIN: %@",[controller curAppID],[modelItem activeBulletin]);
         height = %orig;
