@@ -184,11 +184,11 @@ CGFloat height;
   PHLog(@"TWEAK.XM START MODELITEM FILTER");
 
   if ([controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]]) {
-    PHLog(@"TWEAK.XM CURAPPID IS VALID");
-    if (modelItem && ([modelItem isKindOfClass:[%c(SBAwayBulletinListItem) class]] || [modelItem isKindOfClass:[%c(SBSnoozedAlarmBulletinListItem) class]])) {
-      PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM OR VALID SUBCLASS");
+    PHLog(@"TWEAK.XM CURAPPID IS VALID: %@",[controller curAppID]);
+    if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)]) {
+      PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
       if ([[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]])  {
-        PHLog(@"TWEAK.XM MODELITEM HAS CURAPPID: %@ WITH ACTIVEBULLETIN: %@",controller.curAppID,[modelItem activeBulletin]);
+        PHLog(@"TWEAK.XM MODELITEM HAS CURAPPID: %@ WITH ACTIVEBULLETIN: %@",[controller curAppID],[modelItem activeBulletin]);
         height = %orig;
       }
       PHLog(@"TWEAK.XM MODELITEM CREATING HEIGHT OF %f",height);
