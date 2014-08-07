@@ -181,6 +181,8 @@ CGFloat height;
   modelItem = [self.model listItemAtIndexPath:indexPath];
   PHLog(@"TWEAK.XM POST-MODELITEM: %@",modelItem);
 
+  PHLog(@"TWEAK.XM START MODELITEM FILTER");
+
   if (modelItem && ([controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]])) {
     PHLog(@"TWEAK.XM MODELITEM IS VALID ITEM");
     if ([modelItem respondsToSelector:@selector(activeBulletin)]) {
