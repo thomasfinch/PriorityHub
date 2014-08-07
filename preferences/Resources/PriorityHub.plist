@@ -41,6 +41,14 @@ items = (
     label = "Show Notification Separators";
   },
   {
+    cell = PSSwitchCell;
+    default = 1;
+    defaults = "com.thomasfinch.priorityhub";
+    key = collapseOnLock;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Collapse When Device is Locked";
+  },
+  {
     cell = PSLinkListCell;
     detail = PSListItemsController;
     default = 0;

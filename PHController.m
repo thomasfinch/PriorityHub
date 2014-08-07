@@ -90,6 +90,8 @@ int numNotificationsForAppID(NSString* appID);
     }
     if (![prefsDict objectForKey:@"colorizeSelected"])
         [prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"colorizeSelected"];
+    if (![prefsDict objectForKey:@"collapseOnLock"])
+        [prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"collapseOnLock"];    
     if (![prefsDict objectForKey:@"iconLocation"])
         [prefsDict setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
 

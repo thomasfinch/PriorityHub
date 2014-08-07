@@ -206,8 +206,10 @@ CGFloat height;
 - (void)setInScreenOffMode:(BOOL)screenOff
 {
     PHLog(@"TWEAK.XM SET IN SCREEN OFF MODE");
-    if (screenOff)
-        [controller selectAppID:nil];
+    if ([[controller.prefsDict objectForKey:@"collapseOnLock"] intValue] == 1) {
+      if (screenOff)
+          [controller selectAppID:nil];
+    }
     %orig;
 }
 
