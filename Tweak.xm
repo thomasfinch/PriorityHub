@@ -180,10 +180,11 @@ CGFloat height;
   PHLog(@"TWEAK.XM PRE-MODELITEM");
   modelItem = [self.model listItemAtIndexPath:indexPath];
   PHLog(@"TWEAK.XM POST-MODELITEM: %@",modelItem);
-  
+
   if (modelItem && ([controller curAppID] && [[controller curAppID] isKindOfClass:[NSString class]])) {
+    PHLog(@"TWEAK.XM MODELITEM IS VALID ITEM");
     if ([modelItem respondsToSelector:@selector(activeBulletin)]) {
-      PHLog(@"TWEAK.XM MODELITEM IS VALID");
+      PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
       if ([[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]])  {
         PHLog(@"TWEAK.XM MODELITEM HAS CURRENT APP ID");
         height = %orig;
