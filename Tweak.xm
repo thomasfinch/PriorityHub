@@ -170,13 +170,11 @@ UITableView *notificationsTableView;
 
 //Returns 0 for table view cells that aren't notifications of the current selected app. This is an easy way to make them "disappear" when their app is not selected.
 id modelItem;
-CGFloat height;
 
 -(CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
   PHLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
   modelItem = nil;
-  height = 0.0;
   PHLog(@"TWEAK.XM PRE-MODELITEM");
   modelItem = [self.model listItemAtIndexPath:indexPath];
   PHLog(@"TWEAK.XM POST-MODELITEM: %@",modelItem);
@@ -191,19 +189,16 @@ CGFloat height;
         PHLog(@"TWEAK.XM CURAPPID IS VALID STRING: %@",controller.curAppID);
         if ([controller.curAppID isEqual:[[modelItem activeBulletin] sectionID]])  {
           PHLog(@"TWEAK.XM MODELITEM HAS CURAPPID: %@ WITH ACTIVEBULLETIN: %@",controller.curAppID,[modelItem activeBulletin]);
-          height = %orig;
+          PHLog(@"TWEAK.XM MODELITEM RETURNING HEIGHT OF %f",%orig);
+          return %orig;
         }
       }
-      PHLog(@"TWEAK.XM MODELITEM CREATING HEIGHT OF %f",height);
+
     }
   }
 
-  PHLog(@"TWEAK.XM RETURN HEIGHT");
-  if (height && height != 0.0) {
-    return height;
-  } else {
-    return 0.0;
-  }
+  PHLog(@"TWEAK.XM RETURNING HEIGHT OF 0.0");
+  return 0.0;
 }
 
 - (void)setInScreenOffMode:(BOOL)screenOff
