@@ -173,7 +173,7 @@ id modelItem;
 
 -(CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-  PHLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
+   PHLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
   modelItem = nil;
   PHLog(@"TWEAK.XM PRE-MODELITEM");
   modelItem = [self.model listItemAtIndexPath:indexPath];
@@ -181,28 +181,24 @@ id modelItem;
 
   PHLog(@"TWEAK.XM START MODELITEM FILTER");
 
-  if (![[controller curAppID] isKindOfClass:[NSString class]] || ![currentApp isKindOfClass:[NSString class]]) {
-      PHLog(@"TWEAK.XM CURAPPID IS INVALID TYPE"); // wtf?
-    return 0.0;
-  } else {
-    if (![controller curAppID]) {
-      PHLog(@"TWEAK.XM CURAPPID DOESN'T EXIST");
-      return 0.0;
-    } else if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)]) {
-      PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
-      if ((currentApp && [currentApp isKindOfClass:[NSString class]] && [currentApp isEqual:[[modelItem activeBulletin] sectionID]]) || [[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]]) {
-        PHLog(@"TWEAK.XM RETURNING HEIGHT: %f",%orig);
-        return %orig;
-      } else {
-        PHLog(@"TWEAK.XM CURRENTAPP DOESN'T EXIST OR INVALID OR CURAPPID NOT EQUAL");
-        return 0.0;
+  if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)]) {
+    PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
+    if (controller.curAppID && [controller.curAppID isKindOfClass:[NSString class]] && ![controller.curAppID isEqual:nil]) {
+      PHLog(@"TWEAK.XM CURAPPID IS VALID TYPE");
+      if (![controller.curAppID isEqual:nil] && ![controller.curAppID isEqual:@""]) {
+        PHLog(@"TWEAK.XM CURAPPID IS VALID STRING: %@",controller.curAppID);
+        if ([controller.curAppID isEqual:[[modelItem activeBulletin] sectionID]])  {
+          PHLog(@"TWEAK.XM MODELITEM HAS CURAPPID: %@ WITH ACTIVEBULLETIN: %@",controller.curAppID,[modelItem activeBulletin]);
+          PHLog(@"TWEAK.XM MODELITEM RETURNING HEIGHT OF %f",%orig);
+          return %orig;
+        }
       }
-    } else {
-      PHLog(@"TWEAK.XM MODELITEM IS INVALID TYPE BUT CURAPPID EXISTS");
-      return 0.0;
+
     }
   }
 
+  PHLog(@"TWEAK.XM RETURNING HEIGHT OF 0.0");
+  return 0.0;
 }
 
 - (void)setInScreenOffMode:(BOOL)screenOff
