@@ -13,7 +13,7 @@
 @property (nonatomic, readonly) BOOL appSelected;
 @property (nonatomic, readonly) NSMutableDictionary *prefsDict;
 @property (nonatomic, readonly) UIScrollView *appListView;
-@property (nonatomic, readonly) NSString *curAppID;
+@property (nonatomic, readonly, strong) NSString *curAppID;
 
 - (id)init;
 

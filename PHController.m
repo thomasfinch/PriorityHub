@@ -156,7 +156,7 @@ int numNotificationsForAppID(NSString* appID);
     }
     else
     {
-        BOOL wasAppSelected = (curAppID != nil && ![curAppID isEqualToString:@""]);
+        BOOL wasAppSelected = (curAppID != nil && [curAppID isKindOfClass:[NSString class]] && ![curAppID isEqual:@""]);
         curAppID = appID;
         [selectedView setBackgroundColor:[[self iconForAppID:appID] averageColor]];
         [notificationsTableView reloadData];
