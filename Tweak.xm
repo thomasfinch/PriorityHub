@@ -185,9 +185,9 @@ CGFloat height;
 
   if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)]) {
     PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
-    if (![controller.curAppID isEqual:nil] && ![controller.curAppID isEqual:@""]) {
+    if (![controller.curAppID isEqual:nil]) {
       PHLog(@"TWEAK.XM CURAPPID EXISTS");
-      if ([controller.curAppID isKindOfClass:[NSString class]]) {
+      if ([controller.curAppID isKindOfClass:[NSString class]] && ![controller.curAppID isEqual:@""]) {
         PHLog(@"TWEAK.XM CURAPPID IS VALID: %@",controller.curAppID);
         if ([controller.curAppID isEqual:[[modelItem activeBulletin] sectionID]])  {
           PHLog(@"TWEAK.XM MODELITEM HAS CURAPPID: %@ WITH ACTIVEBULLETIN: %@",controller.curAppID,[modelItem activeBulletin]);
