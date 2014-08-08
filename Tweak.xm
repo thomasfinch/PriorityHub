@@ -14,6 +14,7 @@ static PHController *controller;
 static id notificationListView, notificationListController;
 static UIRefreshControl* refreshControl;
 static BOOL isUnlocked = YES;
+static NSString *currentApp;
 
 NSInvocation *timerInvocation;
 NSTimer *idleResetTimer;
@@ -57,15 +58,14 @@ extern "C" void removeBulletinsForAppID(NSString* appID)
 }
 
 //Returns the number of lock screen notifications stored for the given app ID
-int count;
 extern "C" int numNotificationsForAppID(NSString* appID)
 {
-    count = 0;
+    int count = 0;
     PHLog(@"TWEAK.XM - START COUNTING NOTIFICATIONS");
     for (id listItem in MSHookIvar<NSMutableArray*>(notificationListController,"_listItems")) {
       if (([listItem isKindOfClass:[%c(SBAwayBulletinListItem) class]]) && [[[listItem activeBulletin] sectionID] isEqual:appID]) {
-        PHLog(@"TWEAK.XM - SBAWAYBULLETINLISTITEM ADDED");
         count++;
+        PHLog(@"TWEAK.XM - SBAWAYBULLETINLISTITEM ADDED TO COUNT: %i",count);
       } else {
         PHLog(@"TWEAK.XM - ITEM IS NOT VALID: %@", listItem);
       }
@@ -181,32 +181,41 @@ id modelItem;
 
   PHLog(@"TWEAK.XM START MODELITEM FILTER");
 
-  if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)]) {
-    PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
-    if (controller.curAppID && [controller.curAppID isKindOfClass:[NSString class]] && ![controller.curAppID isEqual:nil]) {
-      PHLog(@"TWEAK.XM CURAPPID IS VALID TYPE");
-      if (![controller.curAppID isEqual:nil] && ![controller.curAppID isEqual:@""]) {
-        PHLog(@"TWEAK.XM CURAPPID IS VALID STRING: %@",controller.curAppID);
-        if ([controller.curAppID isEqual:[[modelItem activeBulletin] sectionID]])  {
-          PHLog(@"TWEAK.XM MODELITEM HAS CURAPPID: %@ WITH ACTIVEBULLETIN: %@",controller.curAppID,[modelItem activeBulletin]);
-          PHLog(@"TWEAK.XM MODELITEM RETURNING HEIGHT OF %f",%orig);
-          return %orig;
-        }
+  if (![[controller curAppID] isKindOfClass:[NSString class]] || ![currentApp isKindOfClass:[NSString class]]) {
+      PHLog(@"TWEAK.XM CURAPPID IS INVALID TYPE"); // wtf?
+    return 0.0;
+  } else {
+    if (![controller curAppID]) {
+      PHLog(@"TWEAK.XM CURAPPID DOESN'T EXIST");
+      return 0.0;
+    } else if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)]) {
+      PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
+      if ((currentApp && [currentApp isKindOfClass:[NSString class]] && [currentApp isEqual:[[modelItem activeBulletin] sectionID]]) || [[controller curAppID] isEqual:[[modelItem activeBulletin] sectionID]]) {
+        PHLog(@"TWEAK.XM RETURNING HEIGHT: %f",%orig);
+        return %orig;
+      } else {
+        PHLog(@"TWEAK.XM CURRENTAPP DOESN'T EXIST OR INVALID OR CURAPPID NOT EQUAL");
+        return 0.0;
       }
-
+    } else {
+      PHLog(@"TWEAK.XM MODELITEM IS INVALID TYPE BUT CURAPPID EXISTS");
+      return 0.0;
     }
   }
 
-  PHLog(@"TWEAK.XM RETURNING HEIGHT OF 0.0");
-  return 0.0;
 }
 
 - (void)setInScreenOffMode:(BOOL)screenOff
 {
     PHLog(@"TWEAK.XM SET IN SCREEN OFF MODE");
+
     if ([[controller.prefsDict objectForKey:@"collapseOnLock"] intValue] == 1) {
-      if (screenOff)
-          [controller selectAppID:nil];
+      if (screenOff) {
+        currentApp = [controller.curAppID copy];
+        [controller selectAppID:nil];
+      } else {
+        currentApp = nil;
+      }
     }
     %orig;
 }

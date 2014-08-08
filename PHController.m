@@ -147,7 +147,7 @@ int numNotificationsForAppID(NSString* appID);
     NSLog(@"PRIORITYHUB - PHCONTROLLER.M SELECT APP ID: %@",appID);
     if (!appID)
     {
-        curAppID = @"";
+        curAppID = nil;
         [notificationsTableView reloadData];
         [UIView animateWithDuration:0.15 animations:^{
             selectedView.alpha = 0.0;
@@ -156,7 +156,7 @@ int numNotificationsForAppID(NSString* appID);
     }
     else
     {
-        BOOL wasAppSelected = (curAppID != nil && [curAppID isKindOfClass:[NSString class]] && ![curAppID isEqual:@""]);
+        BOOL wasAppSelected = (curAppID != nil && [curAppID isKindOfClass:[NSString class]]);
         curAppID = appID;
         [selectedView setBackgroundColor:[[self iconForAppID:appID] averageColor]];
         [notificationsTableView reloadData];
@@ -283,6 +283,7 @@ int numNotificationsForAppID(NSString* appID);
 -(void)dealloc {
   [super dealloc];
   appViewsDict = nil;
+  curAppID = nil;
   appListView = nil;
   callCenter = nil;
   selectedView = nil;
