@@ -178,7 +178,7 @@ id modelItem;
   modelItem = [self.model listItemAtIndexPath:indexPath];
   PHLog(@"TWEAK.XM POST-MODELITEM: %@",modelItem);
 
-  PHLog(@"TWEAK.XM START MODELITEM FILTER");
+  PHLog(@"TWEAK.XM START MODELITEM FILTER FROM PHCONTROLLER: %@",controller);
 
   if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)]) {
     PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
