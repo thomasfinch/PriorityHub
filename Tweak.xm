@@ -14,7 +14,6 @@ static PHController *controller;
 static id notificationListView, notificationListController;
 static UIRefreshControl* refreshControl;
 static BOOL isUnlocked = YES;
-static NSString *currentApp;
 
 NSInvocation *timerInvocation;
 NSTimer *idleResetTimer;
@@ -183,9 +182,9 @@ id modelItem;
 
   if (modelItem && [modelItem respondsToSelector:@selector(activeBulletin)]) {
     PHLog(@"TWEAK.XM MODELITEM IS VALID SBAWAYBULLETINLISTITEM");
-    if (controller.curAppID && [controller.curAppID isKindOfClass:[NSString class]] && ![controller.curAppID isEqual:nil]) {
+    if ([controller.curAppID isKindOfClass:[NSString class]]) {
       PHLog(@"TWEAK.XM CURAPPID IS VALID TYPE");
-      if (![controller.curAppID isEqual:nil] && ![controller.curAppID isEqual:@""]) {
+      if (![controller.curAppID isEqual:nil]) {
         PHLog(@"TWEAK.XM CURAPPID IS VALID STRING: %@",controller.curAppID);
         if ([controller.curAppID isEqual:[[modelItem activeBulletin] sectionID]])  {
           PHLog(@"TWEAK.XM MODELITEM HAS CURAPPID: %@ WITH ACTIVEBULLETIN: %@",controller.curAppID,[modelItem activeBulletin]);
@@ -207,10 +206,7 @@ id modelItem;
 
     if ([[controller.prefsDict objectForKey:@"collapseOnLock"] intValue] == 1) {
       if (screenOff) {
-        currentApp = [controller.curAppID copy];
         [controller selectAppID:nil];
-      } else {
-        currentApp = nil;
       }
     }
     %orig;
