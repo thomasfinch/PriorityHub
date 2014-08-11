@@ -5,7 +5,8 @@ TARGET_CXX = xcrun -sdk iphoneos clang++
 TARGET_LD = xcrun -sdk iphoneos clang++
 SHARED_CFLAGS = -fobjc-arc
 THEOS_BUILD_DIR = debs
-DEBUG = 1
+GO_EASY_ON_ME = 1
+DEBUG = 0
 
 include theos/makefiles/common.mk
 
