@@ -1,10 +1,10 @@
 Package: com.thomasfinch.priorityhub
 Name: Priority Hub
 Depends: mobilesubstrate, preferenceloader
-Conflicts: gsc.ipad
-Version: 1.1.5beta
+Conflicts: gsc.ipad, org.thebigboss.remindersforlockscreen, org.thebigboss.calendarsforlockscreen, com.lockinfo.lockinfo7
+Version: 1.1.6
 Architecture: iphoneos-arm
-Description: Organize lockscreen notifications
+Description: Organize your lockscreen notifications!
 Maintainer: Thomas Finch
 Author: Thomas Finch
 Section: Tweaks
