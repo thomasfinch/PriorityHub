@@ -113,7 +113,7 @@ UITableView *notificationsTableView;
     notificationListView = self;
     containerView = MSHookIvar<UIView*>(self, "_containerView");
     notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
-    MSHookIvar<UITableView*>(controller, "notificationsTableView") = notificationsTableView;
+    controller.notificationsTableView = notificationsTableView;
 
     //Add refresh control for clearing notifications
     if (refreshControl)
@@ -227,7 +227,7 @@ id modelItem;
 BOOL currentCallsExist;
 - (void)observer:(BBObserver*)observer addBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)feed
 {
-  currentCallsExist = ([MSHookIvar<CTCallCenter*>(controller,"callCenter") currentCalls] || [[MSHookIvar<CTCallCenter*>(controller,"callCenter") currentCalls] count] > 0);
+  currentCallsExist = ([controller.callCenter currentCalls] || [[controller.callCenter currentCalls] count] > 0);
 
   PHLog(@"TWEAK.XM OBSERVER: %@ ADDING BULLETIN: %@",observer,bulletin);
 

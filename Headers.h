@@ -53,6 +53,10 @@
 -(void)loadView;
 @end
 
+@interface CTCallCenter
+@property(retain) NSSet *currentCalls;
+@end
+
 @interface IMAVCallManager
 +(instancetype)sharedInstance;
 -(BOOL)hasActiveCall;

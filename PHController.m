@@ -14,21 +14,6 @@
 
 @implementation PHController
 
-@synthesize prefsDict;
-@synthesize appListView;
-@synthesize curAppID;
-@synthesize appSelected;
-
-/*
-
-TO DO
-
-Reminders & calendar for lockscreen compatibility
-Passbook compatibility
-iPad support
-
-*/
-
 void resetIdleTimer();
 void resetTableViewFadeTimers();
 void removeBulletinsForAppID(NSString* appID);
@@ -41,9 +26,8 @@ int numNotificationsForAppID(NSString* appID);
     if (self)
     {
         appViewsDict = [[NSMutableDictionary alloc] init];
-        curAppID = nil;
-        appListView = [[UIScrollView alloc] init];
-        callCenter = [[CTCallCenter alloc] init];
+        self.curAppID = nil;
+        self.appListView = [[UIScrollView alloc] init];
 
         selectedView = [[UIView alloc] init];
         selectedView.backgroundColor = [UIColor colorWithWhite:0.75 alpha:0.3];
@@ -68,7 +52,7 @@ int numNotificationsForAppID(NSString* appID);
 
 - (CGFloat)viewHeight
 {
-    if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
+    if ([[self.prefsDict objectForKey:@"showNumbers"] boolValue])
         return [self iconSize] * 1.85;
     else
         return [self viewWidth];
@@ -77,25 +61,25 @@ int numNotificationsForAppID(NSString* appID);
 - (void)updatePrefsDict
 {
     NSLog(@"PRIORITYHUB - PHCONTROLLER.M UPDATE PREFS DICT");
-    prefsDict = [[NSMutableDictionary alloc] init];
+    self.prefsDict = [[NSMutableDictionary alloc] init];
     if ([NSDictionary dictionaryWithContentsOfFile:kPrefsPath]) {
-        [prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:kPrefsPath]];
+        [self.prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:kPrefsPath]];
     }
 
     //Add preferences if they don't already exist
-    if (![prefsDict objectForKey:@"showNumbers"])
-        [prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"showNumbers"];
-    if (![prefsDict objectForKey:@"showSeparators"]) {
-        [prefsDict setObject:[NSNumber numberWithBool:NO] forKey:@"showSeparators"];
+    if (![self.prefsDict objectForKey:@"showNumbers"])
+        [self.prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"showNumbers"];
+    if (![self.prefsDict objectForKey:@"showSeparators"]) {
+        [self.prefsDict setObject:[NSNumber numberWithBool:NO] forKey:@"showSeparators"];
     }
-    if (![prefsDict objectForKey:@"colorizeSelected"])
-        [prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"colorizeSelected"];
-    if (![prefsDict objectForKey:@"collapseOnLock"])
-        [prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"collapseOnLock"];
-    if (![prefsDict objectForKey:@"iconLocation"])
-        [prefsDict setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
+    if (![self.prefsDict objectForKey:@"colorizeSelected"])
+        [self.prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"colorizeSelected"];
+    if (![self.prefsDict objectForKey:@"collapseOnLock"])
+        [self.prefsDict setObject:[NSNumber numberWithBool:YES] forKey:@"collapseOnLock"];
+    if (![self.prefsDict objectForKey:@"iconLocation"])
+        [self.prefsDict setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
 
-    [prefsDict writeToFile:kPrefsPath atomically:YES];
+    [self.prefsDict writeToFile:kPrefsPath atomically:YES];
 }
 
 - (BOOL)isTweakInstalled:(NSString *)name
@@ -119,24 +103,24 @@ int numNotificationsForAppID(NSString* appID);
 {
     NSLog(@"PRIORITYHUB - PHCONTROLLER.M LAYOUT SUBVIEWS");
     //Remove all subviews and start fresh
-    for (UIView *v in [appListView subviews])
+    for (UIView *v in [self.appListView subviews])
         [v removeFromSuperview];
 
-    [appListView addSubview:selectedView];
+    [self.appListView addSubview:selectedView];
     selectedView.hidden = YES;
 
     //Put all app views in scroll view
-    appListView.contentSize = CGSizeMake(0, [self viewHeight]);
+    self.appListView.contentSize = CGSizeMake(0, [self viewHeight]);
     CGFloat totalViewWidth = [[appViewsDict allKeys] count] * [self viewWidth];
-    CGFloat startX = (appListView.frame.size.width - totalViewWidth)/2;
+    CGFloat startX = (self.appListView.frame.size.width - totalViewWidth)/2;
     if (startX < 0)
         startX = 0;
     for (UIView *appView in [appViewsDict allValues])
     {
         selectedView.hidden = NO;
-        appView.frame = CGRectMake(startX + appListView.contentSize.width, 0, [self viewWidth], [self viewHeight]);
-        appListView.contentSize = CGSizeMake(appListView.contentSize.width + [self viewWidth], [self viewHeight]);
-        [appListView addSubview:appView];
+        appView.frame = CGRectMake(startX + self.appListView.contentSize.width, 0, [self viewWidth], [self viewHeight]);
+        self.appListView.contentSize = CGSizeMake(self.appListView.contentSize.width + [self viewWidth], [self viewHeight]);
+        [self.appListView addSubview:appView];
     }
 
     NSLog(@"PRIORITYHUB - PHCONTROLLER.M LAYOUT SUBVIEWS DONE");
@@ -147,31 +131,31 @@ int numNotificationsForAppID(NSString* appID);
     NSLog(@"PRIORITYHUB - PHCONTROLLER.M SELECT APP ID: %@",appID);
     if (!appID)
     {
-        curAppID = nil;
-        [notificationsTableView reloadData];
+        self.curAppID = nil;
+        [self.notificationsTableView reloadData];
         [UIView animateWithDuration:0.15 animations:^{
             selectedView.alpha = 0.0;
-            notificationsTableView.alpha = 0.0;
+            self.notificationsTableView.alpha = 0.0;
         } completion:nil];
     }
     else
     {
-        BOOL wasAppSelected = (curAppID != nil && [curAppID isKindOfClass:[NSString class]]);
-        curAppID = appID;
+        BOOL wasAppSelected = (self.curAppID != nil && [self.curAppID isKindOfClass:[NSString class]]);
+        self.curAppID = appID;
         [selectedView setBackgroundColor:[[self iconForAppID:appID] averageColor]];
-        [notificationsTableView reloadData];
+        [self.notificationsTableView reloadData];
         if (!wasAppSelected) {
             selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
-            appSelected = NO;
+            self.appSelected = NO;
         }
 
         [UIView animateWithDuration:0.15 animations:^{
             selectedView.alpha = 1.0;
-            notificationsTableView.alpha = 1.0;
+            self.notificationsTableView.alpha = 1.0;
             if (wasAppSelected) {
-                appSelected = YES;
+                self.appSelected = YES;
                 selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
-                if ([[prefsDict objectForKey:@"colorizeSelected"] boolValue] == YES) {
+                if ([[self.prefsDict objectForKey:@"colorizeSelected"] boolValue] == YES) {
                   [selectedView setBackgroundColor:[((UIImageView*)[[appViewsDict objectForKey:appID] subviews][0]).image averageColor]];
                 }
             }
@@ -192,7 +176,7 @@ int numNotificationsForAppID(NSString* appID);
     if (![appViewsDict objectForKey:appID])
     {
         NSLog(@"PRIORITYHUB - PHCONTROLLER.M NO INFO FOR APP ID, CREATING VIEWS");
-        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(appListView.contentSize.width, 0, [self viewWidth], [self viewHeight])];
+        UIView *containerView = [[UIView alloc] initWithFrame:CGRectMake(self.appListView.contentSize.width, 0, [self viewWidth], [self viewHeight])];
         containerView.tag = 1;
 
         UITapGestureRecognizer *singleFingerTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
@@ -202,7 +186,7 @@ int numNotificationsForAppID(NSString* appID);
         iconImageView.frame = CGRectMake(([self viewWidth] - [self iconSize])/2, 5, [self iconSize], [self iconSize]);
         [containerView addSubview:iconImageView];
 
-        if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
+        if ([[self.prefsDict objectForKey:@"showNumbers"] boolValue])
         {
             UILabel *numberLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, iconImageView.frame.origin.y + iconImageView.frame.size.height + ((containerView.frame.size.height - (iconImageView.frame.origin.y + iconImageView.frame.size.height)) - 15) / 2, [self viewWidth], 15)];
             numberLabel.text = @"1";
@@ -221,7 +205,7 @@ int numNotificationsForAppID(NSString* appID);
     {
       NSLog(@"PRIORITYHUB - PHCONTROLLER.M NOTIFICATIONS VIEW FOR APP: %@ EXISTS",appID);
       int notificationCount = numNotificationsForAppID(appID);
-      if ([[prefsDict objectForKey:@"showNumbers"] boolValue]) {
+      if ([[self.prefsDict objectForKey:@"showNumbers"] boolValue]) {
         NSLog(@"PRIORITYHUB - PHCONTROLLER.M ADD NUMBER");
         ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%i", notificationCount];
       }
@@ -236,7 +220,7 @@ int numNotificationsForAppID(NSString* appID);
     resetTableViewFadeTimers();
     resetIdleTimer();
     NSString *appID = [appViewsDict allKeysForObject:recognizer.view][0];
-    if ([appID isEqualToString:curAppID])
+    if ([appID isEqualToString:self.curAppID])
         [self selectAppID:nil];
     else
         [self selectAppID:appID];
@@ -246,14 +230,14 @@ int numNotificationsForAppID(NSString* appID);
 {
     NSLog(@"PRIORITYHUB - PHCONTROLLER.M REMOVE NOTIFICATION FOR APP ID: %@",appID);
     int notificationCount = numNotificationsForAppID(appID);
-    if ([[prefsDict objectForKey:@"showNumbers"] boolValue])
+    if ([[self.prefsDict objectForKey:@"showNumbers"] boolValue])
         ((UILabel*)[[appViewsDict objectForKey:appID] subviews][1]).text = [NSString stringWithFormat:@"%i", notificationCount];
 
     if (notificationCount == 0)
     {
         [[appViewsDict objectForKey:appID] removeFromSuperview];
         [appViewsDict removeObjectForKey:appID];
-        if ([curAppID isEqualToString:appID])
+        if ([self.curAppID isEqualToString:appID])
             [self selectAppID:nil];
         [self layoutSubviews];
     }
@@ -265,7 +249,7 @@ int numNotificationsForAppID(NSString* appID);
     removeBulletinsForAppID(appID);
     [[appViewsDict objectForKey:appID] removeFromSuperview];
     [appViewsDict removeObjectForKey:appID];
-    if ([curAppID isEqualToString:appID])
+    if ([self.curAppID isEqualToString:appID])
         [self selectAppID:nil];
     [self layoutSubviews];
 }
@@ -280,13 +264,5 @@ int numNotificationsForAppID(NSString* appID);
     [self layoutSubviews];
 }
 
--(void)dealloc {
-  [super dealloc];
-  appViewsDict = nil;
-  curAppID = nil;
-  appListView = nil;
-  callCenter = nil;
-  selectedView = nil;
-}
 
 @end
