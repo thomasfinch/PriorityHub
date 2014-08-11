@@ -155,7 +155,7 @@ int numNotificationsForAppID(NSString* appID);
             if (wasAppSelected) {
                 self.appSelected = YES;
                 selectedView.frame = ((UIView*)[appViewsDict objectForKey:appID]).frame;
-                if ([[self.prefsDict objectForKey:@"colorizeSelected"] boolValue] == YES) {
+                if ([[controller.prefsDict objectForKey:@"showSeparators"] intValue] == 1) {
                   [selectedView setBackgroundColor:[((UIImageView*)[[appViewsDict objectForKey:appID] subviews][0]).image averageColor]];
                 }
             }
