@@ -2,7 +2,7 @@
 #import "UIImage+AverageColor.h"
 #import "Headers.h"
 #import <objc/runtime.h>
-#import <UIKit/UIImage+Private.h>
+// #import <UIKit/UIImage+Private.h>
 
 #define kPrefsPath @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist"
 

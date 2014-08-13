@@ -1,4 +1,4 @@
-ARCHS = armv7 armv7s arm64
+ARCHS = armv7 arm64
 TARGET_IPHONEOS_DEPLOYMENT_VERSION = 7.0
 TARGET_CC = xcrun -sdk iphoneos clang
 TARGET_CXX = xcrun -sdk iphoneos clang++

@@ -4,17 +4,15 @@
 #import "PHController.h"
 #import "Headers.h"
 
-<<<<<<< HEAD
 //#define DEBUG
 
 #ifndef DEBUG
-#define NSLog
-=======
+  #define NSLog
+#endif
 #ifdef DEBUG
     #define PHLog(fmt, ...) NSLog((@"[PRIORITYHUB] [Line %d] %s: "  fmt), __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__)
 #else
     #define PHLog(fmt, ...)
->>>>>>> d7874ff4327197fe8d4d6b79f5fda710d92d54b6
 #endif
 
 static PHController *controller;
@@ -179,7 +177,6 @@ id modelItem;
 
 -(CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath
 {
-<<<<<<< HEAD
     NSLog(@"TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
     // NSLog(@"ITEM: %@",[MSHookIvar<id>(self, "_model") listItemAtIndexPath:indexPath]);
     if (![[controller curAppID] isKindOfClass:[NSString class]]) // wtf?
@@ -190,7 +187,7 @@ id modelItem;
         return 0;
     else
         return %orig;
-=======
+
    PHLog(@"TWEAK.XM TABLEVIEW HEIGHT FOR ROW AT INDEXPATH");
   modelItem = nil;
   PHLog(@"TWEAK.XM PRE-MODELITEM");
@@ -217,7 +214,6 @@ id modelItem;
 
   PHLog(@"TWEAK.XM RETURNING HEIGHT OF 0.0");
   return 0.0;
->>>>>>> d7874ff4327197fe8d4d6b79f5fda710d92d54b6
 }
 
 - (void)setInScreenOffMode:(BOOL)screenOff
