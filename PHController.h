@@ -1,24 +1,25 @@
 #import <Foundation/Foundation.h>
-#import <CoreTelephony/CTCallCenter.h>
+#import "Headers.h"
+#import <CoreGraphics/CoreGraphics.h>
 
 @interface PHController : NSObject
 {
     NSMutableDictionary *appViewsDict;
     UIView *selectedView;
-    UITableView* notificationsTableView;
-    CTCallCenter *callCenter;
 }
 
-@property (nonatomic, readonly) BOOL showSeparators;
-@property (nonatomic, readonly) NSMutableDictionary *prefsDict;
-@property (nonatomic, readonly) UIScrollView *appListView;
-@property (nonatomic, readonly) NSString *curAppID;
+@property (nonatomic, strong) CTCallCenter *callCenter;
+@property (nonatomic, strong) UITableView* notificationsTableView;
+@property (nonatomic) BOOL appSelected;
+@property (nonatomic, strong) NSMutableDictionary *prefsDict;
+@property (nonatomic, strong) UIScrollView *appListView;
+@property (nonatomic, strong) NSString *curAppID;
 
 - (id)init;
 
-- (float)iconSize;
-- (float)viewWidth;
-- (float)viewHeight;
+- (CGFloat)iconSize;
+- (CGFloat)viewWidth;
+- (CGFloat)viewHeight;
 
 - (void)updatePrefsDict;
 - (BOOL)isTweakInstalled:(NSString *)name;
