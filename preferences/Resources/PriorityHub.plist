@@ -17,20 +17,20 @@ items = (
     label = "Show Numbers";
   },
   {
-  cell = PSSwitchCell;
-  default = 1;
-  defaults = "com.thomasfinch.priorityhub";
-  key = colorizeSelected;
-  PostNotification = com.thomasfinch.priorityhub-prefschanged;
-  label = "Colorize Selected Background";
+    cell = PSSwitchCell;
+    default = 1;
+    defaults = "com.thomasfinch.priorityhub";
+    key = colorizeSelected;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Colorize Selected Background";
   },
   {
-  cell = PSSwitchCell;
-  default = 0;
-  defaults = "com.thomasfinch.priorityhub";
-  key = privacyModeEnabled;
-  PostNotification = com.thomasfinch.priorityhub-prefschanged;
-  label = "Privacy Mode";
+    cell = PSSwitchCell;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
+    key = privacyModeEnabled;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Privacy Mode";
   },
   {
     cell = PSSwitchCell;
@@ -64,16 +64,6 @@ items = (
       "Top",
       "Bottom"
     );
-  },
-  {
-    cell = PSGroupCell;
-    footerText = "If you like this tweak, please donate! It took a lot of work to make.";
-  },
-  {
-    cell = PSButtonCell;
-    action = DonateButtonTapped;
-    icon = "Paypal.png";
-    label = "Donate";
   },
   {
     cell = PSGroupCell;
