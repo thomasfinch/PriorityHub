@@ -1,35 +1,26 @@
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import "PHAppsScrollView.h"
 #import "Headers.h"
-#import <CoreGraphics/CoreGraphics.h>
 
-@interface PHController : NSObject
-{
-    NSMutableDictionary *appViewsDict;
-    UIView *selectedView;
+@interface PHController : NSObject {
+	const NSString *kPrefsPath;
+
 }
 
-@property (nonatomic, strong) CTCallCenter *callCenter;
-@property (nonatomic, strong) UITableView* notificationsTableView;
-@property (nonatomic) BOOL appSelected;
-@property (nonatomic, strong) NSMutableDictionary *prefsDict;
-@property (nonatomic, strong) UIScrollView *appListView;
-@property (nonatomic, strong) NSString *curAppID;
+@property NSDictionary *prefsDict;
+@property PHAppsScrollView *appsScrollView;
+@property (weak) BBObserver *bulletinObserver;
+@property (weak) SBLockScreenNotificationListController *listController;
 
++ (PHController*)sharedInstance;
 - (id)init;
-
-- (CGFloat)iconSize;
-- (CGFloat)viewWidth;
-- (CGFloat)viewHeight;
-
+- (void)addNotificationForAppID:(NSString*)appID;
+- (void)removeNotificationForAppID:(NSString*)appID;
+- (void)clearNotificationsForAppID:(NSString*)appID;
+- (NSInteger)numNotificationsForAppID:(NSString*)appID;
 - (void)updatePrefsDict;
-- (BOOL)isTweakInstalled:(NSString *)name;
-- (UIImage *)iconForAppID:(NSString *)appID;
-
-- (void)layoutSubviews;
-- (void)selectAppID:(NSString*)appID;
-- (void)addNotificationForAppID:(NSString *)appID;
-- (void)removeNotificationForAppID:(NSString *)appID;
-- (void)removeAllNotificationsForAppID:(NSString *)appID;
-- (void)removeAllNotifications;
+- (UIImage*)iconForAppID:(NSString*)appID;
+- (CGFloat)iconSize;
+- (BOOL)isTweakInstalled:(NSString*)name;
 
 @end

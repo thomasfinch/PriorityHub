@@ -1,17 +1,16 @@
 ARCHS = armv7 arm64
 TARGET_IPHONEOS_DEPLOYMENT_VERSION = 7.0
-TARGET_CC = xcrun -sdk iphoneos clang
-TARGET_CXX = xcrun -sdk iphoneos clang++
-TARGET_LD = xcrun -sdk iphoneos clang++
-SHARED_CFLAGS = -fobjc-arc
+ADDITIONAL_OBJCFLAGS = -fobjc-arc
 THEOS_BUILD_DIR = debs
+THEOS_DEVICE_IP = localhost
+THEOS_DEVICE_PORT = 2222
 GO_EASY_ON_ME = 1
-DEBUG = 0
+DEBUG = 1
 
 include theos/makefiles/common.mk
 
 TWEAK_NAME = PriorityHub
-PriorityHub_FILES = Tweak.xm PHController.m UIImage+AverageColor.m
+PriorityHub_FILES = Tweak.xm PHController.m PHAppsScrollView.m PHAppView.m UIImage+AverageColor.m
 PriorityHub_FRAMEWORKS = UIKit CoreGraphics CoreTelephony
 PriorityHub_PRIVATE_FRAMEWORKS = IMAVCore
 
