@@ -46,7 +46,7 @@ items = (
     defaults = "com.thomasfinch.priorityhub";
     key = collapseOnLock;
     PostNotification = com.thomasfinch.priorityhub-prefschanged;
-    label = "Collapse When Device is Locked";
+    label = "Collapse On Lock";
   },
   {
     cell = PSLinkListCell;

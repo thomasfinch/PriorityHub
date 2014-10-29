@@ -1,6 +1,8 @@
 #import "PHController.h"
 #import <objc/runtime.h>
 
+const NSString *kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist";
+
 @implementation PHController
 
 @synthesize prefsDict;
@@ -18,8 +20,6 @@
 - (id)init {
     NSLog(@"PHCONTROLLER INIT");
     if (self = [super init]) {
-        appsScrollView = [[PHAppsScrollView alloc] init];
-        kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist";
         [self updatePrefsDict];
     }
     return self;
@@ -35,10 +35,14 @@
     [self.appsScrollView removeNotificationForAppID:appID];
 }
 
-- (void)clearNotificationsForAppID:(NSString*)appID {
-    if (_bulletinObserver) {
-        [_bulletinObserver clearSection:appID];
+- (void)pullToClearTriggered {
+    if (_bulletinObserver && appsScrollView.selectedAppID) {
+        [_bulletinObserver clearSection:appsScrollView.selectedAppID];
     }
+}
+
+- (void)clearAllNotificationsForUnlock {
+    [appsScrollView removeAllAppViews];
 }
 
 - (NSInteger)numNotificationsForAppID:(NSString*)appID {
@@ -54,8 +58,10 @@
 - (void)updatePrefsDict
 {
     NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
-    if ([NSDictionary dictionaryWithContentsOfFile:kPrefsPath])
-        [preferences addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:kPrefsPath]];
+    NSDictionary *storedPrefs = (NSDictionary *)CFBridgingRelease(CFPreferencesCopyMultiple(CFPreferencesCopyKeyList(CFSTR("com.thomasfinch.priorityhub"), kCFPreferencesCurrentUser, kCFPreferencesAnyHost), CFSTR("com.thomasfinch.priorityhub"), kCFPreferencesCurrentUser, kCFPreferencesAnyHost)); 
+    if (storedPrefs) {
+        [preferences addEntriesFromDictionary:storedPrefs];
+    }
 
     NSLog(@"UPDATED PREFS DICT");
     //Add preferences if they don't already exist
@@ -70,11 +76,12 @@
     if (![preferences objectForKey:@"iconLocation"])
         [preferences setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
 
-    self.prefsDict = preferences;
-    [self.prefsDict writeToFile:kPrefsPath atomically:YES];
+    prefsDict = preferences;
+    NSLog(@"Prefs dict: %@",prefsDict);
+    [prefsDict writeToFile:kPrefsPath atomically:YES];
 }
 
-- (UIImage*)iconForAppID:(NSString*)appID {
++ (UIImage*)iconForAppID:(NSString*)appID {
 	NSBundle *iconsBundle = [NSBundle  bundleWithPath:@"/Library/Application Support/PriorityHub/Icons.bundle"];
     UIImage *img = [[UIImage class] performSelector:@selector(imageNamed:inBundle:) withObject:[NSString stringWithFormat:@"%@.png",appID] withObject:iconsBundle]; //[UIImage imageNamed:[NSString stringWithFormat:@"%@.png",appID] inBundle:iconsBundle];
 
@@ -88,16 +95,14 @@
     }
 }
 
-- (CGFloat)iconSize {
-    // if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-    //     return 40.0;
-    // else
-    //     return 30.0;
-    NSLog(@"ICON SIZE CALLED");
-    return 30.0; //TEMPORARY
++ (CGFloat)iconSize {
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+        return 40.0;
+    else
+        return 30.0;
 }
 
-- (BOOL)isTweakInstalled:(NSString *)name {
++ (BOOL)isTweakInstalled:(NSString *)name {
     return [[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"/Library/MobileSubstrate/DynamicLibraries/%@.dylib",name]];
 }
 

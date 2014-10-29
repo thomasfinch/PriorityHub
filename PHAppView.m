@@ -10,8 +10,11 @@
 	if (self = [super initWithFrame:frame]) {
 		appID = applicationID;
 
-		iconView = [[UIImageView alloc] initWithImage:[[PHController sharedInstance] iconForAppID:appID]];
-		iconView.frame = CGRectMake((frame.size.width - [[PHController sharedInstance] iconSize])/2, 5, [[PHController sharedInstance] iconSize], [[PHController sharedInstance] iconSize]);
+		iconView = [[UIImageView alloc] initWithImage:[PHController iconForAppID:appID]];
+		if ([[[PHController sharedInstance].prefsDict objectForKey:@"showNumbers"] boolValue])
+			iconView.frame = CGRectMake((frame.size.width - [PHController iconSize])/2, 5, [PHController iconSize], [PHController iconSize]);
+		else
+			iconView.frame = CGRectMake((frame.size.width - [PHController iconSize])/2, (frame.size.width - [PHController iconSize])/2, [PHController iconSize], [PHController iconSize]);
 		[self addSubview:iconView];
 
 		if ([[[PHController sharedInstance].prefsDict objectForKey:@"showNumbers"] boolValue]) {

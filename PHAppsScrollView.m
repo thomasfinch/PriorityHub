@@ -8,26 +8,25 @@
 
 - (id)init {
 	if (self = [super init]) {
-		NSLog(@"SCROLL VIEW INIT");
+		self.directionalLockEnabled = YES;
+
 		selectedView = [[UIView alloc] init];
 		selectedView.backgroundColor = [UIColor colorWithWhite:0.75 alpha:0.3];
-        selectedView.layer.cornerRadius = 10.0;
+        selectedView.layer.cornerRadius = 8.0;
         selectedView.layer.masksToBounds = YES;
         selectedView.alpha = 0.0;
         [self addSubview:selectedView];
 
         appViews = [[NSMutableDictionary alloc] init];
 
-        appViewWidth = 46.5; //[[PHController sharedInstance] iconSize] * 1.55;
-        appViewHeight = 55.5;
-     // 	if ([[[PHController sharedInstance].prefsDict objectForKey:@"showNumbers"] boolValue])
-	    //     appViewHeight = [[PHController sharedInstance] iconSize] * 1.85;
-	    // else
-	    //     appViewHeight = appViewWidth;
+        appViewWidth = [PHController iconSize] * 1.4;
+     	if ([[[PHController sharedInstance].prefsDict objectForKey:@"showNumbers"] boolValue])
+	        appViewHeight = [PHController iconSize] * 1.8;
+	    else
+	        appViewHeight = appViewWidth;
 
 	    selectedAppID = nil;
 
-	    NSLog(@"SCROLL VIEW DONE INITTING");
 	}
 	return self;
 }
@@ -53,12 +52,26 @@
 		[[appViews objectForKey:appID] removeFromSuperview];
 		[appViews removeObjectForKey:appID];
 		[self updateLayout];
+		if ([selectedAppID isEqualToString:appID])
+			[self selectApp:nil];
 	}
 	else
 		[[appViews objectForKey:appID] updateNumNotifications];
 
 	if ([[appViews allKeys] count] == 0)
 		selectedView.alpha = 0.0;
+}
+
+- (void)removeAllAppViews {
+	for (PHAppView *appView in [appViews allValues])
+		[appView removeFromSuperview];
+	[appViews removeAllObjects];
+	[self updateLayout];
+	[self selectApp:nil];
+}
+
+- (void)setClearLabelFade:(CGFloat)percent {
+
 }
 
 - (void)selectApp:(NSString*)appID {
@@ -108,6 +121,8 @@
 		[self selectApp:nil];
 	else
 		[self selectApp:appView.appID];
+
+	//Reset idle timer here
 }
 
 @end

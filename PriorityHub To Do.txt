@@ -1,0 +1,9 @@
+PriorityHub To Do
+
+Hide notifications that are not for the currently selected app
+Add code for other settings
+Fix preferences not updating correctly
+Add option to not show app views when there are only notifications for one app
+Reset screen off timer when an app view is tapped
+Deselect currently selected app when screen turns off
+Make custom refresh control

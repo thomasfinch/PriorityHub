@@ -10,8 +10,8 @@ DEBUG = 1
 include theos/makefiles/common.mk
 
 TWEAK_NAME = PriorityHub
-PriorityHub_FILES = Tweak.xm PHController.m PHAppsScrollView.m PHAppView.m UIImage+AverageColor.m
-PriorityHub_FRAMEWORKS = UIKit CoreGraphics CoreTelephony
+PriorityHub_FILES = Tweak.xm PHController.m PHAppsScrollView.m PHAppView.m UIImage+AverageColor.m PHPullToClearView.m
+PriorityHub_FRAMEWORKS = UIKit CoreGraphics CoreTelephony QuartzCore
 PriorityHub_PRIVATE_FRAMEWORKS = IMAVCore
 
 include $(THEOS_MAKE_PATH)/tweak.mk

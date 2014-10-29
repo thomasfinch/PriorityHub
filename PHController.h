@@ -2,10 +2,7 @@
 #import "PHAppsScrollView.h"
 #import "Headers.h"
 
-@interface PHController : NSObject {
-	const NSString *kPrefsPath;
-
-}
+@interface PHController : NSObject
 
 @property NSDictionary *prefsDict;
 @property PHAppsScrollView *appsScrollView;
@@ -14,13 +11,17 @@
 
 + (PHController*)sharedInstance;
 - (id)init;
+
 - (void)addNotificationForAppID:(NSString*)appID;
 - (void)removeNotificationForAppID:(NSString*)appID;
-- (void)clearNotificationsForAppID:(NSString*)appID;
+- (void)refreshControlTriggered:(UIRefreshControl*)refreshControl;
+- (void)clearAllNotificationsForUnlock;
+- (void)pullToClearTriggered;
+
 - (NSInteger)numNotificationsForAppID:(NSString*)appID;
 - (void)updatePrefsDict;
-- (UIImage*)iconForAppID:(NSString*)appID;
-- (CGFloat)iconSize;
-- (BOOL)isTweakInstalled:(NSString*)name;
++ (UIImage*)iconForAppID:(NSString*)appID;
++ (CGFloat)iconSize;
++ (BOOL)isTweakInstalled:(NSString*)name;
 
 @end
