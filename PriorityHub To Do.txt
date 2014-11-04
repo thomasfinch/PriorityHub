@@ -1,9 +1,6 @@
 PriorityHub To Do
 
-Hide notifications that are not for the currently selected app
-Add code for other settings
-Fix preferences not updating correctly
-Add option to not show app views when there are only notifications for one app
-Reset screen off timer when an app view is tapped
-Deselect currently selected app when screen turns off
-Make custom refresh control
+Add code for disabling pull to clear
+Fix notification list view getting cut off at the bottom
+Fix compatibility with other tweaks
+iPad support...

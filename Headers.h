@@ -42,6 +42,11 @@
 	id<SBLockScreenNotificationModel> _model;
 }
 @property(assign, nonatomic) id<SBLockScreenNotificationModel> model;
+- (void)_cellTextFadeTimerFired:(id)arg1;
+- (void)_textDisabledTimerFired:(id)arg1;
+- (void)_clearTextFadeTimer;
+- (void)_clearTextDisabledTimer;
+- (void)_resetAllFadeTimers;
 -(void)resetTimers;
 -(void)_resetAllFadeTimers;
 -(BOOL)_disableIdleTimer:(BOOL)timer;

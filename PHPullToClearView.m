@@ -21,6 +21,8 @@
     CGPathAddArc(circlePath, nil, 0, 0, radius, 0, 2*M_PI, true);
     circlePath = CGPathCreateCopyByStrokingPath(circlePath, nil, lineWidth, kCGLineCapRound, kCGLineJoinRound, 1.0);
     circleLayer.path = circlePath;
+    circleLayer.rasterizationScale = 2.0*[UIScreen mainScreen].scale;
+    circleLayer.shouldRasterize = YES;
     [self.layer addSublayer:circleLayer];
     
     CGFloat xPathWidth = CGRectGetWidth(self.frame)/30;

@@ -8,6 +8,8 @@
 @property PHAppsScrollView *appsScrollView;
 @property (weak) BBObserver *bulletinObserver;
 @property (weak) SBLockScreenNotificationListController *listController;
+@property (weak) SBLockScreenNotificationListView *listView;
+@property (weak) UITableView *notificationsTableView;
 
 + (PHController*)sharedInstance;
 - (id)init;

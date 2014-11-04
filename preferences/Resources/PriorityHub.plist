@@ -18,22 +18,6 @@ items = (
   },
   {
     cell = PSSwitchCell;
-    default = 1;
-    defaults = "com.thomasfinch.priorityhub";
-    key = colorizeSelected;
-    PostNotification = com.thomasfinch.priorityhub-prefschanged;
-    label = "Colorize Selected Background";
-  },
-  {
-    cell = PSSwitchCell;
-    default = 0;
-    defaults = "com.thomasfinch.priorityhub";
-    key = privacyModeEnabled;
-    PostNotification = com.thomasfinch.priorityhub-prefschanged;
-    label = "Privacy Mode";
-  },
-  {
-    cell = PSSwitchCell;
     default = 0;
     defaults = "com.thomasfinch.priorityhub";
     key = showSeparators;
@@ -44,9 +28,25 @@ items = (
     cell = PSSwitchCell;
     default = 1;
     defaults = "com.thomasfinch.priorityhub";
+    key = enablePullToClear;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Enable Pull To Clear";
+  },
+  {
+    cell = PSSwitchCell;
+    default = 1;
+    defaults = "com.thomasfinch.priorityhub";
     key = collapseOnLock;
     PostNotification = com.thomasfinch.priorityhub-prefschanged;
     label = "Collapse On Lock";
+  },
+  {
+    cell = PSSwitchCell;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
+    key = colorizeSelected;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Colorize Selected Background";
   },
   {
     cell = PSLinkListCell;

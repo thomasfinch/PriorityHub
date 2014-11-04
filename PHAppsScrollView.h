@@ -12,5 +12,7 @@
 - (void)addNotificationForAppID:(NSString*)appID;
 - (void)removeNotificationForAppID:(NSString*)appID;
 - (void)removeAllAppViews;
+- (void)screenTurnedOff;
+- (void)updateLayout;
 
 @end

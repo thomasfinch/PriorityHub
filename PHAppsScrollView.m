@@ -1,6 +1,7 @@
 #import "PHAppsScrollView.h"
 #import "PHAppView.h"
 #import "PHController.h"
+#import "UIImage+AverageColor.h"
 
 @implementation PHAppsScrollView
 
@@ -14,7 +15,6 @@
 		selectedView.backgroundColor = [UIColor colorWithWhite:0.75 alpha:0.3];
         selectedView.layer.cornerRadius = 8.0;
         selectedView.layer.masksToBounds = YES;
-        selectedView.alpha = 0.0;
         [self addSubview:selectedView];
 
         appViews = [[NSMutableDictionary alloc] init];
@@ -70,8 +70,9 @@
 	[self selectApp:nil];
 }
 
-- (void)setClearLabelFade:(CGFloat)percent {
-
+- (void)screenTurnedOff {
+	if ([[[PHController sharedInstance].prefsDict objectForKey:@"collapseOnLock"] boolValue])
+		[self selectApp:nil];
 }
 
 - (void)selectApp:(NSString*)appID {
@@ -79,26 +80,32 @@
 
 	if (!appID) {
 		[UIView animateWithDuration:0.15 animations:^{
-            selectedView.alpha = 0.0;
+            selectedView.alpha = 0;
+            [PHController sharedInstance].notificationsTableView.alpha = 0;
         } completion:nil];
 	}
 	else {
 		//Prevent the selected view from animating its position
-		if (!selectedAppID)
+		if (!selectedAppID) {
 			selectedView.frame = ((PHAppView*)[appViews objectForKey:appID]).frame;
+			selectedView.backgroundColor = [UIColor colorWithWhite:0.75 alpha:0.3];
+		}
 
 		[UIView animateWithDuration:0.15 animations:^{
-			if ([appID isEqualToString:selectedAppID]) {
-				selectedView.alpha = 1.0;
-			}
-			else
-            	selectedView.alpha = 1.0;
-
             selectedView.frame = ((PHAppView*)[appViews objectForKey:appID]).frame;
+            selectedView.alpha = 1;
+            [PHController sharedInstance].notificationsTableView.alpha = 1;
+
+            if ([[[PHController sharedInstance].prefsDict objectForKey:@"colorizeSelected"] boolValue])
+				selectedView.backgroundColor = [[PHController iconForAppID:appID] averageColor];
+
         } completion:nil];
 	}
 
 	selectedAppID = appID;
+
+	if ([PHController sharedInstance].notificationsTableView)
+		[[PHController sharedInstance].notificationsTableView reloadData];
 }
 
 - (void)updateLayout {
@@ -113,16 +120,26 @@
 		appView.frame = CGRectMake(startX, 0, appViewWidth, appViewHeight);
 		startX += appViewWidth;
 	}
+
+	if (selectedView.alpha == 1)
+		selectedView.frame = ((PHAppView*)[appViews objectForKey:selectedAppID]).frame;
 }
 
 - (void)handleAppViewTapped:(PHAppView*)appView {
 	NSLog(@"APP VIEW TAPPED: %@",appView.appID);
+
+	if ([PHController sharedInstance].listView)
+        [[PHController sharedInstance].listView _resetAllFadeTimers];
+
 	if ([appView.appID isEqualToString:selectedAppID])
 		[self selectApp:nil];
 	else
 		[self selectApp:appView.appID];
 
-	//Reset idle timer here
+	if ([PHController sharedInstance].listView) {
+		[[PHController sharedInstance].listView _disableIdleTimer:YES];
+		[[PHController sharedInstance].listView _disableIdleTimer:NO];
+	}
 }
 
 @end

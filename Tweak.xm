@@ -7,7 +7,7 @@
 	#define NSLog
 #endif
 
-const CGFloat pullToClearThreshold = -45;
+const CGFloat pullToClearThreshold = -30;
 PHPullToClearView *pullToClearView;
 
 //Called when any preference is changed in the settings app
@@ -22,28 +22,39 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
     [[PHController sharedInstance] updatePrefsDict]; //Initializes the sharedInstance object
 }
 
-
 %hook SBLockScreenNotificationListView
 
 - (void)layoutSubviews {
 	%orig;
 
-	[PHController sharedInstance].appsScrollView = [[PHAppsScrollView alloc] init];
-
 	UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
 	UITableView* notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
 
-	//Add the app views scroll view to the lockscreen
-	[PHController sharedInstance].appsScrollView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y, containerView.frame.size.width, 55);
-	[self addSubview:[PHController sharedInstance].appsScrollView];
+	[PHController sharedInstance].listView = self;
+	[PHController sharedInstance].notificationsTableView = notificationsTableView;
+	if (![PHController sharedInstance].appsScrollView)
+		[PHController sharedInstance].appsScrollView = [[PHAppsScrollView alloc] init];
 
-	//Adjust the container for the notifications
-	containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + 55 + 2, containerView.frame.size.width, containerView.frame.size.height - 55 - 2);
+	CGFloat scrollViewHeight = ([[[PHController sharedInstance].prefsDict objectForKey:@"showNumbers"] boolValue]) ? [PHController iconSize] * 1.8 : [PHController iconSize] * 1.4;
+
+	if ([[[PHController sharedInstance].prefsDict objectForKey:@"iconLocation"] intValue] == 0) {
+		[PHController sharedInstance].appsScrollView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y, containerView.frame.size.width, scrollViewHeight);
+		containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + scrollViewHeight + 2, containerView.frame.size.width, containerView.frame.size.height - scrollViewHeight - 2);
+	}
+	else {
+		[PHController sharedInstance].appsScrollView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + containerView.frame.size.height - scrollViewHeight, containerView.frame.size.width, scrollViewHeight);
+		containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y, containerView.frame.size.width, containerView.frame.size.height - scrollViewHeight - 2);
+	}
+
+	[[PHController sharedInstance].appsScrollView updateLayout];
+
+	if (![[PHController sharedInstance].appsScrollView superview])
+		[self addSubview:[PHController sharedInstance].appsScrollView];
 
 	if (!pullToClearView || ![[notificationsTableView subviews] containsObject:pullToClearView]) {
-		//Add the pull to clear view to the 
+		//Add the pull to clear view to the table view
 		if (!pullToClearView)
-			pullToClearView = [[PHPullToClearView alloc] initWithFrame:CGRectMake((notificationsTableView.frame.size.width)/2, -30, 30, 30)];
+			pullToClearView = [[PHPullToClearView alloc] initWithFrame:CGRectMake((notificationsTableView.frame.size.width)/2, -20, 30, 30)];
 		[notificationsTableView addSubview:pullToClearView];
 	}
 
@@ -52,21 +63,31 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 		notificationsTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
 }
 
+//Used to "hide" notifications that aren't for the selected view
 - (double)tableView:(id)arg1 heightForRowAtIndexPath:(id)arg2 {
-	return %orig;
+	//If no app is selected (selectedAppID is nil)
+	if (![PHController sharedInstance].appsScrollView.selectedAppID)
+		return 0;
+
+	NSString *cellAppID = [[[[PHController sharedInstance].listController listItemAtIndexPath:arg2] activeBulletin] sectionID];
+	if ([cellAppID isEqualToString:[PHController sharedInstance].appsScrollView.selectedAppID])
+		return %orig;
+	else
+		return 0;
 }
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+	pullToClearView.hidden = ![PHController sharedInstance].appsScrollView.selectedAppID || (!scrollView.dragging && !scrollView.tracking);
 	if (scrollView.contentOffset.y <= 0 && !pullToClearView.clearing)
-		[pullToClearView setXVisible:(scrollView.contentOffset.y <= pullToClearThreshold)];
+		[pullToClearView setXVisible: (scrollView.contentOffset.y <= pullToClearThreshold)];
 
 	%orig;
 }
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView willDecelerate:(_Bool)arg2 {
-	if (scrollView.contentOffset.y <= pullToClearThreshold) {
+	if (scrollView.contentOffset.y <= pullToClearThreshold && [PHController sharedInstance].appsScrollView.selectedAppID && (scrollView.dragging || scrollView.tracking)) {
 		pullToClearView.clearing = NO;
 		[[PHController sharedInstance] pullToClearTriggered];
 	}
@@ -74,19 +95,12 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 	%orig;
 }
 
-//All scroll view methods are used for pull to clear control
-- (void)scrollViewDidEndDecelerating:(id)arg1 {
-	%orig;
-
-	[pullToClearView setXVisible:NO];
-	pullToClearView.clearing = NO;
-}
-
 %end
 
 
 %hook SBLockScreenNotificationListController
 
+//Called when a new notification is added to the notification table view
 -(void)_updateModelAndViewForAdditionOfItem:(id)item {
 	%orig;
 	NSLog(@"UPDATE MODEL AND VIEW FOR ADDITION OF ITEM: %@",item);
@@ -95,6 +109,7 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 	[[PHController sharedInstance] addNotificationForAppID:[[item activeBulletin] sectionID]];
 }
 
+//Called when a notification is removed from the table view
 -(void)_updateModelForRemovalOfItem:(id)item updateView:(BOOL)view {
 	%orig;
 	NSLog(@"UPDATE MODEL FOR REMOVAL OF ITEM (BOOL): %@",item);
@@ -103,28 +118,26 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 	[[PHController sharedInstance] removeNotificationForAppID:[[item activeBulletin] sectionID]];
 }
 
-- (void)unlockUIWithActionContext:(id)arg1 {
-	NSLog(@"UNLOCK UI WITH ACTION CONTEXT: %@",arg1);
-	%orig;
-}
-
 //Called when device is unlocked. Clear all app views.
 - (void)prepareForTeardown {
 	%orig;
-	NSLog(@"PREPARE FOR TEARDOWN");
 	[[PHController sharedInstance] clearAllNotificationsForUnlock];
+}
+
+//Called when the screen turns on or off. Used to deselect any selected app when the screen turns off.
+- (void)setInScreenOffMode:(_Bool)off {
+	%orig;
+	if(off)
+		[[PHController sharedInstance].appsScrollView screenTurnedOff];
 }
 
 %end
 
-// %hook UIRefreshControl
+%hook SBLockScreenViewController
 
-// //Makes the pull-to-clear refresh control more "sensitive" (i.e., you don't have to pull down as far to clear)
-// - (double)_visibleHeightForContentOffset:(struct CGPoint)arg1 origin:(struct CGPoint)arg2 {
-// 	if ([self isEqual:refreshControl])
-// 		return %orig * 2;
-// 	else
-// 		return %orig;
-// }
+- (void)didRotateFromInterfaceOrientation:(long long)arg1 {
+	%orig;
+	[[PHController sharedInstance].listView layoutSubviews];
+}
 
-// %end
+%end

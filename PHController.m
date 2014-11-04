@@ -39,6 +39,8 @@ const NSString *kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.p
     if (_bulletinObserver && appsScrollView.selectedAppID) {
         [_bulletinObserver clearSection:appsScrollView.selectedAppID];
     }
+    
+    [appsScrollView performSelector:@selector(selectApp:) withObject:nil];
 }
 
 - (void)clearAllNotificationsForUnlock {
@@ -70,9 +72,11 @@ const NSString *kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.p
     if (![preferences objectForKey:@"showSeparators"])
         [preferences setObject:[NSNumber numberWithBool:NO] forKey:@"showSeparators"];
     if (![preferences objectForKey:@"colorizeSelected"])
-        [preferences setObject:[NSNumber numberWithBool:YES] forKey:@"colorizeSelected"];
+        [preferences setObject:[NSNumber numberWithBool:NO] forKey:@"colorizeSelected"];
     if (![preferences objectForKey:@"collapseOnLock"])
         [preferences setObject:[NSNumber numberWithBool:YES] forKey:@"collapseOnLock"];
+    if (![preferences objectForKey:@"enablePullToClear"])
+        [preferences setObject:[NSNumber numberWithBool:YES] forKey:@"enablePullToClear"];
     if (![preferences objectForKey:@"iconLocation"])
         [preferences setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
 
