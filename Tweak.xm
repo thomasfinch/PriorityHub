@@ -3,6 +3,8 @@
 #import "PHController.h"
 #import "PHPullToClearView.h"
 
+#define DEBUG 1
+
 #ifndef DEBUG
 	#define NSLog
 #endif
@@ -51,10 +53,12 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 	if (![[PHController sharedInstance].appsScrollView superview])
 		[self addSubview:[PHController sharedInstance].appsScrollView];
 
-	if (!pullToClearView || ![[notificationsTableView subviews] containsObject:pullToClearView]) {
+	if ([[[PHController sharedInstance].prefsDict objectForKey:@"enablePullToClear"] boolValue] && (!pullToClearView || ![[notificationsTableView subviews] containsObject:pullToClearView])) {
 		//Add the pull to clear view to the table view
-		if (!pullToClearView)
-			pullToClearView = [[PHPullToClearView alloc] initWithFrame:CGRectMake((notificationsTableView.frame.size.width)/2, -20, 30, 30)];
+		if (!pullToClearView) {
+			CGFloat pullToClearSize = 30;
+			pullToClearView = [[PHPullToClearView alloc] initWithFrame:CGRectMake((notificationsTableView.frame.size.width)/2 - pullToClearSize/2, -pullToClearSize, pullToClearSize, pullToClearSize)];
+		}
 		[notificationsTableView addSubview:pullToClearView];
 	}
 
@@ -78,16 +82,18 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-	pullToClearView.hidden = ![PHController sharedInstance].appsScrollView.selectedAppID || (!scrollView.dragging && !scrollView.tracking);
-	if (scrollView.contentOffset.y <= 0 && !pullToClearView.clearing)
-		[pullToClearView setXVisible: (scrollView.contentOffset.y <= pullToClearThreshold)];
+	if ([[[PHController sharedInstance].prefsDict objectForKey:@"enablePullToClear"] boolValue]) {
+		pullToClearView.hidden = ![PHController sharedInstance].appsScrollView.selectedAppID;
+		if (scrollView.contentOffset.y <= 0 && !pullToClearView.clearing)
+			[pullToClearView setXVisible: (scrollView.contentOffset.y <= pullToClearThreshold)];
+	}
 
 	%orig;
 }
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView willDecelerate:(_Bool)arg2 {
-	if (scrollView.contentOffset.y <= pullToClearThreshold && [PHController sharedInstance].appsScrollView.selectedAppID && (scrollView.dragging || scrollView.tracking)) {
+	if ([[[PHController sharedInstance].prefsDict objectForKey:@"enablePullToClear"] boolValue] && scrollView.contentOffset.y <= pullToClearThreshold && [PHController sharedInstance].appsScrollView.selectedAppID && (scrollView.dragging || scrollView.tracking)) {
 		pullToClearView.clearing = NO;
 		[[PHController sharedInstance] pullToClearTriggered];
 	}

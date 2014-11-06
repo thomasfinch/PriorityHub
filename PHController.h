@@ -16,7 +16,6 @@
 
 - (void)addNotificationForAppID:(NSString*)appID;
 - (void)removeNotificationForAppID:(NSString*)appID;
-- (void)refreshControlTriggered:(UIRefreshControl*)refreshControl;
 - (void)clearAllNotificationsForUnlock;
 - (void)pullToClearTriggered;
 

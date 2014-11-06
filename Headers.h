@@ -7,6 +7,7 @@
 @interface SBApplicationController
 + (id)sharedInstance;
 - (id)applicationWithBundleIdentifier:(NSString*)id;
+- (id)applicationWithDisplayIdentifier:(NSString*)id;
 @end
 
 @protocol SBLockScreenNotificationModel

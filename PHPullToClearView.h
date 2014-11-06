@@ -9,7 +9,6 @@
 
 @property BOOL clearing;
 
-- (void)setPercentDone:(float)percent;
 - (void)setXVisible:(BOOL)visible;
 
 @end

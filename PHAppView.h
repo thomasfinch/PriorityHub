@@ -3,7 +3,6 @@
 @interface PHAppView : UIView {
 	UIImageView *iconView;
 	UILabel *numberLabel;
-	UITapGestureRecognizer *tapGestureRecognizer;
 }
 
 @property (nonatomic, readonly) NSString *appID;

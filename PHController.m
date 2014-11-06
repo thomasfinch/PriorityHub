@@ -1,7 +1,7 @@
 #import "PHController.h"
 #import <objc/runtime.h>
 
-const NSString *kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist";
+NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist";
 
 @implementation PHController
 
@@ -93,8 +93,10 @@ const NSString *kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.p
         return img;
     else {
         id application;
-        //If iOS 7: [[objc_getClass("SBApplicationController") sharedInstance] applicationWithDisplayIdentifier:appID]
-        application = [[objc_getClass("SBApplicationController") sharedInstance] applicationWithBundleIdentifier:appID]; //iOS 8
+        if ([objc_getClass("SBApplicationController") respondsToSelector:@selector(applicationWithBundleIdentifier:)])
+            application = [[objc_getClass("SBApplicationController") sharedInstance] applicationWithBundleIdentifier:appID]; //iOS 8+
+        else
+            application = [[objc_getClass("SBApplicationController") sharedInstance] applicationWithDisplayIdentifier:appID]; //iOS 7
         return [[[objc_getClass("SBApplicationIcon") alloc] initWithApplication:application] getIconImage:1];
     }
 }

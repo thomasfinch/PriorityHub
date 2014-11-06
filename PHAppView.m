@@ -24,7 +24,7 @@
 			[self addSubview:numberLabel];
 		}
 
-		tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
+		UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
         [self addGestureRecognizer:tapGestureRecognizer];
 	}
 	return self;

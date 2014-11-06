@@ -5,7 +5,6 @@ THEOS_BUILD_DIR = debs
 THEOS_DEVICE_IP = localhost
 THEOS_DEVICE_PORT = 2222
 GO_EASY_ON_ME = 1
-DEBUG = 1
 
 include theos/makefiles/common.mk
 
