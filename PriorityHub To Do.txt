@@ -1,10 +1,4 @@
 PriorityHub To Do
 
-Re-add privacy mode
-Put scroll view in container view instead of list view
 Make pull to clear easier for 4S users
-Fix settings not saving for iOS 7 users
-Fix icon crash/not showing themed (winterboard) icon/icon showing as blank/app views not showing up sometimes
-Fix notification list view getting cut off at the bottom
-Fix compatibility with other tweaks (subtle lock, lockinfo, tinybar, forecast)
-Check compatibility with reminders & calendars for lockscreen
+Crashes?

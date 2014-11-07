@@ -34,6 +34,14 @@ items = (
   },
   {
     cell = PSSwitchCell;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
+    key = privacyMode;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Privacy Mode";
+  },
+  {
+    cell = PSSwitchCell;
     default = 1;
     defaults = "com.thomasfinch.priorityhub";
     key = collapseOnLock;

@@ -43,7 +43,8 @@
 
 	//Update the number of notifications for this app and select it
 	[[appViews objectForKey:appID] updateNumNotifications];
-	[self selectApp:appID];
+	if (![[[PHController sharedInstance].prefsDict objectForKey:@"privacyMode"] boolValue])
+		[self selectApp:appID];
 }
 
 //When one or more notifications are cleared for an app

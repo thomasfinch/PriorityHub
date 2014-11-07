@@ -2,6 +2,7 @@
 #import "Headers.h"
 #import "PHController.h"
 #import "PHPullToClearView.h"
+#include <dlfcn.h>
 
 #define DEBUG 1
 
@@ -22,6 +23,11 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 	//Initialize controller and set up Darwin notifications for preference changes
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, prefsChanged, CFSTR("com.thomasfinch.priorityhub-prefschanged"), NULL,CFNotificationSuspensionBehaviorDeliverImmediately);
     [[PHController sharedInstance] updatePrefsDict]; //Initializes the sharedInstance object
+
+    //dlopen'ing subtlelock causes its dylib to be loaded and executed first
+    //This fixes a lot of layout problems because then priority hub's layout code runs last and
+    //has the last say in the layout of some views.
+    dlopen("/Library/MobileSubstrate/DynamicLibraries/SubtleLock.dylib", RTLD_NOW);
 }
 
 %hook SBLockScreenNotificationListView
@@ -39,19 +45,26 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 
 	CGFloat scrollViewHeight = ([[[PHController sharedInstance].prefsDict objectForKey:@"showNumbers"] boolValue]) ? [PHController iconSize] * 1.8 : [PHController iconSize] * 1.4;
 
+	UIView *topSeparator = ((UIView*)[containerView subviews][1]), *bottomSeparator = ((UIView*)[containerView subviews][2]);
+	if (![[[PHController sharedInstance].prefsDict objectForKey:@"showSeparators"] boolValue]) {
+		topSeparator.hidden = YES;
+		bottomSeparator.hidden = YES;
+	}
+
 	if ([[[PHController sharedInstance].prefsDict objectForKey:@"iconLocation"] intValue] == 0) {
-		[PHController sharedInstance].appsScrollView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y, containerView.frame.size.width, scrollViewHeight);
-		containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + scrollViewHeight + 2, containerView.frame.size.width, containerView.frame.size.height - scrollViewHeight - 2);
+		[PHController sharedInstance].appsScrollView.frame = CGRectMake(notificationsTableView.frame.origin.x, notificationsTableView.frame.origin.y, notificationsTableView.frame.size.width, scrollViewHeight);
+		notificationsTableView.frame = CGRectMake(notificationsTableView.frame.origin.x, notificationsTableView.frame.origin.y + scrollViewHeight + 2, notificationsTableView.frame.size.width, notificationsTableView.frame.size.height - scrollViewHeight - 2);
+		UIView *topSeparator = ((UIView*)[containerView subviews][1]);
+		topSeparator.frame = CGRectMake(topSeparator.frame.origin.x, [PHController sharedInstance].appsScrollView.frame.origin.y + scrollViewHeight + 2, topSeparator.frame.size.width, topSeparator.frame.size.height);
 	}
 	else {
-		[PHController sharedInstance].appsScrollView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + containerView.frame.size.height - scrollViewHeight, containerView.frame.size.width, scrollViewHeight);
-		containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y, containerView.frame.size.width, containerView.frame.size.height - scrollViewHeight - 2);
+		[PHController sharedInstance].appsScrollView.frame = CGRectMake(0, notificationsTableView.frame.origin.y + notificationsTableView.frame.size.height - scrollViewHeight, notificationsTableView.frame.size.width, scrollViewHeight);
+		notificationsTableView.frame = CGRectMake(notificationsTableView.frame.origin.x, notificationsTableView.frame.origin.y, notificationsTableView.frame.size.width, notificationsTableView.frame.size.height - scrollViewHeight - 2);
+		bottomSeparator.frame = CGRectMake(bottomSeparator.frame.origin.x, [PHController sharedInstance].appsScrollView.frame.origin.y - 2, bottomSeparator.frame.size.width, bottomSeparator.frame.size.height);
 	}
 
 	[[PHController sharedInstance].appsScrollView updateLayout];
-
-	if (![[PHController sharedInstance].appsScrollView superview])
-		[self addSubview:[PHController sharedInstance].appsScrollView];
+	[containerView addSubview:[PHController sharedInstance].appsScrollView];
 
 	if ([[[PHController sharedInstance].prefsDict objectForKey:@"enablePullToClear"] boolValue] && (!pullToClearView || ![[notificationsTableView subviews] containsObject:pullToClearView])) {
 		//Add the pull to clear view to the table view

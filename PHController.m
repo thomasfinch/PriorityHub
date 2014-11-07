@@ -26,7 +26,7 @@ NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.
 }
 
 - (void)addNotificationForAppID:(NSString*)appID {
-    NSLog(@"CONTROLLER ADD NOTIFICATOIN FOR APP ID: %@",appID);
+    NSLog(@"CONTROLLER ADD NOTIFICATION FOR APP ID: %@",appID);
     [self.appsScrollView addNotificationForAppID:appID];
 }
 
@@ -60,7 +60,12 @@ NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.
 - (void)updatePrefsDict
 {
     NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
-    NSDictionary *storedPrefs = (NSDictionary *)CFBridgingRelease(CFPreferencesCopyMultiple(CFPreferencesCopyKeyList(CFSTR("com.thomasfinch.priorityhub"), kCFPreferencesCurrentUser, kCFPreferencesAnyHost), CFSTR("com.thomasfinch.priorityhub"), kCFPreferencesCurrentUser, kCFPreferencesAnyHost)); 
+    NSDictionary *storedPrefs;
+    if ([objc_getClass("SBApplicationController") respondsToSelector:@selector(applicationWithBundleIdentifier:)]) //If on iOS 8+
+        storedPrefs = (NSDictionary *)CFBridgingRelease(CFPreferencesCopyMultiple(CFPreferencesCopyKeyList(CFSTR("com.thomasfinch.priorityhub"), kCFPreferencesCurrentUser, kCFPreferencesAnyHost), CFSTR("com.thomasfinch.priorityhub"), kCFPreferencesCurrentUser, kCFPreferencesAnyHost));
+    else //iOS 7
+        storedPrefs = [NSDictionary dictionaryWithContentsOfFile:kPrefsPath];
+
     if (storedPrefs) {
         [preferences addEntriesFromDictionary:storedPrefs];
     }
@@ -77,6 +82,8 @@ NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.
         [preferences setObject:[NSNumber numberWithBool:YES] forKey:@"collapseOnLock"];
     if (![preferences objectForKey:@"enablePullToClear"])
         [preferences setObject:[NSNumber numberWithBool:YES] forKey:@"enablePullToClear"];
+    if (![preferences objectForKey:@"privacyMode"])
+        [preferences setObject:[NSNumber numberWithBool:NO] forKey:@"privacyMode"];
     if (![preferences objectForKey:@"iconLocation"])
         [preferences setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
 
