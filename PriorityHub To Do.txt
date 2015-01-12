@@ -1,4 +1,0 @@
-PriorityHub To Do
-
-Make pull to clear easier for 4S users
-Crashes?

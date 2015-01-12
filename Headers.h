@@ -4,6 +4,14 @@
 // #import <SpringBoard/SBApplicationController.h>
 #import <CoreGraphics/CoreGraphics.h>
 
+@interface UIImage (Private)
++(id) _applicationIconImageForBundleIdentifier:(NSString*)displayIdentifier format:(int)form scale:(CGFloat)scale;
+@end
+
+@interface SBIconModel
+- (id)expectedIconForDisplayIdentifier:(NSString*)str;
+@end
+
 @interface SBApplicationController
 + (id)sharedInstance;
 - (id)applicationWithBundleIdentifier:(NSString*)id;

@@ -1,8 +1,8 @@
 Package: com.thomasfinch.priorityhub
 Name: Priority Hub
 Depends: mobilesubstrate, preferenceloader
-Version: 1.2
-Conflicts: com.lockinfo.lockinfo7
+Version: 1.3.4
+Conflicts: com.lockinfo.lockinfo7, com.dylankelly.customls
 Architecture: iphoneos-arm
 Description: Organize your lockscreen notifications!
 Homepage: http://thomasfinch.me

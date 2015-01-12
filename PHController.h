@@ -4,7 +4,7 @@
 
 @interface PHController : NSObject
 
-@property NSDictionary *prefsDict;
+@property NSUserDefaults *prefsDict;
 @property PHAppsScrollView *appsScrollView;
 @property (weak) BBObserver *bulletinObserver;
 @property (weak) SBLockScreenNotificationListController *listController;

@@ -1,5 +1,4 @@
 #import "PHController.h"
-#import <objc/runtime.h>
 
 NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist";
 
@@ -36,6 +35,7 @@ NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.
 }
 
 - (void)pullToClearTriggered {
+    NSLog(@"PULL TO CLEAR TRIGGERED");
     if (_bulletinObserver && appsScrollView.selectedAppID) {
         [_bulletinObserver clearSection:appsScrollView.selectedAppID];
     }
@@ -50,7 +50,8 @@ NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.
 - (NSInteger)numNotificationsForAppID:(NSString*)appID {
     NSInteger count = 0;
     for (unsigned long long i = 0; i < [_listController count]; i++) {
-        if ([[[[_listController listItemAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]] activeBulletin] sectionID] isEqualToString:appID])
+        id listItem = [_listController listItemAtIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
+        if ([listItem respondsToSelector:@selector(activeBulletin)] && [[[listItem activeBulletin] sectionID] isEqualToString:appID])
             count++;
     }
 
@@ -59,53 +60,30 @@ NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.
 
 - (void)updatePrefsDict
 {
-    NSMutableDictionary *preferences = [[NSMutableDictionary alloc] init];
-    NSDictionary *storedPrefs;
-    if ([objc_getClass("SBApplicationController") respondsToSelector:@selector(applicationWithBundleIdentifier:)]) //If on iOS 8+
-        storedPrefs = (NSDictionary *)CFBridgingRelease(CFPreferencesCopyMultiple(CFPreferencesCopyKeyList(CFSTR("com.thomasfinch.priorityhub"), kCFPreferencesCurrentUser, kCFPreferencesAnyHost), CFSTR("com.thomasfinch.priorityhub"), kCFPreferencesCurrentUser, kCFPreferencesAnyHost));
-    else //iOS 7
-        storedPrefs = [NSDictionary dictionaryWithContentsOfFile:kPrefsPath];
+    prefsDict = [[NSUserDefaults alloc] initWithSuiteName:@"com.thomasfinch.priorityhub"];
 
-    if (storedPrefs) {
-        [preferences addEntriesFromDictionary:storedPrefs];
-    }
-
-    NSLog(@"UPDATED PREFS DICT");
-    //Add preferences if they don't already exist
-    if (![preferences objectForKey:@"showNumbers"])
-        [preferences setObject:[NSNumber numberWithBool:YES] forKey:@"showNumbers"];
-    if (![preferences objectForKey:@"showSeparators"])
-        [preferences setObject:[NSNumber numberWithBool:NO] forKey:@"showSeparators"];
-    if (![preferences objectForKey:@"colorizeSelected"])
-        [preferences setObject:[NSNumber numberWithBool:NO] forKey:@"colorizeSelected"];
-    if (![preferences objectForKey:@"collapseOnLock"])
-        [preferences setObject:[NSNumber numberWithBool:YES] forKey:@"collapseOnLock"];
-    if (![preferences objectForKey:@"enablePullToClear"])
-        [preferences setObject:[NSNumber numberWithBool:YES] forKey:@"enablePullToClear"];
-    if (![preferences objectForKey:@"privacyMode"])
-        [preferences setObject:[NSNumber numberWithBool:NO] forKey:@"privacyMode"];
-    if (![preferences objectForKey:@"iconLocation"])
-        [preferences setObject:[NSNumber numberWithInt:0] forKey:@"iconLocation"];
-
-    prefsDict = preferences;
-    NSLog(@"Prefs dict: %@",prefsDict);
-    [prefsDict writeToFile:kPrefsPath atomically:YES];
+    [prefsDict registerDefaults:@{
+        @"showNumbers": @YES,
+        @"showSeparators": @NO,
+        @"colorizeSelected": @NO,
+        @"collapseOnLock": @YES,
+        @"enablePullToClear": @YES,
+        @"privacyMode": @NO,
+        @"iconLocation": [NSNumber numberWithInt:0],
+        @"numberStyle": [NSNumber numberWithInt:0],
+        @"verticalAdjustment": [NSNumber numberWithFloat:0]
+    }];
 }
 
 + (UIImage*)iconForAppID:(NSString*)appID {
+    //Get custom priority hub icon if it exists
 	NSBundle *iconsBundle = [NSBundle  bundleWithPath:@"/Library/Application Support/PriorityHub/Icons.bundle"];
     UIImage *img = [[UIImage class] performSelector:@selector(imageNamed:inBundle:) withObject:[NSString stringWithFormat:@"%@.png",appID] withObject:iconsBundle]; //[UIImage imageNamed:[NSString stringWithFormat:@"%@.png",appID] inBundle:iconsBundle];
 
     if (img)
         return img;
-    else {
-        id application;
-        if ([objc_getClass("SBApplicationController") respondsToSelector:@selector(applicationWithBundleIdentifier:)])
-            application = [[objc_getClass("SBApplicationController") sharedInstance] applicationWithBundleIdentifier:appID]; //iOS 8+
-        else
-            application = [[objc_getClass("SBApplicationController") sharedInstance] applicationWithDisplayIdentifier:appID]; //iOS 7
-        return [[[objc_getClass("SBApplicationIcon") alloc] initWithApplication:application] getIconImage:1];
-    }
+    else
+        return [UIImage _applicationIconImageForBundleIdentifier:appID format:0 scale:[UIScreen mainScreen].scale];
 }
 
 + (CGFloat)iconSize {
@@ -118,5 +96,10 @@ NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.
 + (BOOL)isTweakInstalled:(NSString *)name {
     return [[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"/Library/MobileSubstrate/DynamicLibraries/%@.dylib",name]];
 }
+
+// - (void)dealloc {
+//     [prefsDict release];
+//     [super dealloc];
+// }
 
 @end

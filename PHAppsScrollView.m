@@ -20,7 +20,7 @@
         appViews = [[NSMutableDictionary alloc] init];
 
         appViewWidth = [PHController iconSize] * 1.4;
-     	if ([[[PHController sharedInstance].prefsDict objectForKey:@"showNumbers"] boolValue])
+     	if ([[PHController sharedInstance].prefsDict boolForKey:@"showNumbers"] && [[PHController sharedInstance].prefsDict integerForKey:@"numberStyle"] == 0)
 	        appViewHeight = [PHController iconSize] * 1.8;
 	    else
 	        appViewHeight = appViewWidth;
@@ -43,12 +43,13 @@
 
 	//Update the number of notifications for this app and select it
 	[[appViews objectForKey:appID] updateNumNotifications];
-	if (![[[PHController sharedInstance].prefsDict objectForKey:@"privacyMode"] boolValue])
+	if (![[PHController sharedInstance].prefsDict boolForKey:@"privacyMode"])
 		[self selectApp:appID];
 }
 
 //When one or more notifications are cleared for an app
 - (void)removeNotificationForAppID:(NSString*)appID {
+	NSLog(@"REMOVE NOTIFICATION IN SCROLL VIEW");
 	if ([[PHController sharedInstance] numNotificationsForAppID:appID] == 0) {
 		[[appViews objectForKey:appID] removeFromSuperview];
 		[appViews removeObjectForKey:appID];
@@ -72,7 +73,7 @@
 }
 
 - (void)screenTurnedOff {
-	if ([[[PHController sharedInstance].prefsDict objectForKey:@"collapseOnLock"] boolValue])
+	if ([[PHController sharedInstance].prefsDict boolForKey:@"collapseOnLock"])
 		[self selectApp:nil];
 }
 
@@ -82,7 +83,6 @@
 	if (!appID) {
 		[UIView animateWithDuration:0.15 animations:^{
             selectedView.alpha = 0;
-            [PHController sharedInstance].notificationsTableView.alpha = 0;
         } completion:nil];
 	}
 	else {
@@ -95,9 +95,8 @@
 		[UIView animateWithDuration:0.15 animations:^{
             selectedView.frame = ((PHAppView*)[appViews objectForKey:appID]).frame;
             selectedView.alpha = 1;
-            [PHController sharedInstance].notificationsTableView.alpha = 1;
 
-            if ([[[PHController sharedInstance].prefsDict objectForKey:@"colorizeSelected"] boolValue])
+            if ([[PHController sharedInstance].prefsDict boolForKey:@"colorizeSelected"])
 				selectedView.backgroundColor = [[PHController iconForAppID:appID] averageColor];
 
         } completion:nil];
@@ -142,5 +141,11 @@
 		[[PHController sharedInstance].listView _disableIdleTimer:NO];
 	}
 }
+
+// - (void)dealloc {
+// 	[selectedView release];
+// 	[appViews release];
+// 	[super dealloc];
+// }
 
 @end

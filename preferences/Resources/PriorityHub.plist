@@ -74,6 +74,38 @@ items = (
     );
   },
   {
+    cell = PSLinkListCell;
+    detail = PSListItemsController;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
+    key = numberStyle;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Number Style";
+    validValues = (
+      0,
+      1
+    );
+    validTitles = (
+      "Below Icon",
+      "Badge"
+    );
+  },
+  {
+    cell = PSGroupCell;
+    label = "Vertical Adjustment";
+    footerText = "Use this setting to manually adjust the notification view up or down if it's cut off by other tweaks. Negative numbers mean moving the top of the view down, and positive numbers mean moving the bottom up.";
+  },
+  {
+    cell = PSEditTextCell;
+    defaults = "com.thomasfinch.priorityhub";
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    key = verticalAdjustment;
+    label = "Height";
+    default = 0;
+    isIP = 1;
+    placeholder = "0";
+  },
+  {
     cell = PSGroupCell;
   },
   {
@@ -81,9 +113,6 @@ items = (
     action = GithubButtonTapped;
     icon = "Github.png";
     label = "View Source on GitHub";
-  },
-  {
-    cell = PSGroupCell;
   },
   {
     cell = PSButtonCell;

@@ -10,18 +10,36 @@
 	if (self = [super initWithFrame:frame]) {
 		appID = applicationID;
 
+		BOOL showNumbers = [[PHController sharedInstance].prefsDict boolForKey:@"showNumbers"];
+		int numberStyle = [[PHController sharedInstance].prefsDict integerForKey:@"numberStyle"];
+
 		iconView = [[UIImageView alloc] initWithImage:[PHController iconForAppID:appID]];
-		if ([[[PHController sharedInstance].prefsDict objectForKey:@"showNumbers"] boolValue])
+		if (showNumbers && numberStyle == 0)
 			iconView.frame = CGRectMake((frame.size.width - [PHController iconSize])/2, 5, [PHController iconSize], [PHController iconSize]);
 		else
 			iconView.frame = CGRectMake((frame.size.width - [PHController iconSize])/2, (frame.size.width - [PHController iconSize])/2, [PHController iconSize], [PHController iconSize]);
 		[self addSubview:iconView];
 
-		if ([[[PHController sharedInstance].prefsDict objectForKey:@"showNumbers"] boolValue]) {
-			numberLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, iconView.frame.origin.y + CGRectGetHeight(iconView.frame) + ((CGRectGetHeight(frame) - (iconView.frame.origin.y + CGRectGetHeight(iconView.frame))) - 15) / 2, CGRectGetWidth(frame), 15)];
+		if (showNumbers) {
+			numberLabel = [[UILabel alloc] initWithFrame:CGRectMake(0,0,0,0)];
 			numberLabel.textColor = [UIColor whiteColor];
 			numberLabel.textAlignment = NSTextAlignmentCenter;
-			[self addSubview:numberLabel];
+
+			if (numberStyle == 0) {
+				numberLabel.frame = CGRectMake(0, iconView.frame.origin.y + CGRectGetHeight(iconView.frame) + ((CGRectGetHeight(frame) - (iconView.frame.origin.y + CGRectGetHeight(iconView.frame))) - 15) / 2, CGRectGetWidth(frame), 15);
+				[self addSubview:numberLabel];
+			}
+			else {
+				badgeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [PHController iconSize]/2, [PHController iconSize]/2)];
+				badgeView.backgroundColor = [UIColor redColor];
+				badgeView.layer.cornerRadius = badgeView.frame.size.width/2;
+				badgeView.center = CGPointMake(iconView.frame.origin.x + iconView.frame.size.width*0.9, iconView.frame.origin.y + iconView.frame.size.height*0.1);
+				[self addSubview:badgeView];
+
+				numberLabel.frame = badgeView.bounds;
+				numberLabel.font = [UIFont systemFontOfSize:10];
+				[badgeView addSubview:numberLabel];
+			}
 		}
 
 		UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
@@ -38,5 +56,12 @@
 - (void)handleSingleTap:(UITapGestureRecognizer*)gestureRecognizer {
 	[tapDelegate performSelector:@selector(handleAppViewTapped:) withObject:self];
 }
+
+// - (void)dealloc {
+// 	[iconView release];
+// 	[numberLabel release];
+// 	[badgeView release];
+// 	[super dealloc];
+// }
 
 @end

@@ -1,0 +1,5 @@
+Fix compatibility with: jellylock
+Fix notification number maxing out at 11
+Remove custom adjustments for subtlelock and other tweak
+Fix icons showing up wrong when polus is installed
+Fix theming of icons not working properly
