@@ -4,8 +4,6 @@
 #include <dlfcn.h>
 #import <objc/runtime.h>
 
-#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0];
-
 @implementation PHAppView
 
 @synthesize appID;
@@ -48,7 +46,9 @@
 					int badgeColor = [[cb sharedInstance] colorForImage:[PHController iconForAppID:appID]];
 					badgeView.backgroundColor = UIColorFromRGB(badgeColor);
 					BOOL isDark = [cb isDarkColor:badgeColor];
-					badgeView.layer.borderWidth = 1.0f;
+					if ([cb areBordersEnabled])
+						badgeView.layer.borderWidth = 1.0f;
+					
 					if (isDark) {
 						badgeView.layer.borderColor = [UIColor whiteColor].CGColor;
 						numberLabel.textColor = [UIColor whiteColor];
