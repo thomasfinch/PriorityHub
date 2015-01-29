@@ -8,6 +8,7 @@
 + (instancetype)sharedInstance;
 + (BOOL)isDarkColor:(int)color;
 + (BOOL)areBordersEnabled;
++ (BOOL)isEnabled;
 
 // Return RGB ints. i.e. 0xRRGGBB.
 - (int)colorForImage:(UIImage *)image;
@@ -20,7 +21,7 @@
 @implementation YourObject
 - (void)configureMyBadge:(id)badge forIcon:(id)icon {
   Class cb = %c(ColorBadges);
-  if (cb) {
+  if ([cb isEnabled]) {
     int color = [[cb sharedInstance] colorForIcon:icon];
     badge.tintColor = UIColorFromRGB(color);
 

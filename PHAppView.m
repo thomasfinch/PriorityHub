@@ -42,7 +42,7 @@
 				//ColorBadge support
 				dlopen("/Library/MobileSubstrate/DynamicLibraries/ColorBadges.dylib", RTLD_LAZY);
 				Class cb = objc_getClass("ColorBadges");
-				if (cb) {
+				if (cb && [cb isEnabled]) {
 					int badgeColor = [[cb sharedInstance] colorForImage:[PHController iconForAppID:appID]];
 					badgeView.backgroundColor = UIColorFromRGB(badgeColor);
 					BOOL isDark = [cb isDarkColor:badgeColor];
