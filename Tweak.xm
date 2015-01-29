@@ -38,10 +38,10 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 	UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
 	UITableView* notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
 
-	if ([[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/Roomy.dylib"]) {
-		containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + 30, containerView.frame.size.width, containerView.frame.size.height - 30);
-	}
-	else if ([[PHController sharedInstance].prefsDict floatForKey:@"verticalAdjustment"] != 0) { //Vertical adjustment setting
+	// if ([[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/Roomy.dylib"]) {
+	// 	containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + 30, containerView.frame.size.width, containerView.frame.size.height - 30);
+	// }
+	if ([[PHController sharedInstance].prefsDict floatForKey:@"verticalAdjustment"] != 0) { //Vertical adjustment setting
 		float adjustment = [[PHController sharedInstance].prefsDict floatForKey:@"verticalAdjustment"];
 		NSLog(@"VERTICAL ADJUSTMENT: %f", adjustment);
 		
@@ -99,8 +99,6 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 //Used to "hide" notifications that aren't for the selected view
 - (double)tableView:(id)arg1 heightForRowAtIndexPath:(id)arg2 {
 	id itemAtIndexPath = [[PHController sharedInstance].listController listItemAtIndexPath:arg2];
-
-	NSLog(@"ITEM AT INDEX PATH: %@",itemAtIndexPath);
 
 	//If the item is a system alert or passbook pass
 	if ([itemAtIndexPath isKindOfClass:%c(SBAwaySystemAlertItem)] || [itemAtIndexPath isKindOfClass:%c(SBAwayCardListItem)])

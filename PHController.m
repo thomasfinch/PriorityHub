@@ -1,4 +1,5 @@
 #import "PHController.h"
+#import "substrate.h"
 
 NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.priorityhub.plist";
 
@@ -91,10 +92,6 @@ NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.
         return 40.0;
     else
         return 30.0;
-}
-
-+ (BOOL)isTweakInstalled:(NSString *)name {
-    return [[NSFileManager defaultManager] fileExistsAtPath:[NSString stringWithFormat:@"/Library/MobileSubstrate/DynamicLibraries/%@.dylib",name]];
 }
 
 // - (void)dealloc {

@@ -28,6 +28,7 @@
 
 @interface BBObserver
 - (void)clearSection:(NSString*)arg1;
+- (id)parametersForSectionID:(NSString*)sectionID;
 @end
 
 @interface SBAwayBulletinListItem

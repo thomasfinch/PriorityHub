@@ -23,6 +23,5 @@
 - (void)updatePrefsDict;
 + (UIImage*)iconForAppID:(NSString*)appID;
 + (CGFloat)iconSize;
-+ (BOOL)isTweakInstalled:(NSString*)name;
 
 @end
