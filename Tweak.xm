@@ -35,6 +35,9 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 - (void)layoutSubviews {
 	%orig;
 
+	if (![[PHController sharedInstance].prefsDict boolForKey:@"enabled"])
+		return;
+
 	UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
 	UITableView* notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
 
@@ -98,6 +101,9 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 
 //Used to "hide" notifications that aren't for the selected view
 - (double)tableView:(id)arg1 heightForRowAtIndexPath:(id)arg2 {
+	if (![[PHController sharedInstance].prefsDict boolForKey:@"enabled"])
+		return %orig;
+
 	id itemAtIndexPath = [[PHController sharedInstance].listController listItemAtIndexPath:arg2];
 
 	//If the item is a system alert or passbook pass
@@ -117,7 +123,7 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-	if ([[PHController sharedInstance].prefsDict boolForKey:@"enablePullToClear"]) {
+	if ([[PHController sharedInstance].prefsDict boolForKey:@"enablePullToClear"] && [[PHController sharedInstance].prefsDict boolForKey:@"enabled"]) {
 		pullToClearView.hidden = ![PHController sharedInstance].appsScrollView.selectedAppID;
 		if (scrollView.contentOffset.y <= 0 && !pullToClearView.clearing)
 			[pullToClearView setXVisible: (scrollView.contentOffset.y <= pullToClearThreshold)];
@@ -128,7 +134,10 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView willDecelerate:(_Bool)arg2 {
-	if ([[PHController sharedInstance].prefsDict boolForKey:@"enablePullToClear"] && scrollView.contentOffset.y <= pullToClearThreshold && [PHController sharedInstance].appsScrollView.selectedAppID && (scrollView.dragging || scrollView.tracking)) {
+	if ([[PHController sharedInstance].prefsDict boolForKey:@"enabled"] && [[PHController sharedInstance].prefsDict boolForKey:@"enablePullToClear"] && 
+		scrollView.contentOffset.y <= pullToClearThreshold && [PHController sharedInstance].appsScrollView.selectedAppID && 
+		(scrollView.dragging || scrollView.tracking)) {
+
 		pullToClearView.clearing = NO;
 		[[PHController sharedInstance] pullToClearTriggered];
 	}
@@ -144,6 +153,9 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 //Called when a new notification is added to the notification table view
 -(void)_updateModelAndViewForAdditionOfItem:(id)item {
 	%orig;
+	if (![[PHController sharedInstance].prefsDict boolForKey:@"enabled"])
+		return;
+
 	NSLog(@"UPDATE MODEL AND VIEW FOR ADDITION OF ITEM: %@",item);
 	[PHController sharedInstance].listController = self;
 	[PHController sharedInstance].bulletinObserver = MSHookIvar<BBObserver*>(self, "_observer");
@@ -154,6 +166,9 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 //Called when a notification is removed from the table view
 -(void)_updateModelForRemovalOfItem:(id)item updateView:(BOOL)view {
 	%orig;
+	if (![[PHController sharedInstance].prefsDict boolForKey:@"enabled"])
+		return;
+
 	NSLog(@"UPDATE MODEL FOR REMOVAL OF ITEM (BOOL): %@",item);
 	[PHController sharedInstance].listController = self;
 	[PHController sharedInstance].bulletinObserver = MSHookIvar<BBObserver*>(self, "_observer");
@@ -164,13 +179,16 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 //Called when device is unlocked. Clear all app views.
 - (void)prepareForTeardown {
 	%orig;
+	if (![[PHController sharedInstance].prefsDict boolForKey:@"enabled"])
+		return;
+
 	[[PHController sharedInstance] clearAllNotificationsForUnlock];
 }
 
 //Called when the screen turns on or off. Used to deselect any selected app when the screen turns off.
 - (void)setInScreenOffMode:(_Bool)off {
 	%orig;
-	if(off)
+	if(off && [[PHController sharedInstance].prefsDict boolForKey:@"enabled"])
 		[[PHController sharedInstance].appsScrollView screenTurnedOff];
 }
 
@@ -180,6 +198,8 @@ static void prefsChanged(CFNotificationCenterRef center, void *observer,CFString
 
 - (void)didRotateFromInterfaceOrientation:(long long)arg1 {
 	%orig;
+	if (![[PHController sharedInstance].prefsDict boolForKey:@"enabled"])
+		return;
 	[[PHController sharedInstance].listView layoutSubviews];
 }
 

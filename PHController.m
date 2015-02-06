@@ -64,6 +64,7 @@ NSString * const kPrefsPath = @"/var/mobile/Library/Preferences/com.thomasfinch.
     prefsDict = [[NSUserDefaults alloc] initWithSuiteName:@"com.thomasfinch.priorityhub"];
 
     [prefsDict registerDefaults:@{
+        @"enabled": @YES,
         @"showNumbers": @YES,
         @"showSeparators": @NO,
         @"colorizeSelected": @NO,

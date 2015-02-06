@@ -12,6 +12,17 @@ items = (
     cell = PSSwitchCell;
     default = 1;
     defaults = "com.thomasfinch.priorityhub";
+    key = enabled;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Enabled";
+  },
+  {
+    cell = PSGroupCell;
+  },
+  {
+    cell = PSSwitchCell;
+    default = 1;
+    defaults = "com.thomasfinch.priorityhub";
     key = showNumbers;
     PostNotification = com.thomasfinch.priorityhub-prefschanged;
     label = "Show Numbers";
