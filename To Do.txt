@@ -1,5 +1,3 @@
 Fix icons showing up wrong when polus is installed
 Fix theming of icons not working properly
 Fix credit card icons not showing up properly
-Fix crash while recording voice memo
-Add enable/disable switch in preference pane
