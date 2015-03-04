@@ -2,6 +2,7 @@ Fix icons showing up wrong when polus is installed
 Fix theming of icons not working properly
 Fix credit card icons not showing up properly
 Add setting to show all notifications when no app is selected instead of none
+Fix icons sometimes not detecting taps when music is playing on lockscreen
 
 Changelog (version 1.4)
 - Rearranged settings into sections so they're easier to manage
