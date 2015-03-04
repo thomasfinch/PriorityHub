@@ -1,5 +1,5 @@
 #import "PHAppView.h"
-#import "PHController.h"
+#import "PHView.h"
 #import "colorbadges_api.h"
 #include <dlfcn.h>
 #import <objc/runtime.h>
@@ -9,41 +9,43 @@
 @synthesize appID;
 @synthesize tapDelegate;
 
-- (id)initWithFrame:(CGRect)frame appID:(NSString*)applicationID {
+- (id)initWithFrame:(CGRect)frame appID:(NSString*)applicationID icon:(UIImage*)icon {
 	if (self = [super initWithFrame:frame]) {
+		self.userInteractionEnabled = YES;
 		appID = applicationID;
+		defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.thomasfinch.priorityhub"];
 
-		BOOL showNumbers = [[PHController sharedInstance].prefsDict boolForKey:@"showNumbers"];
-		int numberStyle = [[PHController sharedInstance].prefsDict integerForKey:@"numberStyle"];
+		BOOL showNumbers = [defaults boolForKey:@"showNumbers"];
+		int numberStyle = [defaults integerForKey:@"numberStyle"];
 
-		iconView = [[UIImageView alloc] initWithImage:[PHController iconForAppID:appID]];
+		iconView = [[UIImageView alloc] initWithImage:icon];
 		if (showNumbers && numberStyle == 0)
-			iconView.frame = CGRectMake((frame.size.width - [PHController iconSize])/2, 5, [PHController iconSize], [PHController iconSize]);
+			iconView.frame = CGRectMake((frame.size.width - frame.size.width * 0.71)/2, 5, frame.size.width * 0.71, frame.size.width * 0.71);
 		else
-			iconView.frame = CGRectMake((frame.size.width - [PHController iconSize])/2, (frame.size.width - [PHController iconSize])/2, [PHController iconSize], [PHController iconSize]);
+			iconView.frame = CGRectMake((frame.size.width - frame.size.width * 0.71)/2, (frame.size.width - frame.size.width * 0.71)/2, frame.size.width * 0.71, frame.size.width * 0.71);
 		[self addSubview:iconView];
 
 		if (showNumbers) {
-			numberLabel = [[UILabel alloc] initWithFrame:CGRectMake(0,0,0,0)];
+			numberLabel = [[UILabel alloc] initWithFrame:CGRectZero];
 			numberLabel.textColor = [UIColor whiteColor];
 			numberLabel.textAlignment = NSTextAlignmentCenter;
 
-			if (numberStyle == 0) { //If the notification count is underneath the app icon
+			if (numberStyle == 0) { //If the notification count is below the app icon
 				numberLabel.frame = CGRectMake(0, iconView.frame.origin.y + CGRectGetHeight(iconView.frame) + ((CGRectGetHeight(frame) - (iconView.frame.origin.y + CGRectGetHeight(iconView.frame))) - 15) / 2, CGRectGetWidth(frame), 15);
 				[self addSubview:numberLabel];
 			}
 			else { //If the notification count is shown as an app badge
-				badgeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [PHController iconSize]/2, [PHController iconSize]/2)];
+				badgeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, iconView.frame.size.height/2, iconView.frame.size.height/2)];
 				badgeView.backgroundColor = [UIColor redColor];
 				badgeView.layer.cornerRadius = badgeView.frame.size.width/2;
-				badgeView.center = CGPointMake(iconView.frame.origin.x + iconView.frame.size.width*0.9, iconView.frame.origin.y + iconView.frame.size.height*0.1);
+				badgeView.center = CGPointMake(iconView.frame.origin.x + iconView.frame.size.width * 0.9, iconView.frame.origin.y + iconView.frame.size.height * 0.1);
 				[self addSubview:badgeView];
 
 				//ColorBadge support
 				dlopen("/Library/MobileSubstrate/DynamicLibraries/ColorBadges.dylib", RTLD_LAZY);
 				Class cb = objc_getClass("ColorBadges");
 				if (cb && [cb isEnabled]) {
-					int badgeColor = [[cb sharedInstance] colorForImage:[PHController iconForAppID:appID]];
+					int badgeColor = [[cb sharedInstance] colorForImage:icon];
 					badgeView.backgroundColor = UIColorFromRGB(badgeColor);
 					BOOL isDark = [cb isDarkColor:badgeColor];
 					if ([cb areBordersEnabled])
@@ -65,26 +67,24 @@
 			}
 		}
 
-		UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
+		UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewTapped:)];
         [self addGestureRecognizer:tapGestureRecognizer];
 	}
+
 	return self;
 }
 
-- (void)updateNumNotifications {
+- (void)viewTapped:(UITapGestureRecognizer*)recognizer {
+	[(PHView*)[self superview] selectAppID:self.appID newNotification:NO];
+}
+
+- (void)updateNumNotifications:(NSUInteger)numNotifications {
 	if (numberLabel)
-		numberLabel.text = [NSString stringWithFormat:@"%ld",(long)[[PHController sharedInstance] numNotificationsForAppID:appID]];
+		numberLabel.text = [NSString stringWithFormat:@"%ld",(long)numNotifications];
 }
 
 - (void)handleSingleTap:(UITapGestureRecognizer*)gestureRecognizer {
 	[tapDelegate performSelector:@selector(handleAppViewTapped:) withObject:self];
 }
-
-// - (void)dealloc {
-// 	[iconView release];
-// 	[numberLabel release];
-// 	[badgeView release];
-// 	[super dealloc];
-// }
 
 @end

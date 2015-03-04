@@ -1,7 +1,6 @@
 //Headers.h
 #import <SpringBoard/SBApplicationIcon.h>
 #import <SpringBoard/SBAwayListItem.h>
-// #import <SpringBoard/SBApplicationController.h>
 #import <CoreGraphics/CoreGraphics.h>
 
 @interface UIImage (Private)
@@ -22,8 +21,32 @@
 - (SBAwayListItem *)listItemAtIndexPath:(NSIndexPath *)arg1;
 @end
 
+@interface SBLockScreenManager
++(id)sharedInstance;
+- (void)_lockUI;
+- (void)lockUIFromSource:(int)arg1 withOptions:(id)arg2;
+- (void)_setUILocked:(_Bool)arg1;
+@end
+
+@interface BBAction
++ (id)action;
+@end
+
+@interface SpringBoard : UIApplication
+- (void)lockButtonUp:(id)arg1;
+- (void)lockDevice:(id)arg1;
+@end
+
 @interface BBBulletin
-@property(copy, nonatomic) NSString *sectionID; // @synthesize sectionID=_sectionID;
+@property(copy, nonatomic) NSString *sectionID; // @dynamic sectionID;
+@property(copy, nonatomic) NSString *title; // @dynamic title;
+@property(copy, nonatomic) NSString *message; // @dynamic title;
+@property(copy, nonatomic) BBAction *defaultAction; // @dynamic defaultAction;
+@property(retain, nonatomic) NSDate *date;
+@property(copy, nonatomic) NSString *bulletinID;
+@end
+
+@interface BBBulletinRequest : BBBulletin
 @end
 
 @interface BBObserver
@@ -31,9 +54,52 @@
 - (id)parametersForSectionID:(NSString*)sectionID;
 @end
 
-@interface SBAwayBulletinListItem
+@interface SBAwayBulletinListItem : SBAwayListItem
 @property(retain) BBBulletin* activeBulletin;
 -(Class)class;
+@end
+
+@interface SBSCardItem : NSObject <NSCopying, NSSecureCoding>
+@property(copy, nonatomic) UIImage *thumbnail; // @synthesize thumbnail=_thumbnail;
+@property(copy, nonatomic) NSString *bundleName; // @synthesize bundleName=_bundleName;
+@property(nonatomic) BOOL requiresPasscode; // @synthesize requiresPasscode=_requiresPasscode;
+@property(copy, nonatomic) NSData *iconData; // @synthesize iconData=_iconData;
+@property(copy, nonatomic) NSString *identifier; // @synthesize identifier=_identifier;
+@end
+
+@interface SBAwayCardListItem : SBAwayListItem
+@property(retain, nonatomic) UIImage *iconImage;
+@property(retain, nonatomic) UIImage *cardThumbnail;
+@property(readonly, nonatomic) NSString *body;
+@property(readonly, nonatomic) NSString *title;
+@property(copy, nonatomic) SBSCardItem *cardItem;
+- (_Bool)inertWhenLocked;
+- (id)sortDate;
+- (void)dealloc;
+@end
+
+@interface SBAwaySystemAlertItem : SBAwayListItem
+{
+    id _currentAlert;
+    NSString *_title;
+    UIImage *_appImage;
+    NSString *_message;
+    long long _displayedButtonIndex;
+    _Bool _isAlarm;
+}
+
+- (_Bool)isAlarm;
+- (void)buttonPressed;
+- (id)sortDate;
+- (id)iconImage;
+- (id)title;
+- (id)message;
+- (void)setCurrentAlert:(id)arg1;
+- (id)currentAlert;
+- (void)dealloc;
+- (id)initWithSystemAlert:(id)arg1;
+- (id)init;
+
 @end
 
 @interface SBLockScreenNotificationTableView : UITableView
@@ -65,14 +131,22 @@
 -(void)addSubview:(UIView*)arg1;
 @end
 
+@interface SBLockScreenNotificationModel : NSObject
+- (SBAwayListItem *)listItemAtIndexPath:(NSIndexPath *)arg1;
+- (unsigned long long)count;
+@end
+
 @interface SBLockScreenNotificationListController {
 	SBLockScreenNotificationListView* _notificationView;
 	NSMutableArray* _listItems;
   BBObserver* _observer;
 }
 -(id)listItemAtIndexPath:(NSIndexPath*)indexPath;
+-(BOOL)respondsToSelector:(SEL)selector;
+-(void)_showTestBulletin;
 -(void)observer:(BBObserver*)observer removeBulletin:(BBBulletin*)bulletin;
--(void)observer:(BBObserver*)observer addBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)feed;
+-(void)observer:(BBObserver*)observer addBulletin:(id)bulletin forFeed:(unsigned long long)feed;
+- (void)observer:(id)arg1 addBulletin:(id)arg2 forFeed:(unsigned long long)arg3 playLightsAndSirens:(_Bool)arg4 withReply:(id)arg5;
 -(void)loadView;
 -(int)count;
 @end

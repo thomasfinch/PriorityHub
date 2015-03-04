@@ -2,12 +2,8 @@
 #import <QuartzCore/QuartzCore.h>
 
 @interface PHPullToClearView : UIView {
-    float percentDone;
-    
-    CAShapeLayer *leftXLine, *rightXLine, *circleLayer;
+    CAShapeLayer *leftXLine, *rightXLine;
 }
-
-@property BOOL clearing;
 
 - (void)setXVisible:(BOOL)visible;
 

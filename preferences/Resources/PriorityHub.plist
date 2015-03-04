@@ -20,6 +20,15 @@ items = (
     cell = PSGroupCell;
   },
   {
+    cell = PSButtonCell;
+    action = sendTestNotification;
+    label = "Send Test Notification";
+  },
+  {
+    cell = PSGroupCell;
+    label = "Notification Numbers";
+  },
+  {
     cell = PSSwitchCell;
     default = 1;
     defaults = "com.thomasfinch.priorityhub";
@@ -28,12 +37,54 @@ items = (
     label = "Show Numbers";
   },
   {
+    cell = PSLinkListCell;
+    detail = PSListItemsController;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
+    key = numberStyle;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Number Style";
+    validValues = (
+      0,
+      1
+    );
+    validTitles = (
+      "Below Icon",
+      "Badge"
+    );
+  },
+  {
+    cell = PSGroupCell;
+    label = "Visual Settings";
+  },
+  {
+    cell = PSLinkListCell;
+    detail = PSListItemsController;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
+    key = iconLocation;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Icon Location";
+    validValues = (
+      0,
+      1
+    );
+    validTitles = (
+      "Top",
+      "Bottom"
+    );
+  },
+  {
     cell = PSSwitchCell;
     default = 0;
     defaults = "com.thomasfinch.priorityhub";
     key = showSeparators;
     PostNotification = com.thomasfinch.priorityhub-prefschanged;
     label = "Show Notification Separators";
+  },
+  {
+    cell = PSGroupCell;
+    label = "Functionality Settings";
   },
   {
     cell = PSSwitchCell;
@@ -60,58 +111,26 @@ items = (
     label = "Collapse On Lock";
   },
   {
-    cell = PSSwitchCell;
-    default = 0;
-    defaults = "com.thomasfinch.priorityhub";
-    key = colorizeSelected;
-    PostNotification = com.thomasfinch.priorityhub-prefschanged;
-    label = "Colorize Selected Background";
-  },
-  {
-    cell = PSLinkListCell;
-    detail = PSListItemsController;
-    default = 0;
-    defaults = "com.thomasfinch.priorityhub";
-    key = iconLocation;
-    PostNotification = com.thomasfinch.priorityhub-prefschanged;
-    label = "Icon Location";
-    validValues = (
-      0,
-      1
-    );
-    validTitles = (
-      "Top",
-      "Bottom"
-    );
-  },
-  {
-    cell = PSLinkListCell;
-    detail = PSListItemsController;
-    default = 0;
-    defaults = "com.thomasfinch.priorityhub";
-    key = numberStyle;
-    PostNotification = com.thomasfinch.priorityhub-prefschanged;
-    label = "Number Style";
-    validValues = (
-      0,
-      1
-    );
-    validTitles = (
-      "Below Icon",
-      "Badge"
-    );
-  },
-  {
     cell = PSGroupCell;
     label = "Vertical Adjustment";
-    footerText = "Use this setting to manually adjust the notification view up or down if it's cut off by other tweaks. Negative numbers mean moving the top of the view down, and positive numbers mean moving the bottom up.";
+    footerText = "Use this setting to manually adjust the notification view up or down if it's cut off by other tweaks. Negative numbers mean moving the view up, and positive numbers mean moving it down.";
   },
   {
     cell = PSEditTextCell;
     defaults = "com.thomasfinch.priorityhub";
     PostNotification = com.thomasfinch.priorityhub-prefschanged;
-    key = verticalAdjustment;
-    label = "Height";
+    key = verticalAdjustmentTop;
+    label = "Top";
+    default = 0;
+    isIP = 1;
+    placeholder = "0";
+  },
+  {
+    cell = PSEditTextCell;
+    defaults = "com.thomasfinch.priorityhub";
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    key = verticalAdjustmentBottom;
+    label = "Bottom";
     default = 0;
     isIP = 1;
     placeholder = "0";

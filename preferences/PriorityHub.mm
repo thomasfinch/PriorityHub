@@ -5,8 +5,11 @@
 
 @implementation PriorityHubListController
 
--(void)TFTwitterButtonTapped
-{
+- (void)sendTestNotification {
+    CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR("com.thomasfinch.priorityhub-testnotification"), nil, nil, true);
+}
+
+- (void)TFTwitterButtonTapped {
     UIApplication *app = [UIApplication sharedApplication];
     NSURL *tweetbot = [NSURL URLWithString:@"tweetbot:///user_profile/tomf64"];
     if ([app canOpenURL:tweetbot])
@@ -22,8 +25,7 @@
     }
 }
 
--(void)JGTwitterButtonTapped
-{
+- (void)JGTwitterButtonTapped {
     UIApplication *app = [UIApplication sharedApplication];
     NSURL *tweetbot = [NSURL URLWithString:@"tweetbot:///user_profile/JeremyGoulet"];
     if ([app canOpenURL:tweetbot])
@@ -39,8 +41,7 @@
     }
 }
 
--(void)GithubButtonTapped
-{
+- (void)GithubButtonTapped {
     NSURL *githubURL = [NSURL URLWithString:@"https://github.com/thomasfinch/Priority-Hub"];
     [[UIApplication sharedApplication] openURL:githubURL];
 }

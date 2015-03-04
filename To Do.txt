@@ -1,3 +1,15 @@
 Fix icons showing up wrong when polus is installed
 Fix theming of icons not working properly
 Fix credit card icons not showing up properly
+Add setting to show all notifications when no app is selected instead of none
+
+To do for rewrite
+	Make sure theming works
+
+Changelog (version 1.4)
+- Rearranged settings into sections so they're easier to manage
+- Added button in settings to send test notification (to preview settings changes)
+- Changed vertical adjustment setting so the top and bottom of the notification view can be adjusted separately
+- Possibly fixed Apple pay credit card icons showing as blank icons
+- Many internal changes, code is much cleaner
+(Removed colorize selected setting)
