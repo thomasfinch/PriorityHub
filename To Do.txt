@@ -9,5 +9,6 @@ Changelog (version 1.4)
 - Added button in settings to send test notification (to preview settings changes)
 - Changed vertical adjustment setting so the top and bottom of the notification view can be adjusted separately
 - Possibly fixed Apple pay credit card icons showing as blank icons
+- Removed conflict with CustomLS
 - Many internal changes, code is much cleaner
 (Removed colorize selected setting)

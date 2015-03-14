@@ -137,6 +137,7 @@ items = (
   },
   {
     cell = PSGroupCell;
+    footerText = "© 2015 Thomas Finch";
   },
   {
     cell = PSButtonCell;
@@ -155,9 +156,5 @@ items = (
     action = JGTwitterButtonTapped;
     icon = "Twitter.png";
     label = "Icon by @JeremyGoulet";
-  },
-  {
-    cell = PSGroupCell;
-    footerText = "© 2014 Thomas Finch";
   }
 );

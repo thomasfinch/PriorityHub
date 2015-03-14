@@ -44,17 +44,20 @@ void showTestNotification() {
 	[[%c(SBLockScreenManager) sharedInstance] lockUIFromSource:1 withOptions:nil];
 
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-		BBBulletin *bulletin = [[%c(BBBulletinRequest) alloc] init];
-		bulletin.title = @"Priority Hub";
-		bulletin.message = @"This is a test notification!";
-		bulletin.sectionID = @"com.apple.Preferences";
-		bulletin.defaultAction = [%c(BBAction) action];
-		if (notificationListController) {
-			if ([notificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:)])
-				[notificationListController observer:nil addBulletin:bulletin forFeed:2]; //iOS 7
-			else if ([notificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:playLightsAndSirens:withReply:)])
-				[notificationListController observer:nil addBulletin:bulletin forFeed:2 playLightsAndSirens:YES withReply:nil]; //iOS 8
-		}
+		[notificationListController _showTestBulletin];
+
+		// BBBulletin *bulletin = [[%c(BBBulletinRequest) alloc] init];
+		// bulletin.title = @"Priority Hub";
+		// bulletin.message = @"This is a test notification!";
+		// bulletin.sectionID = @"com.apple.Preferences";
+		// bulletin.defaultAction = [%c(BBAction) action];
+		// bulletin.bulletinID = @"PriorityHubTest";
+		// if (notificationListController) {
+		// 	if ([notificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:playLightsAndSirens:withReply:)])
+		// 		[notificationListController observer:nil addBulletin:bulletin forFeed:2 playLightsAndSirens:YES withReply:nil]; //iOS 8
+		// 	else if ([notificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:)])
+		// 		[notificationListController observer:nil addBulletin:bulletin forFeed:2]; //iOS 7
+		// }
 	});
 }
 
@@ -98,27 +101,26 @@ void showTestNotification() {
 	notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
 	notificationListView = self;
 
-	[self addSubview:phView];
+	[containerView addSubview:phView];
 
 	//Set up autolayout constraints
 	CGFloat height = [phView appViewSize].height;
 	NSDictionary *metrics = @{@"height":[NSNumber numberWithFloat:height]};
-	NSDictionary *viewsDictionary = [NSDictionary dictionaryWithObjectsAndKeys:phView, @"phView", containerView, @"containerView", nil];
-	[self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[phView]|" options:nil metrics:nil views:viewsDictionary]];
+	NSDictionary *viewsDictionary = [NSDictionary dictionaryWithObjectsAndKeys:phView, @"phView", notificationsTableView, @"notifTableView", nil];
+	[notificationsTableView setTranslatesAutoresizingMaskIntoConstraints:NO];
+	[containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[phView]|" options:nil metrics:nil views:viewsDictionary]];
+	[containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[notifTableView]|" options:nil metrics:nil views:viewsDictionary]];
 
-	//Change the container view's frame depending on the icon location option
+	//Change the notification table view's frame depending on the icon location option
+	if ([defaults integerForKey:@"iconLocation"] == 0) //App icons at top
+		[containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[phView(height)][notifTableView]|" options:nil metrics:metrics views:viewsDictionary]];
+	else //App icons at bottom
+		[containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[notifTableView][phView(height)]|" options:nil metrics:metrics views:viewsDictionary]];
+	
+	//Change the container view's frame depending on the vertical adjustments set
 	CGFloat verticalAdjustmentTop = [defaults floatForKey:@"verticalAdjustmentTop"];
 	CGFloat verticalAdjustmentBottom = [defaults floatForKey:@"verticalAdjustmentBottom"];
-	if ([defaults integerForKey:@"iconLocation"] == 0) { //App icons at top
-		containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + height + verticalAdjustmentTop, containerView.frame.size.width, containerView.frame.size.height - height - verticalAdjustmentTop + verticalAdjustmentBottom);
-		[self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[phView(height)][containerView]" options:nil metrics:metrics views:viewsDictionary]];
-	}
-	else { //App icons at bottom
-		containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + verticalAdjustmentTop, containerView.frame.size.width, containerView.frame.size.height - height - verticalAdjustmentTop + verticalAdjustmentBottom);
-		[self addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[containerView][phView(height)]" options:nil metrics:metrics views:viewsDictionary]];
-	}
-	notificationsTableView.frame = CGRectInset(notificationsTableView.frame, 0, height/2);
-	notificationsTableView.frame = CGRectOffset(notificationsTableView.frame, 0, -height/2);
+	containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + verticalAdjustmentTop, containerView.frame.size.width, containerView.frame.size.height - verticalAdjustmentTop + verticalAdjustmentBottom);
 	
 	//-----Other general setup-----
 
@@ -128,6 +130,10 @@ void showTestNotification() {
 		topSeparator.hidden = YES;
 		bottomSeparator.hidden = YES;
 		notificationsTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+	}
+	else { //Otherwise move the top separator to the right location
+		UIView *topSeparator = ((UIView*)[containerView subviews][1]);
+		topSeparator.frame = CGRectMake(topSeparator.frame.origin.x, topSeparator.frame.origin.y + height, topSeparator.frame.size.width, topSeparator.frame.size.height);
 	}
 
 	//Add pull to clear view if the option is on
@@ -209,7 +215,6 @@ void showTestNotification() {
 			appID = [(SBAwaySystemAlertItem*)item title];
 		[phView selectAppID:appID newNotification:YES];
 	}
-
 }
 
 //Called when a notification is removed from the list
