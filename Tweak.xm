@@ -31,9 +31,15 @@ void updateNotificationTableView() {
 		[notificationListView _resetAllFadeTimers];
 	}
 
+	//Hide pull to clear view if no app is selected
+	if (phView.selectedAppID == nil)
+		pullToClearView.hidden = YES;
+	else
+		pullToClearView.hidden = NO;
+
 	//Animate notification table view fading in/out
 	[UIView animateWithDuration:0.15 animations:^(){
-		if (!phView.selectedAppID)
+		if (!phView.selectedAppID && [defaults integerForKey:@"showAllWhenNotSelected"] == 0)
 			notificationsTableView.alpha = 0;
 		else
 			notificationsTableView.alpha = 1;
@@ -46,17 +52,24 @@ void showTestNotification() {
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		[notificationListController _showTestBulletin];
 
-		// BBBulletin *bulletin = [[%c(BBBulletinRequest) alloc] init];
+		// BBBulletinRequest *bulletin = [[%c(BBBulletinRequest) alloc] init];
 		// bulletin.title = @"Priority Hub";
+		// bulletin.sectionID = @"com.apple.MobileStore";
 		// bulletin.message = @"This is a test notification!";
-		// bulletin.sectionID = @"com.apple.Preferences";
-		// bulletin.defaultAction = [%c(BBAction) action];
 		// bulletin.bulletinID = @"PriorityHubTest";
+		// bulletin.clearable = YES;
+		// bulletin.showsMessagePreview = YES;
+		// bulletin.defaultAction = [%c(BBAction) action];
+		// NSDate *now = [NSDate date];
+		// bulletin.date = now;
+		// bulletin.publicationDate = now;
+		// bulletin.lastInterruptDate = now;
+
 		// if (notificationListController) {
 		// 	if ([notificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:playLightsAndSirens:withReply:)])
-		// 		[notificationListController observer:nil addBulletin:bulletin forFeed:2 playLightsAndSirens:YES withReply:nil]; //iOS 8
+		// 		[notificationListController observer:MSHookIvar<id>(notificationListController, "_observer") addBulletin:bulletin forFeed:2 playLightsAndSirens:YES withReply:nil]; //iOS 8
 		// 	else if ([notificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:)])
-		// 		[notificationListController observer:nil addBulletin:bulletin forFeed:2]; //iOS 7
+		// 		[notificationListController observer:MSHookIvar<id>(notificationListController, "_observer") addBulletin:bulletin forFeed:2]; //iOS 7
 		// }
 	});
 }
@@ -81,7 +94,8 @@ void showTestNotification() {
         @"iconLocation": [NSNumber numberWithInt:0],
         @"numberStyle": [NSNumber numberWithInt:0],
         @"verticalAdjustmentTop": [NSNumber numberWithFloat:0],
-        @"verticalAdjustmentBottom": [NSNumber numberWithFloat:0]
+        @"verticalAdjustmentBottom": [NSNumber numberWithFloat:0],
+        @"showAllWhenNotSelected": [NSNumber numberWithInt:0]
     }];
     phView = [[PHView alloc] init];
     [phView setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -131,10 +145,6 @@ void showTestNotification() {
 		bottomSeparator.hidden = YES;
 		notificationsTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
 	}
-	else { //Otherwise move the top separator to the right location
-		UIView *topSeparator = ((UIView*)[containerView subviews][1]);
-		topSeparator.frame = CGRectMake(topSeparator.frame.origin.x, topSeparator.frame.origin.y + height, topSeparator.frame.size.width, topSeparator.frame.size.height);
-	}
 
 	//Add pull to clear view if the option is on
 	if ([defaults boolForKey:@"enablePullToClear"]) {
@@ -156,6 +166,14 @@ void showTestNotification() {
 	if (![listItem isKindOfClass:%c(SBAwayBulletinListItem)])
 		return %orig;
 
+	//If no app is selected
+	if (phView.selectedAppID == nil) {
+		if ([defaults integerForKey:@"showAllWhenNotSelected"] == 0 || [defaults boolForKey:@"privacyMode"]) //If all notifications are hidden when not selected
+			return 0;
+		else
+			return %orig;
+	}
+
 	//Only show the cell if it's equal to the selected app ID
 	if ([phView.selectedAppID isEqualToString:[[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID]])
 		return %orig;
@@ -175,7 +193,7 @@ void showTestNotification() {
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView willDecelerate:(_Bool)arg2 {
-	if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"] && scrollView.contentOffset.y <= pullToClearThreshold &&  (scrollView.dragging || scrollView.tracking)) {
+	if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"] && phView.selectedAppID != nil && scrollView.contentOffset.y <= pullToClearThreshold &&  (scrollView.dragging || scrollView.tracking)) {
 		[bulletinObserver clearSection:phView.selectedAppID];
 		notificationsTableView.alpha = 0;
 		[pullToClearView setXVisible:NO];

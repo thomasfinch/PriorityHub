@@ -3,7 +3,7 @@ Name: Priority Hub
 Depends: mobilesubstrate, preferenceloader
 Version: 1.4
 Architecture: iphoneos-arm
-Description: Organize your lockscreen notifications!
+Description: Organize your lock screen notifications!
 Homepage: http://thomasfinch.me
 Maintainer: Thomas Finch <tomf64@gmail.com>
 Author: Thomas Finch <tomf64@gmail.com>

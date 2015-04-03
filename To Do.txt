@@ -1,14 +1,20 @@
 Fix icons showing up wrong when polus is installed
 Fix theming of icons not working properly
-Fix credit card icons not showing up properly
-Add setting to show all notifications when no app is selected instead of none
+Add setting to manually set size of icons
+Make test notification clearable
+Add setting to hide app icon if only one notification/notifications from one app are present? (probably no, would be messy)
 Fix icons sometimes not detecting taps when music is playing on lockscreen
+Add back scroll view to PHView
+Fix test notification crash?
 
-Changelog (version 1.4)
+Changelog
+---------
+Version 1.4
 - Rearranged settings into sections so they're easier to manage
 - Added button in settings to send test notification (to preview settings changes)
+- Added option to either show or hide all notifications when no app icon is selected (previously PH would hide all)
 - Changed vertical adjustment setting so the top and bottom of the notification view can be adjusted separately
 - Possibly fixed Apple pay credit card icons showing as blank icons
 - Removed conflict with CustomLS
-- Many internal changes, code is much cleaner
+- Many internal changes, code is cleaner and easier to update
 (Removed colorize selected setting)

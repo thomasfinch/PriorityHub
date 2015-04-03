@@ -55,7 +55,7 @@ items = (
   },
   {
     cell = PSGroupCell;
-    label = "Visual Settings";
+    label = "Appearance";
   },
   {
     cell = PSLinkListCell;
@@ -84,7 +84,7 @@ items = (
   },
   {
     cell = PSGroupCell;
-    label = "Functionality Settings";
+    label = "Functionality";
   },
   {
     cell = PSSwitchCell;
@@ -109,6 +109,23 @@ items = (
     key = collapseOnLock;
     PostNotification = com.thomasfinch.priorityhub-prefschanged;
     label = "Collapse On Lock";
+  },
+  {
+    cell = PSLinkListCell;
+    detail = PSListItemsController;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
+    key = showAllWhenNotSelected;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "When No App Is Selected";
+    validValues = (
+      0,
+      1
+    );
+    validTitles = (
+      "Hide All Notifications",
+      "Show All Notifications"
+    );
   },
   {
     cell = PSGroupCell;
@@ -149,12 +166,12 @@ items = (
     cell = PSButtonCell;
     action = TFTwitterButtonTapped;
     icon = "Twitter.png";
-    label = "Developed by @tomf64";
+    label = "Developed by Thomas Finch";
   },
   {
     cell = PSButtonCell;
     action = JGTwitterButtonTapped;
     icon = "Twitter.png";
-    label = "Icon by @JeremyGoulet";
+    label = "Icon by Jérémy Goulet";
   }
 );

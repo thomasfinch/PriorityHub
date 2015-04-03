@@ -46,7 +46,6 @@
     [[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
     [appViews removeAllObjects];
     [self addSubview:selectedView];
-
     for (NSString *appID in [bulletinCountDict allKeys]) {
     	PHAppView *appView = [[PHAppView alloc] initWithFrame:CGRectMake(0,0,[self appViewSize].width,[self appViewSize].height) appID:appID icon:[iconDict objectForKey:appID]];
     	[appView updateNumNotifications:[[bulletinCountDict objectForKey:appID] unsignedIntegerValue]];

@@ -32,6 +32,12 @@
 + (id)action;
 @end
 
+@interface BBServer
+- (void)_publishBulletinRequest:(id)arg1 forSectionID:(id)arg2 forDestinations:(unsigned int)arg3 alwaysToLockScreen:(BOOL)arg4;
+- (void)demo_lockscreen:(unsigned long long)arg1;
+- (void)_sendAddBulletin:(id)arg1 toFeeds:(unsigned int)arg2;
+@end
+
 @interface SpringBoard : UIApplication
 - (void)lockButtonUp:(id)arg1;
 - (void)lockDevice:(id)arg1;
@@ -44,9 +50,16 @@
 @property(copy, nonatomic) BBAction *defaultAction; // @dynamic defaultAction;
 @property(retain, nonatomic) NSDate *date;
 @property(copy, nonatomic) NSString *bulletinID;
+@property(retain, nonatomic) NSDate *publicationDate;
+@property(retain, nonatomic) NSDate *lastInterruptDate;
+@property(nonatomic) BOOL showsMessagePreview;
 @end
 
 @interface BBBulletinRequest : BBBulletin
+- (void)publish;
+- (void)generateBulletinID;
+@property(nonatomic) BOOL clearable;
+@property(copy, nonatomic) BBAction *dismissAction;
 @end
 
 @interface BBObserver
