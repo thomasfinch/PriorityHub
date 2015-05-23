@@ -4,6 +4,12 @@
 #include <dlfcn.h>
 #import <objc/runtime.h>
 
+#ifdef DEBUG
+	#define PHLog(fmt, ...) NSLog((@"PRIORITY HUB [Line %d]: " fmt), __LINE__, ##__VA_ARGS__)
+#else
+	#define PHLog(...)
+#endif
+
 @implementation PHAppView
 
 @synthesize appID;

@@ -1,15 +1,17 @@
 #import <UIKit/UIKit.h>
 #import "Headers.h"
 #import "PHView.h"
+#import "substrate.h"
 #import "PHPullToClearView.h"
 #include <dlfcn.h>
 
-#ifndef DEBUG
-	#define NSLog
+#ifdef DEBUG
+	#define PHLog(fmt, ...) NSLog((@"PRIORITY HUB [Line %d]: " fmt), __LINE__, ##__VA_ARGS__)
+#else
+	#define PHLog(...)
 #endif
 
 const CGFloat pullToClearThreshold = -35;
-const CGFloat pullToClearSize = 30;
 static PHPullToClearView *pullToClearView;
 PHView *phView;
 NSUserDefaults *defaults;
@@ -97,46 +99,30 @@ void showTestNotification() {
         @"verticalAdjustmentBottom": [NSNumber numberWithFloat:0],
         @"showAllWhenNotSelected": [NSNumber numberWithInt:0]
     }];
+
     phView = [[PHView alloc] init];
-    [phView setTranslatesAutoresizingMaskIntoConstraints:NO];
 }
 
 %hook SBLockScreenNotificationListView
 
-- (void)layoutSubviews {
-	%orig;
+- (id)initWithFrame:(struct CGRect)frame {
+	self = %orig;
 
 	if (![defaults boolForKey:@"enabled"])
-		return;
+		return self;
 
-	//-----View creation and layout-----
-
+	//Save important views to variables
 	UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
 	notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
 	notificationListView = self;
 
 	[containerView addSubview:phView];
 
-	//Set up autolayout constraints
-	CGFloat height = [phView appViewSize].height;
-	NSDictionary *metrics = @{@"height":[NSNumber numberWithFloat:height]};
-	NSDictionary *viewsDictionary = [NSDictionary dictionaryWithObjectsAndKeys:phView, @"phView", notificationsTableView, @"notifTableView", nil];
-	[notificationsTableView setTranslatesAutoresizingMaskIntoConstraints:NO];
-	[containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[phView]|" options:nil metrics:nil views:viewsDictionary]];
-	[containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|[notifTableView]|" options:nil metrics:nil views:viewsDictionary]];
-
-	//Change the notification table view's frame depending on the icon location option
-	if ([defaults integerForKey:@"iconLocation"] == 0) //App icons at top
-		[containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[phView(height)][notifTableView]|" options:nil metrics:metrics views:viewsDictionary]];
-	else //App icons at bottom
-		[containerView addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|[notifTableView][phView(height)]|" options:nil metrics:metrics views:viewsDictionary]];
-	
 	//Change the container view's frame depending on the vertical adjustments set
 	CGFloat verticalAdjustmentTop = [defaults floatForKey:@"verticalAdjustmentTop"];
 	CGFloat verticalAdjustmentBottom = [defaults floatForKey:@"verticalAdjustmentBottom"];
+	PHLog(@"Container view frame: %@",NSStringFromCGRect(containerView.frame));
 	containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + verticalAdjustmentTop, containerView.frame.size.width, containerView.frame.size.height - verticalAdjustmentTop + verticalAdjustmentBottom);
-	
-	//-----Other general setup-----
 
 	//Remove notification cell separators if the option is on		
 	if (![defaults boolForKey:@"showSeparators"]) {
@@ -150,15 +136,40 @@ void showTestNotification() {
 	if ([defaults boolForKey:@"enablePullToClear"]) {
 		if (pullToClearView)
 			[pullToClearView removeFromSuperview];
-		pullToClearView = [[PHPullToClearView alloc] initWithFrame:CGRectMake((notificationsTableView.frame.size.width)/2 - pullToClearSize/2, -pullToClearSize * 1.1, pullToClearSize, pullToClearSize)];
+		pullToClearView = [[PHPullToClearView alloc] initWithFrame:CGRectZero];
 		[notificationsTableView addSubview:pullToClearView];
 	}
+
+	return self;
+}
+
+- (void)layoutSubviews {
+	%orig;
+
+	//Layout PHView and notifications table view
+	CGRect phViewFrame = CGRectMake(0, 0, 0, 0);
+	CGRect tableViewFrame = CGRectMake(0, 0, 0, 0);
+	UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
+
+	if ([defaults integerForKey:@"iconLocation"] == 0) //App icons at top
+		CGRectDivide(containerView.bounds, &phViewFrame, &tableViewFrame, [phView appViewSize].height, CGRectMinYEdge);
+	else //App icons at bottom
+		CGRectDivide(containerView.bounds, &phViewFrame, &tableViewFrame, [phView appViewSize].height, CGRectMaxYEdge);
+
+	phView.frame = phViewFrame;
+	notificationsTableView.frame = tableViewFrame;
+
+	//Layout pull to clear view
+	if (pullToClearView)
+		pullToClearView.frame = CGRectMake(0, -pullToClearSize, notificationsTableView.bounds.size.width, pullToClearSize);
 }
 
 //Used to hide notifications that aren't for the selected app
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath {
 	if (![defaults boolForKey:@"enabled"])
 		return %orig;
+
+	PHLog(@"TWEAK XM TABLEVIEW HEIGHT FOR ROW AT INDEX PATH");
 
 	SBAwayListItem *listItem = [MSHookIvar<SBLockScreenNotificationModel*>(self, "_model") listItemAtIndexPath:indexPath];
 
@@ -220,7 +231,7 @@ void showTestNotification() {
 	if (![defaults boolForKey:@"enabled"])
 		return;
 
-	NSLog(@"UPDATE MODEL AND VIEW FOR ADDITION OF ITEM: %@",item);
+	PHLog(@"UPDATE MODEL AND VIEW FOR ADDITION OF ITEM: %@",item);
 	[phView updateView];
 
 	if (![defaults boolForKey:@"privacyMode"]) {
@@ -241,13 +252,15 @@ void showTestNotification() {
 	if (![defaults boolForKey:@"enabled"])
 		return;
 
-	NSLog(@"UPDATE MODEL FOR REMOVAL OF ITEM (BOOL): %@",item);
+	PHLog(@"UPDATE MODEL FOR REMOVAL OF ITEM (BOOL): %@",item);
 	[phView updateView];
 }
 
 //Called when device is unlocked, clear all app views.
 - (void)prepareForTeardown {
 	%orig;
+	PHLog(@"TWEAK XM PREPARE FOR TEARDOWN");
+
 	if ([defaults boolForKey:@"enabled"])
 		[phView updateView];
 }
@@ -255,6 +268,9 @@ void showTestNotification() {
 //Called when the screen turns on or off, used to deselect any selected app when the screen turns off.
 - (void)setInScreenOffMode:(BOOL)off {
 	%orig;
+
+	PHLog(@"TWEAK XM SET SCREEN IN OFF MODE");
+	
 	if(off && [defaults boolForKey:@"enabled"] && [defaults boolForKey:@"collapseOnLock"] && phView && phView.selectedAppID)
 		[phView selectAppID:phView.selectedAppID newNotification:NO];
 }

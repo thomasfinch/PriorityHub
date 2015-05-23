@@ -1,6 +1,12 @@
 #import "PHView.h"
 #import "substrate.h"
 
+#ifdef DEBUG
+	#define PHLog(fmt, ...) NSLog((@"PRIORITY HUB [Line %d]: " fmt), __LINE__, ##__VA_ARGS__)
+#else
+	#define PHLog(...)
+#endif
+
 @implementation PHView
 
 @synthesize selectedAppID;
@@ -24,7 +30,7 @@
 }
 
 - (void)updateView {
-	NSLog(@"UPDATING PHVIEW");
+	PHLog(@"PHVIEW UPDATE VIEW");
 	NSMutableDictionary *bulletinCountDict = [[NSMutableDictionary alloc] init], *iconDict = [[NSMutableDictionary alloc] init];
 	if (!_listController)
 		return;
@@ -74,6 +80,8 @@
 }
 
 - (void)selectAppID:(NSString*)appID newNotification:(BOOL)newNotif {
+
+	PHLog(@"PHVIEW SELECT APP ID");
 	if (newNotif) {
 		selectedView.alpha = 1;
 		selectedView.frame = ((PHAppView*)[appViews objectForKey:appID]).frame;
