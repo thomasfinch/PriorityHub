@@ -4,3 +4,4 @@ obj
 _
 major version debs
 .theos
+.DS_Store
