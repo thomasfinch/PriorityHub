@@ -158,19 +158,6 @@ void showTestNotification() {
 		pullToClearView.frame = CGRectMake(0, -pullToClearSize, notificationsTableView.bounds.size.width, pullToClearSize);
 }
 
-// Used to hide notifications that aren't for the selected app
-- (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-	if (![defaults boolForKey:@"enabled"])
-		return %orig;
-
-	PHLog(@"TWEAK XM TABLEVIEW HEIGHT FOR ROW AT INDEX PATH");
-
-	if ([self shouldDisplayIndexPath:indexPath])
-		return %orig;
-	else
-		return 0;
-}
-
 %new
 - (BOOL)shouldDisplayIndexPath:(NSIndexPath*)indexPath {
 	PHLog(@"TWEAK XM SHOULD SHOW INDEX PATH");
@@ -194,6 +181,19 @@ void showTestNotification() {
 		return YES;
 	else
 		return NO;
+}
+
+// Used to hide notifications that aren't for the selected app
+- (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath {
+	if (![defaults boolForKey:@"enabled"])
+		return %orig;
+
+	PHLog(@"TWEAK XM TABLEVIEW HEIGHT FOR ROW AT INDEX PATH");
+
+	if ([self shouldDisplayIndexPath:indexPath])
+		return %orig;
+	else
+		return 0;
 }
 
 //All scroll view methods are used for pull to clear control

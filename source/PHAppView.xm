@@ -1,9 +1,9 @@
 #import "PHAppView.h"
 #import "PHView.h"
 #import "colorbadges_api.h"
+#import "Headers.h"
 #include <dlfcn.h>
 #import <objc/runtime.h>
-#import <SpringBoard/SBApplicationController.h>
 
 @implementation PHAppView
 
