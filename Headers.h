@@ -1,7 +1,11 @@
 //Headers.h
 #import <SpringBoard/SBApplicationIcon.h>
-#import <SpringBoard/SBAwayListItem.h>
+#import <SpringBoard/SBAwayItem.h>
+#import <SpringBoard/SBApplication.h>
 #import <CoreGraphics/CoreGraphics.h>
+
+@interface SBAwayListItem : SBAwayItem
+@end
 
 @interface UIImage (Private)
 +(id) _applicationIconImageForBundleIdentifier:(NSString*)displayIdentifier format:(int)form scale:(CGFloat)scale;
@@ -9,12 +13,6 @@
 
 @interface SBIconModel
 - (id)expectedIconForDisplayIdentifier:(NSString*)str;
-@end
-
-@interface SBApplicationController
-+ (id)sharedInstance;
-- (id)applicationWithBundleIdentifier:(NSString*)id;
-- (id)applicationWithDisplayIdentifier:(NSString*)id;
 @end
 
 @protocol SBLockScreenNotificationModel
@@ -72,6 +70,14 @@
 -(Class)class;
 @end
 
+@interface BBDataProviderManager : NSObject
+-(id)initWithDelegate:(id)arg1 queue:(id)arg2;
+@end
+
+@interface BBDataProvider : NSObject
+-(id)dataProviderForSectionID:(id)arg1;
+@end
+
 @interface SBSCardItem : NSObject <NSCopying, NSSecureCoding>
 @property(copy, nonatomic) UIImage *thumbnail; // @synthesize thumbnail=_thumbnail;
 @property(copy, nonatomic) NSString *bundleName; // @synthesize bundleName=_bundleName;
@@ -94,7 +100,7 @@
 @interface SBAwaySystemAlertItem : SBAwayListItem
 {
     id _currentAlert;
-    NSString *_title;
+    // NSString *_title;
     UIImage *_appImage;
     NSString *_message;
     long long _displayedButtonIndex;
@@ -142,6 +148,8 @@
 -(CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath;
 -(void)setInScreenOffMode:(BOOL)screenOffMode;
 -(void)addSubview:(UIView*)arg1;
+- (UIView*)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2;
+- (BOOL)shouldDisplayIndexPath:(NSIndexPath*)indexPath;
 @end
 
 @interface SBLockScreenNotificationModel : NSObject

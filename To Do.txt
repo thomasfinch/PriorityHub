@@ -17,6 +17,12 @@ Add help section in settings with detailed descriptions of each setting
 
 Changelog
 ---------
+Version 1.4.4
+- Fixed vertical adjustment not working (again)
+
+Version 1.4.3
+- Fixed vertical adjustment not working
+
 Version 1.4.2
 - Fixed a bug with app icon positions when rotating the lock screen
 - Fixed bug that caused freezes on iOS 7

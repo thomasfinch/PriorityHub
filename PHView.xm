@@ -1,12 +1,6 @@
 #import "PHView.h"
 #import "substrate.h"
 
-#ifdef DEBUG
-	#define PHLog(fmt, ...) NSLog((@"PRIORITY HUB [Line %d]: " fmt), __LINE__, ##__VA_ARGS__)
-#else
-	#define PHLog(...)
-#endif
-
 @implementation PHView
 
 @synthesize selectedAppID;
@@ -114,6 +108,7 @@
 	}
 
 	updateNotificationTableView();
+	UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
 }
 
 - (NSString*)identifierForListItem:(SBAwayListItem*)listItem {

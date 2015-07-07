@@ -5,12 +5,6 @@
 #import "PHPullToClearView.h"
 #include <dlfcn.h>
 
-#ifdef DEBUG
-	#define PHLog(fmt, ...) NSLog((@"PRIORITY HUB [Line %d]: " fmt), __LINE__, ##__VA_ARGS__)
-#else
-	#define PHLog(...)
-#endif
-
 const CGFloat pullToClearThreshold = -35;
 static PHPullToClearView *pullToClearView;
 PHView *phView;
@@ -54,9 +48,10 @@ void showTestNotification() {
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		[notificationListController _showTestBulletin];
 
+
 		// BBBulletinRequest *bulletin = [[%c(BBBulletinRequest) alloc] init];
 		// bulletin.title = @"Priority Hub";
-		// bulletin.sectionID = @"com.apple.MobileStore";
+		// bulletin.sectionID = @"com.apple.mobilecal";
 		// bulletin.message = @"This is a test notification!";
 		// bulletin.bulletinID = @"PriorityHubTest";
 		// bulletin.clearable = YES;
@@ -118,12 +113,6 @@ void showTestNotification() {
 
 	[containerView addSubview:phView];
 
-	//Change the container view's frame depending on the vertical adjustments set
-	CGFloat verticalAdjustmentTop = [defaults floatForKey:@"verticalAdjustmentTop"];
-	CGFloat verticalAdjustmentBottom = [defaults floatForKey:@"verticalAdjustmentBottom"];
-	PHLog(@"Container view frame: %@",NSStringFromCGRect(containerView.frame));
-	containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + verticalAdjustmentTop, containerView.frame.size.width, containerView.frame.size.height - verticalAdjustmentTop + verticalAdjustmentBottom);
-
 	//Remove notification cell separators if the option is on		
 	if (![defaults boolForKey:@"showSeparators"]) {
 		UIView *topSeparator = ((UIView*)[containerView subviews][1]), *bottomSeparator = ((UIView*)[containerView subviews][2]);
@@ -146,11 +135,16 @@ void showTestNotification() {
 - (void)layoutSubviews {
 	%orig;
 
-	//Layout PHView and notifications table view
 	CGRect phViewFrame = CGRectMake(0, 0, 0, 0);
 	CGRect tableViewFrame = CGRectMake(0, 0, 0, 0);
 	UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
 
+	//Change the container view's frame depending on the vertical adjustments set
+	CGFloat verticalAdjustmentTop = [defaults floatForKey:@"verticalAdjustmentTop"];
+	CGFloat verticalAdjustmentBottom = [defaults floatForKey:@"verticalAdjustmentBottom"];
+	containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + verticalAdjustmentTop, containerView.frame.size.width, containerView.frame.size.height - verticalAdjustmentTop + verticalAdjustmentBottom);
+
+	//Layout PHView and notifications table view
 	if ([defaults integerForKey:@"iconLocation"] == 0) //App icons at top
 		CGRectDivide(containerView.bounds, &phViewFrame, &tableViewFrame, [phView appViewSize].height, CGRectMinYEdge);
 	else //App icons at bottom
@@ -164,32 +158,42 @@ void showTestNotification() {
 		pullToClearView.frame = CGRectMake(0, -pullToClearSize, notificationsTableView.bounds.size.width, pullToClearSize);
 }
 
-//Used to hide notifications that aren't for the selected app
+// Used to hide notifications that aren't for the selected app
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath {
 	if (![defaults boolForKey:@"enabled"])
 		return %orig;
 
 	PHLog(@"TWEAK XM TABLEVIEW HEIGHT FOR ROW AT INDEX PATH");
 
+	if ([self shouldDisplayIndexPath:indexPath])
+		return %orig;
+	else
+		return 0;
+}
+
+%new
+- (BOOL)shouldDisplayIndexPath:(NSIndexPath*)indexPath {
+	PHLog(@"TWEAK XM SHOULD SHOW INDEX PATH");
+
 	SBAwayListItem *listItem = [MSHookIvar<SBLockScreenNotificationModel*>(self, "_model") listItemAtIndexPath:indexPath];
 
 	//If the item is not a notification (system alert or passbook pass)
 	if (![listItem isKindOfClass:%c(SBAwayBulletinListItem)])
-		return %orig;
+		return YES;
 
 	//If no app is selected
 	if (phView.selectedAppID == nil) {
 		if ([defaults integerForKey:@"showAllWhenNotSelected"] == 0 || [defaults boolForKey:@"privacyMode"]) //If all notifications are hidden when not selected
 			return 0;
 		else
-			return %orig;
+			return YES;
 	}
 
 	//Only show the cell if it's equal to the selected app ID
 	if ([phView.selectedAppID isEqualToString:[[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID]])
-		return %orig;
+		return YES;
 	else
-		return 0;
+		return NO;
 }
 
 //All scroll view methods are used for pull to clear control
@@ -252,7 +256,7 @@ void showTestNotification() {
 	if (![defaults boolForKey:@"enabled"])
 		return;
 
-	PHLog(@"UPDATE MODEL FOR REMOVAL OF ITEM (BOOL): %@",item);
+	PHLog(@"UPDATE MODEL FOR REMOVAL OF ITEM (BOOL): %@, updateView: %d",item,update);
 	[phView updateView];
 }
 
@@ -276,14 +280,3 @@ void showTestNotification() {
 }
 
 %end
-
-// %hook SBLockScreenViewController
-
-// - (void)didRotateFromInterfaceOrientation:(long long)arg1 {
-// 	%orig;
-// 	if (![[PHController sharedInstance].prefsDict boolForKey:@"enabled"])
-// 		return;
-// 	[[PHController sharedInstance].listView layoutSubviews];
-// }
-
-// %end

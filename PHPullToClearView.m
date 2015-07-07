@@ -1,11 +1,5 @@
 #import "PHPullToClearView.h"
 
-#ifdef DEBUG
-    #define PHLog(fmt, ...) NSLog((@"PRIORITY HUB [Line %d]: " fmt), __LINE__, ##__VA_ARGS__)
-#else
-    #define PHLog(...)
-#endif
-
 @implementation PHPullToClearView
 
 - (id)initWithFrame:(CGRect)frame {
