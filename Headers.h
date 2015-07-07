@@ -1,7 +1,12 @@
-//Headers.h
-#import <SpringBoard/SBApplicationIcon.h>
-#import <SpringBoard/SBAwayListItem.h>
+#import <UIKit/UIKit.h>
 #import <CoreGraphics/CoreGraphics.h>
+
+
+@interface SBAwayListItem : NSObject
+@end
+
+@interface SBApplicationIcon : NSObject
+@end
 
 @interface UIImage (Private)
 +(id) _applicationIconImageForBundleIdentifier:(NSString*)displayIdentifier format:(int)form scale:(CGFloat)scale;
@@ -88,6 +93,7 @@
 @property(copy, nonatomic) SBSCardItem *cardItem;
 - (_Bool)inertWhenLocked;
 - (id)sortDate;
+- (NSString*)title;
 - (void)dealloc;
 @end
 
