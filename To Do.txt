@@ -2,7 +2,6 @@ Fixes
 -----
 Fix icons showing up wrong when polus is installed
 Fix theming of icons not working properly
-Make test notification clearable
 Fix icons sometimes not detecting taps when music is playing on lockscreen
 Add back scroll view to PHView
 
@@ -17,6 +16,10 @@ Add help section in settings with detailed descriptions of each setting
 
 Changelog
 ---------
+Version 1.4.5
+- Added VoiceOver support for visually impaired users
+- Made test notification clearable
+
 Version 1.4.4
 - Fixed vertical adjustment not working (again)
 

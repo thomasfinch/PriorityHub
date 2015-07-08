@@ -7,7 +7,7 @@
 
 const CGFloat pullToClearThreshold = -35;
 static PHPullToClearView *pullToClearView;
-BBServer *bbServer = nil;
+BBServer *bbServer;
 PHView *phView;
 NSUserDefaults *defaults;
 
@@ -44,18 +44,15 @@ void updateNotificationTableView() {
 }
 
 void showTestNotification() {
-	PHLog(@"SHOW TEST NOTIFICATION");
-
 	[[%c(SBLockScreenManager) sharedInstance] lockUIFromSource:1 withOptions:nil];
 
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 
 		// [notificationListController _showTestBulletin];
 
-
-		BBBulletinRequest *bulletin = [[%c(BBBulletinRequest) alloc] init];
+		BBBulletin *bulletin = [[%c(BBBulletin) alloc] init];
 		bulletin.title = @"Priority Hub";
-		bulletin.sectionID = @"com.apple.preferences";
+		bulletin.sectionID = @"com.apple.MobileSMS";
 		bulletin.message = @"This is a test notification!";
 		bulletin.bulletinID = @"PriorityHubTest";
 		bulletin.clearable = YES;
@@ -66,14 +63,8 @@ void showTestNotification() {
 		bulletin.publicationDate = now;
 		bulletin.lastInterruptDate = now;
 
-		[bbServer publishBulletin:bulletin destinations:4 alwaysToLockScreen:YES];
-
-		// if (notificationListController) {
-		// 	if ([notificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:playLightsAndSirens:withReply:)])
-		// 		[notificationListController observer:MSHookIvar<id>(notificationListController, "_observer") addBulletin:bulletin forFeed:2 playLightsAndSirens:YES withReply:nil]; //iOS 8
-		// 	else if ([notificationListController respondsToSelector:@selector(observer:addBulletin:forFeed:)])
-		// 		[notificationListController observer:MSHookIvar<id>(notificationListController, "_observer") addBulletin:bulletin forFeed:2]; //iOS 7
-		// }
+		if (bbServer)
+			[bbServer publishBulletin:bulletin destinations:4 alwaysToLockScreen:YES];
 	});
 }
 
@@ -105,12 +96,10 @@ void showTestNotification() {
 }
 
 %hook BBServer
-
 - (id)init {
-        bbServer = %orig;
-        return bbServer;
+	bbServer = %orig;
+	return bbServer;
 }
-
 %end
 
 %hook SBLockScreenNotificationListView
