@@ -4,6 +4,7 @@ Fix icons showing up wrong when polus is installed
 Fix theming of icons not working properly
 Fix icons sometimes not detecting taps when music is playing on lockscreen
 Add back scroll view to PHView
+Fix air drop icon not showing up correctly
 
 New Features
 -----------
