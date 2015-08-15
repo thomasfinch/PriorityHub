@@ -43,7 +43,7 @@
 				badgeView.center = CGPointMake(iconView.frame.origin.x + iconView.frame.size.width * 0.9, iconView.frame.origin.y + iconView.frame.size.height * 0.1);
 				[self addSubview:badgeView];
 
-				//ColorBadge support
+				//ColorBadges support
 				dlopen("/Library/MobileSubstrate/DynamicLibraries/ColorBadges.dylib", RTLD_LAZY);
 				Class cb = objc_getClass("ColorBadges");
 				if (cb && [cb isEnabled]) {
@@ -64,7 +64,7 @@
 				}
 
 				numberLabel.frame = badgeView.bounds;
-				numberLabel.font = [UIFont systemFontOfSize:10];
+				numberLabel.font = (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? [UIFont systemFontOfSize:12] : [UIFont systemFontOfSize:10];
 				[badgeView addSubview:numberLabel];
 			}
 		}

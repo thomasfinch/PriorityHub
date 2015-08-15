@@ -7,6 +7,8 @@
 
 - (id)init {
 	if (self = [super init]) {
+		self.directionalLockEnabled = YES;
+		
 		//Create the selected view
 		selectedView = [[UIView alloc] init];
 		selectedView.backgroundColor = [UIColor colorWithWhite:0.75 alpha:0.3];
@@ -55,6 +57,7 @@
 
     //Layout all app views
 	CGFloat totalWidth = [[appViews allKeys] count] * [self appViewSize].width;
+	self.contentSize = CGSizeMake(totalWidth, [self appViewSize].height);
 	CGFloat startX = (CGRectGetWidth(self.frame) - totalWidth)/2;
 	if (startX < 0)
 		startX = 0;
@@ -130,19 +133,21 @@
 
 	    if (img)
 	        return img;
-	    else
+	    else if ([UIImage _applicationIconImageForBundleIdentifier:[self identifierForListItem:listItem] format:0 scale:[UIScreen mainScreen].scale])
 	        return [UIImage _applicationIconImageForBundleIdentifier:[self identifierForListItem:listItem] format:0 scale:[UIScreen mainScreen].scale];
+	    else
+	    	return [(SBAwayBulletinListItem*)listItem iconImage];
 	}
 	else if ([listItem isKindOfClass:%c(SBAwayCardListItem)])
-		return [(SBAwayCardListItem*)listItem iconImage];
+		return [(SBAwayCardListItem*)listItem cardThumbnail];
 	else if ([listItem isKindOfClass:%c(SBAwaySystemAlertItem)])
 		return [(SBAwaySystemAlertItem*)listItem iconImage];
 	else
-		return [UIImage imageWithData:[NSData data]];
+		return [UIImage _applicationIconImageForBundleIdentifier:nil format:0 scale:[UIScreen mainScreen].scale];
 }
 
 - (CGSize)appViewSize {
-	CGFloat width = (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 56.0 : 42.0;
+	CGFloat width = (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 50.0 : 42.0;
 	if ([defaults boolForKey:@"showNumbers"] && [defaults integerForKey:@"numberStyle"] == 0) //If numbers are enabled and below icon
 		return CGSizeMake(width, width * 1.3);
 	else

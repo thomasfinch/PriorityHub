@@ -1,11 +1,15 @@
 #import <UIKit/UIKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 
-
 @interface SBAwayListItem : NSObject
 @end
 
+@interface SBApplication : NSObject
+@end
+
 @interface SBApplicationIcon : NSObject
+- (SBApplicationIcon*)initWithApplication:(SBApplication*)app;
+- (UIImage*)generateIconImage:(int)image;
 @end
 
 @interface UIImage (Private)
@@ -75,6 +79,7 @@
 
 @interface SBAwayBulletinListItem : SBAwayListItem
 @property(retain) BBBulletin* activeBulletin;
+- (UIImage*)iconImage;
 -(Class)class;
 @end
 

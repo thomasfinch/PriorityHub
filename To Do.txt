@@ -17,6 +17,14 @@ Add help section in settings with detailed descriptions of each setting
 
 Changelog
 ---------
+Version 1.4.7
+- Fixed calendar icon appearance
+- Fixed crashes with Apple Pay notifications
+- Fixed bug where icon area wouldn't scroll when there were lots of icons
+
+Version 1.4.6
+- Slight icon size adjustments on iPad
+
 Version 1.4.5
 - Added VoiceOver support for visually impaired users
 - Made test notification clearable

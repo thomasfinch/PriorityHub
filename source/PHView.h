@@ -3,7 +3,7 @@
 
 extern void updateNotificationTableView();
 
-@interface PHView : UIView {
+@interface PHView : UIScrollView {
 	UIView *selectedView;
 	NSUserDefaults *defaults;
 	NSMutableDictionary *appViews;
