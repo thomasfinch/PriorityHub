@@ -5,14 +5,20 @@ Fix theming of icons not working properly
 Fix icons sometimes not detecting taps when music is playing on lockscreen
 Add back scroll view to PHView
 Fix air drop icon not showing up correctly
+Improve icon retrieval method - airdrop, passbook, etc. not working
 
 New Features
 -----------
+Notificaion center support?
+    Would need to decouple PH views etc. from the lock screen
+    Would need to restructure settings pane to separate lock screen & notification center
+    Add option to auto-clear notifs from an app when it's launched - notifications are mostly irrelevant after an app has been opened
+Remove theming support?
 Add setting to use native pull to refresh view
-Add setting to clear app badges when clearing from lockscreen (see markasread7 source code on github)
-Add option to open to currently selected app
+Add setting to clear app badges when clearing from lockscreen? (see markasread7 source code on github)
+Add option to open to currently selected app?
 Add setting to hide app icon if only one notification/notifications from one app are present? (probably no, code would be messy)
-Add setting to manually set size of icons
+Add setting to manually set size of icons (small, med, large)
 Add help section in settings with detailed descriptions of each setting
 
 Changelog
