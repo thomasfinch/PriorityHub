@@ -17,6 +17,7 @@
 		appID = applicationID;
 		defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.thomasfinch.priorityhub"];
 
+		BOOL privacyMode = [defaults boolForKey:@"privacyMode"];
 		BOOL showNumbers = [defaults boolForKey:@"showNumbers"];
 		int numberStyle = [defaults integerForKey:@"numberStyle"];
 
@@ -69,8 +70,10 @@
 			}
 		}
 
-		UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewTapped:)];
-        [self addGestureRecognizer:tapGestureRecognizer];
+		if (!privacyMode) {
+			UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewTapped:)];
+        		[self addGestureRecognizer:tapGestureRecognizer];
+        	}
 	}
 
 	return self;
