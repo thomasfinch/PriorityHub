@@ -3,7 +3,7 @@
 
 extern void updateNotificationTableView();
 
-@interface PHView : UIScrollView {
+@interface PHContainerView : UIScrollView {
 	UIView *selectedView;
 	NSUserDefaults *defaults;
 	NSMutableDictionary *appViews;
@@ -13,6 +13,7 @@ extern void updateNotificationTableView();
 @property (assign) SBLockScreenNotificationListController *listController;
 
 - (void)updateView;
+- (CGFloat)appIconSize;
 - (CGSize)appViewSize;
 - (void)selectAppID:(NSString*)appID newNotification:(BOOL)newNotif;
 

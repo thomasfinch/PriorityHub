@@ -1,7 +1,7 @@
-#import "PHView.h"
+#import "PHContainerView.h"
 #import "substrate.h"
 
-@implementation PHView
+@implementation PHContainerView
 
 @synthesize selectedAppID;
 
@@ -12,7 +12,7 @@
 		//Create the selected view
 		selectedView = [[UIView alloc] init];
 		selectedView.backgroundColor = [UIColor colorWithWhite:0.75 alpha:0.3];
-	    selectedView.layer.cornerRadius = 8.0;
+	    selectedView.layer.cornerRadius = 10.0;
 	    selectedView.layer.masksToBounds = YES;
 	    [self addSubview:selectedView];
 
@@ -49,7 +49,7 @@
     [appViews removeAllObjects];
     [self addSubview:selectedView];
     for (NSString *appID in [bulletinCountDict allKeys]) {
-    	PHAppView *appView = [[PHAppView alloc] initWithFrame:CGRectMake(0,0,[self appViewSize].width,[self appViewSize].height) appID:appID icon:[iconDict objectForKey:appID]];
+    	PHAppView *appView = [[PHAppView alloc] initWithFrame:CGRectMake(0,0,[self appViewSize].width,[self appViewSize].height) appID:appID iconSize:[self appIconSize] icon:[iconDict objectForKey:appID]];
     	[appView updateNumNotifications:[[bulletinCountDict objectForKey:appID] unsignedIntegerValue]];
     	[appViews setObject:appView forKey:appID];
     	[self addSubview:appView];
@@ -129,12 +129,30 @@
 	if ([listItem isKindOfClass:%c(SBAwayBulletinListItem)]) {
 		//Get custom priority hub icon if it exists
 		NSBundle *iconsBundle = [NSBundle  bundleWithPath:@"/Library/Application Support/PriorityHub/Icons.bundle"];
-	    UIImage *img = [[UIImage class] performSelector:@selector(imageNamed:inBundle:) withObject:[NSString stringWithFormat:@"%@.png",[self identifierForListItem:listItem]] withObject:iconsBundle]; //[UIImage imageNamed:[NSString stringWithFormat:@"%@.png",appID] inBundle:iconsBundle];
+	    UIImage *phThemedImg = [[UIImage class] performSelector:@selector(imageNamed:inBundle:) withObject:[NSString stringWithFormat:@"%@.png",[self identifierForListItem:listItem]] withObject:iconsBundle];
+	    if (phThemedImg)
+	        return phThemedImg;
 
-	    if (img)
-	        return img;
-	    else if ([UIImage _applicationIconImageForBundleIdentifier:[self identifierForListItem:listItem] format:0 scale:[UIScreen mainScreen].scale])
-	        return [UIImage _applicationIconImageForBundleIdentifier:[self identifierForListItem:listItem] format:0 scale:[UIScreen mainScreen].scale];
+	    if ([[self identifierForListItem:listItem] isEqualToString:@"com.apple.mobilecal"]) {
+	    	return [UIImage _applicationIconImageForBundleIdentifier:[self identifierForListItem:listItem] format:0 scale:[UIScreen mainScreen].scale];
+	    }
+	    else if (![[self identifierForListItem:listItem] isEqualToString:@"noIdentifier"]) {
+	    	int iconImageNumber = 2;
+	    	if ([self appIconSize] >= 60)
+	    		iconImageNumber = 2;
+	    	else if ([self appIconSize] >= 40)
+	    		iconImageNumber = 1;
+	    	else
+	    		iconImageNumber = 0;
+
+			SBApplication *app = nil;
+			if ([[%c(SBApplicationController) sharedInstance] respondsToSelector:@selector(applicationWithBundleIdentifier:)])
+				app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:[self identifierForListItem:listItem]];
+			else if ([[%c(SBApplicationController) sharedInstance] respondsToSelector:@selector(applicationWithDisplayIdentifier:)])
+				app = [[%c(SBApplicationController) sharedInstance] applicationWithDisplayIdentifier:[self identifierForListItem:listItem]];
+
+			return [[[%c(SBApplicationIcon) alloc] initWithApplication:app] generateIconImage:iconImageNumber]; //0 = 29x29, 1 = 40x40, 2 = 60x60, 3 = ???
+		}
 	    else
 	    	return [(SBAwayBulletinListItem*)listItem iconImage];
 	}
@@ -146,12 +164,27 @@
 		return [UIImage _applicationIconImageForBundleIdentifier:nil format:0 scale:[UIScreen mainScreen].scale];
 }
 
+- (CGFloat)appIconSize {
+	switch([defaults integerForKey:@"iconSize"]) {
+		case 0:
+			return 29;
+		case 1:
+			return 38;
+		case 2:
+			return 45;
+		case 3:
+			return (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 76 : 60;
+		default:
+			return (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 38 : 29;
+	}
+}
+
 - (CGSize)appViewSize {
-	CGFloat width = (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? 50.0 : 42.0;
+	CGFloat width = [self appIconSize];
 	if ([defaults boolForKey:@"showNumbers"] && [defaults integerForKey:@"numberStyle"] == 0) //If numbers are enabled and below icon
-		return CGSizeMake(width, width * 1.3);
+		return CGSizeMake(width * 1.3, width * 1.7);
 	else
-		return CGSizeMake(width, width);
+		return CGSizeMake(width * 1.3, width * 1.3);
 }
 
 @end

@@ -1,5 +1,5 @@
 #import "PHAppView.h"
-#import "PHView.h"
+#import "PHContainerView.h"
 #import "colorbadges_api.h"
 #import "Headers.h"
 #include <dlfcn.h>
@@ -10,7 +10,7 @@
 @synthesize appID;
 @synthesize tapDelegate;
 
-- (id)initWithFrame:(CGRect)frame appID:(NSString*)applicationID icon:(UIImage*)icon {
+- (id)initWithFrame:(CGRect)frame appID:(NSString*)applicationID iconSize:(CGFloat)iconSize icon:(UIImage*)icon {
 	if (self = [super initWithFrame:frame]) {
 		self.userInteractionEnabled = YES;
 		[self setIsAccessibilityElement:YES];
@@ -22,9 +22,9 @@
 
 		iconView = [[UIImageView alloc] initWithImage:icon];
 		if (showNumbers && numberStyle == 0)
-			iconView.frame = CGRectMake((frame.size.width - frame.size.width * 0.71)/2, 5, frame.size.width * 0.71, frame.size.width * 0.71);
+			iconView.frame = CGRectMake((frame.size.width - iconSize)/2, frame.size.height * 0.07, iconSize, iconSize);
 		else
-			iconView.frame = CGRectMake((frame.size.width - frame.size.width * 0.71)/2, (frame.size.width - frame.size.width * 0.71)/2, frame.size.width * 0.71, frame.size.width * 0.71);
+			iconView.frame = CGRectMake((frame.size.width - iconSize)/2, (frame.size.width - iconSize)/2, iconSize, iconSize);
 		[self addSubview:iconView];
 
 		if (showNumbers) {
@@ -37,9 +37,9 @@
 				[self addSubview:numberLabel];
 			}
 			else { //If the notification count is shown as an app badge
-				badgeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, iconView.frame.size.height/2, iconView.frame.size.height/2)];
+				badgeView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, [self badgeSizeForIconSize:iconSize], [self badgeSizeForIconSize:iconSize])];
 				badgeView.backgroundColor = [UIColor redColor];
-				badgeView.layer.cornerRadius = badgeView.frame.size.width/2;
+				badgeView.layer.cornerRadius = [self badgeSizeForIconSize:iconSize]/2;
 				badgeView.center = CGPointMake(iconView.frame.origin.x + iconView.frame.size.width * 0.9, iconView.frame.origin.y + iconView.frame.size.height * 0.1);
 				[self addSubview:badgeView];
 
@@ -64,7 +64,7 @@
 				}
 
 				numberLabel.frame = badgeView.bounds;
-				numberLabel.font = (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? [UIFont systemFontOfSize:12] : [UIFont systemFontOfSize:10];
+				numberLabel.font = [UIFont systemFontOfSize:[self fontSizeForIconSize:iconSize]];
 				[badgeView addSubview:numberLabel];
 			}
 		}
@@ -76,8 +76,24 @@
 	return self;
 }
 
+- (CGFloat)badgeSizeForIconSize:(CGFloat)iconSize {
+	CGFloat size = iconSize/2.5;
+
+	if (size < 14)
+		return 14;
+	else if (size > 20)
+		return 20;
+	else
+		return size;
+}
+
+- (NSInteger)fontSizeForIconSize:(CGFloat)iconSize {
+	CGFloat badgeSize = [self badgeSizeForIconSize:iconSize];
+	return badgeSize / 1.2;
+}
+
 - (void)viewTapped:(UITapGestureRecognizer*)recognizer {
-	[(PHView*)[self superview] selectAppID:self.appID newNotification:NO];
+	[(PHContainerView*)[self superview] selectAppID:self.appID newNotification:NO];
 }
 
 - (void)updateNumNotifications:(NSUInteger)numNotifications {

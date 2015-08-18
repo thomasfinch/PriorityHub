@@ -75,6 +75,27 @@ items = (
     );
   },
   {
+    cell = PSLinkListCell;
+    detail = PSListItemsController;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
+    key = iconSize;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "Icon Size";
+    validValues = (
+      0,
+      1,
+      2,
+      3
+    );
+    validTitles = (
+      "Small",
+      "Medium",
+      "Large",
+      "Full Size"
+    );
+  },
+  {
     cell = PSSwitchCell;
     default = 0;
     defaults = "com.thomasfinch.priorityhub";

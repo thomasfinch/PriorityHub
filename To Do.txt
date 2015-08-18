@@ -3,9 +3,8 @@ Fixes
 Fix icons showing up wrong when polus is installed
 Fix theming of icons not working properly
 Fix icons sometimes not detecting taps when music is playing on lockscreen
-Add back scroll view to PHView
 Fix air drop icon not showing up correctly
-Improve icon retrieval method - airdrop, passbook, etc. not working
+Fix system alert icon not showing up correctly
 
 New Features
 -----------
@@ -18,11 +17,15 @@ Add setting to use native pull to refresh view
 Add setting to clear app badges when clearing from lockscreen? (see markasread7 source code on github)
 Add option to open to currently selected app?
 Add setting to hide app icon if only one notification/notifications from one app are present? (probably no, code would be messy)
-Add setting to manually set size of icons (small, med, large)
 Add help section in settings with detailed descriptions of each setting
+Option for icons on the side?
 
 Changelog
 ---------
+Version 1.5
+- Added icon size setting
+- Fixed some themes not working correctly
+
 Version 1.4.7
 - Fixed calendar icon appearance
 - Fixed crashes with Apple Pay notifications

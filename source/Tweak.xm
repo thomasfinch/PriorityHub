@@ -1,6 +1,6 @@
 #import <UIKit/UIKit.h>
 #import "Headers.h"
-#import "PHView.h"
+#import "PHContainerView.h"
 #import "substrate.h"
 #import "PHPullToClearView.h"
 #include <dlfcn.h>
@@ -8,7 +8,7 @@
 const CGFloat pullToClearThreshold = -35;
 static PHPullToClearView *pullToClearView;
 BBServer *bbServer;
-PHView *phView;
+PHContainerView *phContainerView;
 NSUserDefaults *defaults;
 
 UITableView *notificationsTableView;
@@ -29,14 +29,14 @@ void updateNotificationTableView() {
 	}
 
 	//Hide pull to clear view if no app is selected
-	if (phView.selectedAppID == nil)
+	if (phContainerView.selectedAppID == nil)
 		pullToClearView.hidden = YES;
 	else
 		pullToClearView.hidden = NO;
 
 	//Animate notification table view fading in/out
 	[UIView animateWithDuration:0.15 animations:^(){
-		if (!phView.selectedAppID && [defaults integerForKey:@"showAllWhenNotSelected"] == 0)
+		if (!phContainerView.selectedAppID && [defaults integerForKey:@"showAllWhenNotSelected"] == 0)
 			notificationsTableView.alpha = 0;
 		else
 			notificationsTableView.alpha = 1;
@@ -86,13 +86,14 @@ void showTestNotification() {
         @"enablePullToClear": @YES,
         @"privacyMode": @NO,
         @"iconLocation": [NSNumber numberWithInt:0],
+        @"iconSize": (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? [NSNumber numberWithInt:1] : [NSNumber numberWithInt:0],
         @"numberStyle": [NSNumber numberWithInt:0],
         @"verticalAdjustmentTop": [NSNumber numberWithFloat:0],
         @"verticalAdjustmentBottom": [NSNumber numberWithFloat:0],
         @"showAllWhenNotSelected": [NSNumber numberWithInt:0]
     }];
 
-    phView = [[PHView alloc] init];
+    phContainerView = [[PHContainerView alloc] init];
 }
 
 %hook BBServer
@@ -115,7 +116,7 @@ void showTestNotification() {
 	notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
 	notificationListView = self;
 
-	[containerView addSubview:phView];
+	[containerView addSubview:phContainerView];
 
 	//Remove notification cell separators if the option is on		
 	if (![defaults boolForKey:@"showSeparators"]) {
@@ -139,7 +140,7 @@ void showTestNotification() {
 - (void)layoutSubviews {
 	%orig;
 
-	CGRect phViewFrame = CGRectMake(0, 0, 0, 0);
+	CGRect phContainerViewFrame = CGRectMake(0, 0, 0, 0);
 	CGRect tableViewFrame = CGRectMake(0, 0, 0, 0);
 	UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
 
@@ -148,13 +149,13 @@ void showTestNotification() {
 	CGFloat verticalAdjustmentBottom = [defaults floatForKey:@"verticalAdjustmentBottom"];
 	containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + verticalAdjustmentTop, containerView.frame.size.width, containerView.frame.size.height - verticalAdjustmentTop + verticalAdjustmentBottom);
 
-	//Layout PHView and notifications table view
+	//Layout PHContainerView and notifications table view
 	if ([defaults integerForKey:@"iconLocation"] == 0) //App icons at top
-		CGRectDivide(containerView.bounds, &phViewFrame, &tableViewFrame, [phView appViewSize].height, CGRectMinYEdge);
+		CGRectDivide(containerView.bounds, &phContainerViewFrame, &tableViewFrame, [phContainerView appViewSize].height, CGRectMinYEdge);
 	else //App icons at bottom
-		CGRectDivide(containerView.bounds, &phViewFrame, &tableViewFrame, [phView appViewSize].height, CGRectMaxYEdge);
+		CGRectDivide(containerView.bounds, &phContainerViewFrame, &tableViewFrame, [phContainerView appViewSize].height, CGRectMaxYEdge);
 
-	phView.frame = phViewFrame;
+	phContainerView.frame = phContainerViewFrame;
 	notificationsTableView.frame = tableViewFrame;
 
 	//Layout pull to clear view
@@ -173,7 +174,7 @@ void showTestNotification() {
 		return YES;
 
 	//If no app is selected
-	if (phView.selectedAppID == nil) {
+	if (phContainerView.selectedAppID == nil) {
 		if ([defaults integerForKey:@"showAllWhenNotSelected"] == 0 || [defaults boolForKey:@"privacyMode"]) //If all notifications are hidden when not selected
 			return 0;
 		else
@@ -181,7 +182,7 @@ void showTestNotification() {
 	}
 
 	//Only show the cell if it's equal to the selected app ID
-	if ([phView.selectedAppID isEqualToString:[[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID]])
+	if ([phContainerView.selectedAppID isEqualToString:[[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID]])
 		return YES;
 	else
 		return NO;
@@ -212,8 +213,8 @@ void showTestNotification() {
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView willDecelerate:(_Bool)arg2 {
-	if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"] && phView.selectedAppID != nil && scrollView.contentOffset.y <= pullToClearThreshold &&  (scrollView.dragging || scrollView.tracking)) {
-		[bulletinObserver clearSection:phView.selectedAppID];
+	if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"] && phContainerView.selectedAppID != nil && scrollView.contentOffset.y <= pullToClearThreshold &&  (scrollView.dragging || scrollView.tracking)) {
+		[bulletinObserver clearSection:phContainerView.selectedAppID];
 		notificationsTableView.alpha = 0;
 		[pullToClearView setXVisible:NO];
 	}
@@ -230,7 +231,7 @@ void showTestNotification() {
 	%orig;
 	bulletinObserver = MSHookIvar<BBObserver*>(self, "_observer");
 	notificationListController = self;
-	phView.listController = self;
+	phContainerView.listController = self;
 }
 
 //Called when a new notification is added to the notification list
@@ -240,7 +241,7 @@ void showTestNotification() {
 		return;
 
 	PHLog(@"UPDATE MODEL AND VIEW FOR ADDITION OF ITEM: %@",item);
-	[phView updateView];
+	[phContainerView updateView];
 
 	if (![defaults boolForKey:@"privacyMode"]) {
 		NSString *appID = nil;
@@ -250,7 +251,7 @@ void showTestNotification() {
 			appID = [[(SBAwayCardListItem*)item cardItem] identifier];
 		else if ([item isKindOfClass:%c(SBAwaySystemAlertItem)])
 			appID = [(SBAwaySystemAlertItem*)item title];
-		[phView selectAppID:appID newNotification:YES];
+		[phContainerView selectAppID:appID newNotification:YES];
 	}
 }
 
@@ -261,7 +262,7 @@ void showTestNotification() {
 		return;
 
 	PHLog(@"UPDATE MODEL FOR REMOVAL OF ITEM (BOOL): %@, updateView: %d",item,update);
-	[phView updateView];
+	[phContainerView updateView];
 }
 
 //Called when device is unlocked, clear all app views.
@@ -270,7 +271,7 @@ void showTestNotification() {
 	PHLog(@"TWEAK XM PREPARE FOR TEARDOWN");
 
 	if ([defaults boolForKey:@"enabled"])
-		[phView updateView];
+		[phContainerView updateView];
 }
 
 //Called when the screen turns on or off, used to deselect any selected app when the screen turns off.
@@ -279,8 +280,8 @@ void showTestNotification() {
 
 	PHLog(@"TWEAK XM SET SCREEN IN OFF MODE");
 	
-	if(off && [defaults boolForKey:@"enabled"] && [defaults boolForKey:@"collapseOnLock"] && phView && phView.selectedAppID)
-		[phView selectAppID:phView.selectedAppID newNotification:NO];
+	if(off && [defaults boolForKey:@"enabled"] && [defaults boolForKey:@"collapseOnLock"] && phContainerView && phContainerView.selectedAppID)
+		[phContainerView selectAppID:phContainerView.selectedAppID newNotification:NO];
 }
 
 %end
