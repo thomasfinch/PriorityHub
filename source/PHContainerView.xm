@@ -36,11 +36,11 @@
 		NSString *bulletinID = [self identifierForListItem:listItem];
 
 		//Add count and icon to dictionaries
-		if ([bulletinCountDict objectForKey:bulletinID])
+		if ([[bulletinCountDict objectForKey:bulletinID] intValue])
 			[bulletinCountDict setObject:[NSNumber numberWithInt:[[bulletinCountDict objectForKey:bulletinID] intValue] + 1] forKey:bulletinID];
 		else {
 			[bulletinCountDict setObject:[NSNumber numberWithInt:1] forKey:bulletinID];
-			[iconDict setObject:[self iconForListItem:listItem] forKey:bulletinID];
+			[iconDict setObject:[self iconForListItem:listItem] forKey:bulletinID]; //This seems to be causing crashes, object seems to be nil
 		}
 	}
 
@@ -126,16 +126,17 @@
 }
 
 - (UIImage*)iconForListItem:(SBAwayListItem*)listItem {
+	UIImage *icon = nil;
+
 	if ([listItem isKindOfClass:%c(SBAwayBulletinListItem)]) {
-		//Get custom priority hub icon if it exists
+		//Get custom themed priority hub icon if it exists
 		NSBundle *iconsBundle = [NSBundle  bundleWithPath:@"/Library/Application Support/PriorityHub/Icons.bundle"];
 	    UIImage *phThemedImg = [[UIImage class] performSelector:@selector(imageNamed:inBundle:) withObject:[NSString stringWithFormat:@"%@.png",[self identifierForListItem:listItem]] withObject:iconsBundle];
+	    
 	    if (phThemedImg)
-	        return phThemedImg;
-
-	    if ([[self identifierForListItem:listItem] isEqualToString:@"com.apple.mobilecal"]) {
-	    	return [UIImage _applicationIconImageForBundleIdentifier:[self identifierForListItem:listItem] format:0 scale:[UIScreen mainScreen].scale];
-	    }
+	        icon = phThemedImg;
+	    else if ([[self identifierForListItem:listItem] isEqualToString:@"com.apple.mobilecal"])
+	    	icon = [UIImage _applicationIconImageForBundleIdentifier:[self identifierForListItem:listItem] format:0 scale:[UIScreen mainScreen].scale];
 	    else if (![[self identifierForListItem:listItem] isEqualToString:@"noIdentifier"]) {
 	    	int iconImageNumber = 2;
 	    	if ([self appIconSize] >= 60)
@@ -151,15 +152,18 @@
 			else if ([[%c(SBApplicationController) sharedInstance] respondsToSelector:@selector(applicationWithDisplayIdentifier:)])
 				app = [[%c(SBApplicationController) sharedInstance] applicationWithDisplayIdentifier:[self identifierForListItem:listItem]];
 
-			return [[[%c(SBApplicationIcon) alloc] initWithApplication:app] generateIconImage:iconImageNumber]; //0 = 29x29, 1 = 40x40, 2 = 60x60, 3 = ???
+			icon = [[[%c(SBApplicationIcon) alloc] initWithApplication:app] generateIconImage:iconImageNumber]; //0 = 29x29, 1 = 40x40, 2 = 60x60, 3 = ???
 		}
-	    else
-	    	return [(SBAwayBulletinListItem*)listItem iconImage];
+	    else if ([(SBAwayBulletinListItem*)listItem iconImage])
+	    	icon = [(SBAwayBulletinListItem*)listItem iconImage];
 	}
 	else if ([listItem isKindOfClass:%c(SBAwayCardListItem)])
-		return [(SBAwayCardListItem*)listItem cardThumbnail];
+		icon = [(SBAwayCardListItem*)listItem cardThumbnail];
 	else if ([listItem isKindOfClass:%c(SBAwaySystemAlertItem)])
-		return [(SBAwaySystemAlertItem*)listItem iconImage];
+		icon = [(SBAwaySystemAlertItem*)listItem iconImage];
+
+	if (icon)
+		return icon;
 	else
 		return [UIImage _applicationIconImageForBundleIdentifier:nil format:0 scale:[UIScreen mainScreen].scale];
 }
