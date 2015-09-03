@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#include <Foundation/NSDistributedNotificationCenter.h>
 #import "Headers.h"
 #import "PHContainerView.h"
 #import "substrate.h"
@@ -84,6 +85,7 @@ void showTestNotification() {
         @"showSeparators": @NO,
         @"collapseOnLock": @YES,
         @"enablePullToClear": @YES,
+        @"externalPullToClear": @NO,
         @"privacyMode": @NO,
         @"iconLocation": [NSNumber numberWithInt:0],
         @"iconSize": (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) ? [NSNumber numberWithInt:1] : [NSNumber numberWithInt:0],
@@ -127,7 +129,7 @@ void showTestNotification() {
 	}
 
 	//Add pull to clear view if the option is on
-	if ([defaults boolForKey:@"enablePullToClear"]) {
+	if ([defaults boolForKey:@"enablePullToClear"] || [defaults boolForKey:@"externalPullToClear"]) {
 		if (pullToClearView)
 			[pullToClearView removeFromSuperview];
 		pullToClearView = [[PHPullToClearView alloc] initWithFrame:CGRectZero];
@@ -203,7 +205,7 @@ void showTestNotification() {
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-	if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"]) {
+	if ([defaults boolForKey:@"enabled"] && ([defaults boolForKey:@"enablePullToClear"] || [defaults boolForKey:@"externalPullToClear"])) {
 		if (scrollView.contentOffset.y <= 0)
 			[pullToClearView setXVisible:(scrollView.contentOffset.y <= pullToClearThreshold)];
 	}
@@ -213,8 +215,18 @@ void showTestNotification() {
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidEndDragging:(UIScrollView*)scrollView willDecelerate:(_Bool)arg2 {
-	if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"] && phContainerView.selectedAppID != nil && scrollView.contentOffset.y <= pullToClearThreshold &&  (scrollView.dragging || scrollView.tracking)) {
+	BOOL enablePullToClear = [defaults boolForKey:@"enablePullToClear"];
+	BOOL externalPullToClear = [defaults boolForKey:@"externalPullToClear"];
+
+	if ([defaults boolForKey:@"enabled"] && (enablePullToClear || externalPullToClear) && phContainerView.selectedAppID != nil && scrollView.contentOffset.y <= pullToClearThreshold &&  (scrollView.dragging || scrollView.tracking)) {
+		if (externalPullToClear) {
+			[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"com.thomasfinch.priorityhub-pulltoclearsection" object:nil userInfo:@{@"sectionID":phContainerView.selectedAppID}];
+		}
+
+		if (enablePullToClear) {
 		[bulletinObserver clearSection:phContainerView.selectedAppID];
+		}
+
 		notificationsTableView.alpha = 0;
 		[pullToClearView setXVisible:NO];
 	}
@@ -279,7 +291,7 @@ void showTestNotification() {
 	%orig;
 
 	PHLog(@"TWEAK XM SET SCREEN IN OFF MODE");
-	
+
 	if(off && [defaults boolForKey:@"enabled"] && [defaults boolForKey:@"collapseOnLock"] && phContainerView && phContainerView.selectedAppID)
 		[phContainerView selectAppID:phContainerView.selectedAppID newNotification:NO];
 }

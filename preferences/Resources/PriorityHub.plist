@@ -119,6 +119,14 @@ items = (
     cell = PSSwitchCell;
     default = 0;
     defaults = "com.thomasfinch.priorityhub";
+    key = externalPullToClear;
+    PostNotification = com.thomasfinch.priorityhub-prefschanged;
+    label = "External Pull To Clear";
+  },
+  {
+    cell = PSSwitchCell;
+    default = 0;
+    defaults = "com.thomasfinch.priorityhub";
     key = privacyMode;
     PostNotification = com.thomasfinch.priorityhub-prefschanged;
     label = "Privacy Mode";
