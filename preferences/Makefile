@@ -1,7 +1,6 @@
 ARCHS = armv7 arm64
-GO_EASY_ON_ME = 1
 
-include theos/makefiles/common.mk
+include $(THEOS)/makefiles/common.mk
 
 BUNDLE_NAME = PriorityHub
 PriorityHub_FILES = PriorityHub.mm

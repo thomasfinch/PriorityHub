@@ -1,15 +1,10 @@
 ARCHS = armv7 arm64
 TARGET_IPHONEOS_DEPLOYMENT_VERSION = 7.0
 ADDITIONAL_OBJCFLAGS = -fobjc-arc
-THEOS_BUILD_DIR = build
-# GO_EASY_ON_ME = 1
-PACKAGE_VERSION = 1.5.1
+# PACKAGE_VERSION = 1.5.1
 # DEBUG = 1
 
-include theos/makefiles/common.mk
-
-clean::
-	rm -rf $(THEOS_BUILD_DIR)/*
+include $(THEOS)/makefiles/common.mk
 
 SOURCE_FILES=$(wildcard source/*.m source/*.mm source/*.x source/*.xm)
 

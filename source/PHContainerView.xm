@@ -129,13 +129,7 @@
 	UIImage *icon = nil;
 
 	if ([listItem isKindOfClass:%c(SBAwayBulletinListItem)]) {
-		//Get custom themed priority hub icon if it exists
-		NSBundle *iconsBundle = [NSBundle  bundleWithPath:@"/Library/Application Support/PriorityHub/Icons.bundle"];
-	    UIImage *phThemedImg = [[UIImage class] performSelector:@selector(imageNamed:inBundle:) withObject:[NSString stringWithFormat:@"%@.png",[self identifierForListItem:listItem]] withObject:iconsBundle];
-	    
-	    if (phThemedImg)
-	        icon = phThemedImg;
-	    else if ([[self identifierForListItem:listItem] isEqualToString:@"com.apple.mobilecal"])
+	    if ([[self identifierForListItem:listItem] isEqualToString:@"com.apple.mobilecal"])
 	    	icon = [UIImage _applicationIconImageForBundleIdentifier:[self identifierForListItem:listItem] format:0 scale:[UIScreen mainScreen].scale];
 	    else if (![[self identifierForListItem:listItem] isEqualToString:@"noIdentifier"]) {
 	    	int iconImageNumber = 2;
