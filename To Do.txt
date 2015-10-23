@@ -12,7 +12,6 @@ Notificaion center support?
     Would need to decouple PH views etc. from the lock screen
     Would need to restructure settings pane to separate lock screen & notification center
     Add option to auto-clear notifs from an app when it's launched - notifications are mostly irrelevant after an app has been opened
-Remove theming support?
 Add setting to use native pull to refresh view
 Add setting to clear app badges when clearing from lockscreen? (see markasread7 source code on github)
 Add option to open to currently selected app?
@@ -22,6 +21,10 @@ Option for icons on the side?
 
 Changelog
 ---------
+Version 1.5.2
+- Fixed crash on iOS 9 when alarms are snoozed
+- Removed custom PH only theme support
+
 Version 1.5
 - Added icon size setting
 - Fixed some themes not working correctly

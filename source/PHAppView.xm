@@ -8,7 +8,6 @@
 @implementation PHAppView
 
 @synthesize appID;
-@synthesize tapDelegate;
 
 - (id)initWithFrame:(CGRect)frame appID:(NSString*)applicationID iconSize:(CGFloat)iconSize icon:(UIImage*)icon {
 	if (self = [super initWithFrame:frame]) {
@@ -110,10 +109,6 @@
 		appName = [[[%c(SBApplicationController) sharedInstance] applicationWithDisplayIdentifier:self.appID] displayName];
 	}
 	self.accessibilityLabel = [NSString stringWithFormat:@"Priority hub, %@, %lu %@", appName, (unsigned long)numNotifications, notificationsString];
-}
-
-- (void)handleSingleTap:(UITapGestureRecognizer*)gestureRecognizer {
-	[tapDelegate performSelector:@selector(handleAppViewTapped:) withObject:self];
 }
 
 @end

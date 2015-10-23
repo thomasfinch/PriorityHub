@@ -2,6 +2,7 @@
 #import "PHAppView.h"
 
 extern void updateNotificationTableView();
+extern NSString* identifierForListItem(SBAwayListItem *listItem);
 
 @interface PHContainerView : UIScrollView {
 	UIView *selectedView;

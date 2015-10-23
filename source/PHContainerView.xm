@@ -26,14 +26,13 @@
 }
 
 - (void)updateView {
-	PHLog(@"PHVIEW UPDATE VIEW");
 	NSMutableDictionary *bulletinCountDict = [[NSMutableDictionary alloc] init], *iconDict = [[NSMutableDictionary alloc] init];
 	if (!_listController)
 		return;
 
 	//Count the number of bulletins for each app ID
 	for (SBAwayListItem *listItem in MSHookIvar<NSMutableArray*>(_listController, "_listItems")) {
-		NSString *bulletinID = [self identifierForListItem:listItem];
+		NSString *bulletinID = identifierForListItem(listItem);
 
 		//Add count and icon to dictionaries
 		if ([[bulletinCountDict objectForKey:bulletinID] intValue])
@@ -77,8 +76,6 @@
 }
 
 - (void)selectAppID:(NSString*)appID newNotification:(BOOL)newNotif {
-
-	PHLog(@"PHVIEW SELECT APP ID");
 	if (newNotif) {
 		selectedView.alpha = 1;
 		selectedView.frame = ((PHAppView*)[appViews objectForKey:appID]).frame;
@@ -114,24 +111,14 @@
 	UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
 }
 
-- (NSString*)identifierForListItem:(SBAwayListItem*)listItem {
-	if ([listItem isKindOfClass:%c(SBAwayBulletinListItem)])
-		return [[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID];
-	else if ([listItem isKindOfClass:%c(SBAwayCardListItem)])
-		return [[(SBAwayCardListItem*)listItem cardItem] identifier];
-	else if ([listItem isKindOfClass:%c(SBAwaySystemAlertItem)])
-		return [(SBAwaySystemAlertItem*)listItem title];
-	else
-		return @"noIdentifier";
-}
-
 - (UIImage*)iconForListItem:(SBAwayListItem*)listItem {
 	UIImage *icon = nil;
+	NSString *identifier = identifierForListItem(listItem);
 
 	if ([listItem isKindOfClass:%c(SBAwayBulletinListItem)]) {
-	    if ([[self identifierForListItem:listItem] isEqualToString:@"com.apple.mobilecal"])
-	    	icon = [UIImage _applicationIconImageForBundleIdentifier:[self identifierForListItem:listItem] format:0 scale:[UIScreen mainScreen].scale];
-	    else if (![[self identifierForListItem:listItem] isEqualToString:@"noIdentifier"]) {
+	    if ([identifier isEqualToString:@"com.apple.mobilecal"])
+	    	icon = [UIImage _applicationIconImageForBundleIdentifier:identifier format:0 scale:[UIScreen mainScreen].scale];
+	    else if (![identifier isEqualToString:@"noIdentifier"]) {
 	    	int iconImageNumber = 2;
 	    	if ([self appIconSize] >= 60)
 	    		iconImageNumber = 2;
@@ -142,9 +129,9 @@
 
 			SBApplication *app = nil;
 			if ([[%c(SBApplicationController) sharedInstance] respondsToSelector:@selector(applicationWithBundleIdentifier:)])
-				app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:[self identifierForListItem:listItem]];
+				app = [[%c(SBApplicationController) sharedInstance] applicationWithBundleIdentifier:identifier];
 			else if ([[%c(SBApplicationController) sharedInstance] respondsToSelector:@selector(applicationWithDisplayIdentifier:)])
-				app = [[%c(SBApplicationController) sharedInstance] applicationWithDisplayIdentifier:[self identifierForListItem:listItem]];
+				app = [[%c(SBApplicationController) sharedInstance] applicationWithDisplayIdentifier:identifier];
 
 			icon = [[[%c(SBApplicationIcon) alloc] initWithApplication:app] generateIconImage:iconImageNumber]; //0 = 29x29, 1 = 40x40, 2 = 60x60, 3 = ???
 		}
@@ -158,8 +145,13 @@
 
 	if (icon)
 		return icon;
-	else
-		return [UIImage _applicationIconImageForBundleIdentifier:nil format:0 scale:[UIScreen mainScreen].scale];
+
+	//Handle the case where somehow an icon still hasn't been found yet
+	icon = [UIImage _applicationIconImageForBundleIdentifier:nil format:0 scale:[UIScreen mainScreen].scale];
+	if (!icon)
+		icon = [[UIImage alloc] init];
+
+	return icon;
 }
 
 - (CGFloat)appIconSize {

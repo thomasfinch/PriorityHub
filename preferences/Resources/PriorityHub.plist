@@ -106,6 +106,7 @@ items = (
   {
     cell = PSGroupCell;
     label = "Functionality";
+    footerText = "Privacy mode stops the app from being selected when a notification comes in. Collapse on lock deselects the current app when the screen is locked.";
   },
   {
     cell = PSSwitchCell;
@@ -151,7 +152,7 @@ items = (
   {
     cell = PSGroupCell;
     label = "Vertical Adjustment";
-    footerText = "Use this setting to manually adjust the notification view up or down if it's cut off by other tweaks. Negative numbers mean moving the view up, and positive numbers mean moving it down.";
+    footerText = "Use this setting to manually adjust the notification view up or down if it's cut off by other tweaks. Negative numbers mean moving the app icon area up, and positive numbers mean moving it down.";
   },
   {
     cell = PSEditTextCell;

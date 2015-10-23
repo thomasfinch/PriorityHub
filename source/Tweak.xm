@@ -16,6 +16,17 @@ SBLockScreenNotificationListView *notificationListView;
 SBLockScreenNotificationListController *notificationListController;
 BBObserver *bulletinObserver;
 
+NSString* identifierForListItem(SBAwayListItem *listItem) {
+	if ([listItem isKindOfClass:%c(SBAwayBulletinListItem)])
+		return [[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID];
+	else if ([listItem isKindOfClass:%c(SBAwayCardListItem)])
+		return [[(SBAwayCardListItem*)listItem cardItem] identifier];
+	else if ([listItem isKindOfClass:%c(SBAwaySystemAlertItem)])
+		return [(SBAwaySystemAlertItem*)listItem title];
+	else
+		return @"noIdentifier";
+}
+
 void updateNotificationTableView() {
 	//Call reloadData on tableview
 	if (notificationsTableView)
@@ -69,7 +80,7 @@ void showTestNotification() {
 }
 
 %ctor {
-    //dlopen'ing tweaks causes their dylib to be loaded and executed first
+    //dlopen'ing tweaks causes their dylib to be loaded and their constructors to be executed first.
     //This fixes a lot of layout problems because then priority hub's layout code runs last and
     //has the last say in the layout of some views.
     dlopen("/Library/MobileSubstrate/DynamicLibraries/SubtleLock.dylib", RTLD_NOW);
@@ -140,8 +151,8 @@ void showTestNotification() {
 - (void)layoutSubviews {
 	%orig;
 
-	CGRect phContainerViewFrame = CGRectMake(0, 0, 0, 0);
-	CGRect tableViewFrame = CGRectMake(0, 0, 0, 0);
+	CGRect phContainerViewFrame = CGRectZero;
+	CGRect tableViewFrame = CGRectZero;
 	UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
 
 	//Change the container view's frame depending on the vertical adjustments set
@@ -165,8 +176,6 @@ void showTestNotification() {
 
 %new
 - (BOOL)shouldDisplayIndexPath:(NSIndexPath*)indexPath {
-	PHLog(@"TWEAK XM SHOULD SHOW INDEX PATH");
-
 	SBAwayListItem *listItem = [MSHookIvar<SBLockScreenNotificationModel*>(self, "_model") listItemAtIndexPath:indexPath];
 
 	//If the item is not a notification (system alert or passbook pass)
@@ -174,7 +183,7 @@ void showTestNotification() {
 		return YES;
 
 	//If no app is selected
-	if (phContainerView.selectedAppID == nil) {
+	if (!phContainerView.selectedAppID) {
 		if ([defaults integerForKey:@"showAllWhenNotSelected"] == 0 || [defaults boolForKey:@"privacyMode"]) //If all notifications are hidden when not selected
 			return 0;
 		else
@@ -182,20 +191,12 @@ void showTestNotification() {
 	}
 
 	//Only show the cell if it's equal to the selected app ID
-	if ([phContainerView.selectedAppID isEqualToString:[[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID]])
-		return YES;
-	else
-		return NO;
+	return [phContainerView.selectedAppID isEqualToString:[[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID]];
 }
 
 // Used to hide notifications that aren't for the selected app
 - (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-	if (![defaults boolForKey:@"enabled"])
-		return %orig;
-
-	PHLog(@"TWEAK XM TABLEVIEW HEIGHT FOR ROW AT INDEX PATH");
-
-	if ([self shouldDisplayIndexPath:indexPath])
+	if (![defaults boolForKey:@"enabled"] || [self shouldDisplayIndexPath:indexPath])
 		return %orig;
 	else
 		return 0;
@@ -203,10 +204,8 @@ void showTestNotification() {
 
 //All scroll view methods are used for pull to clear control
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-	if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"]) {
-		if (scrollView.contentOffset.y <= 0)
-			[pullToClearView setXVisible:(scrollView.contentOffset.y <= pullToClearThreshold)];
-	}
+	if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"] && scrollView.contentOffset.y <= 0)
+		[pullToClearView setXVisible:(scrollView.contentOffset.y <= pullToClearThreshold)];
 
 	%orig;
 }
@@ -240,19 +239,10 @@ void showTestNotification() {
 	if (![defaults boolForKey:@"enabled"])
 		return;
 
-	PHLog(@"UPDATE MODEL AND VIEW FOR ADDITION OF ITEM: %@",item);
 	[phContainerView updateView];
 
-	if (![defaults boolForKey:@"privacyMode"]) {
-		NSString *appID = nil;
-		if ([item isKindOfClass:%c(SBAwayBulletinListItem)])
-			appID = [[(SBAwayBulletinListItem*)item activeBulletin] sectionID];
-		else if ([item isKindOfClass:%c(SBAwayCardListItem)])
-			appID = [[(SBAwayCardListItem*)item cardItem] identifier];
-		else if ([item isKindOfClass:%c(SBAwaySystemAlertItem)])
-			appID = [(SBAwaySystemAlertItem*)item title];
-		[phContainerView selectAppID:appID newNotification:YES];
-	}
+	if (![defaults boolForKey:@"privacyMode"])
+		[phContainerView selectAppID:identifierForListItem(item) newNotification:YES];
 }
 
 //Called when a notification is removed from the list
@@ -261,14 +251,12 @@ void showTestNotification() {
 	if (![defaults boolForKey:@"enabled"])
 		return;
 
-	PHLog(@"UPDATE MODEL FOR REMOVAL OF ITEM (BOOL): %@, updateView: %d",item,update);
 	[phContainerView updateView];
 }
 
 //Called when device is unlocked, clear all app views.
 - (void)prepareForTeardown {
 	%orig;
-	PHLog(@"TWEAK XM PREPARE FOR TEARDOWN");
 
 	if ([defaults boolForKey:@"enabled"])
 		[phContainerView updateView];
@@ -277,8 +265,6 @@ void showTestNotification() {
 //Called when the screen turns on or off, used to deselect any selected app when the screen turns off.
 - (void)setInScreenOffMode:(BOOL)off {
 	%orig;
-
-	PHLog(@"TWEAK XM SET SCREEN IN OFF MODE");
 	
 	if(off && [defaults boolForKey:@"enabled"] && [defaults boolForKey:@"collapseOnLock"] && phContainerView && phContainerView.selectedAppID)
 		[phContainerView selectAppID:phContainerView.selectedAppID newNotification:NO];
