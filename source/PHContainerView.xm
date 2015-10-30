@@ -115,6 +115,12 @@
 	UIImage *icon = nil;
 	NSString *identifier = identifierForListItem(listItem);
 
+	if (!identifier) {
+		return [[UIImage alloc] init];
+	}
+
+	if ([listItem isKindOfClass:%c(SBSnoozedAlarmListItem)] || [listItem isKindOfClass:%c(SBSnoozedAlarmBulletinListItem)])
+		icon = [UIImage _applicationIconImageForBundleIdentifier:identifier format:0 scale:[UIScreen mainScreen].scale];
 	if ([listItem isKindOfClass:%c(SBAwayBulletinListItem)]) {
 	    if ([identifier isEqualToString:@"com.apple.mobilecal"])
 	    	icon = [UIImage _applicationIconImageForBundleIdentifier:identifier format:0 scale:[UIScreen mainScreen].scale];
@@ -147,7 +153,6 @@
 		return icon;
 
 	//Handle the case where somehow an icon still hasn't been found yet
-	icon = [UIImage _applicationIconImageForBundleIdentifier:nil format:0 scale:[UIScreen mainScreen].scale];
 	if (!icon)
 		icon = [[UIImage alloc] init];
 

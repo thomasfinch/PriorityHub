@@ -8,6 +8,8 @@ Fix system alert icon not showing up correctly
 
 New Features
 -----------
+Make all notifications clearable? (hook function in SBAwayListItem)
+External pull to clear (see github)
 Notificaion center support?
     Would need to decouple PH views etc. from the lock screen
     Would need to restructure settings pane to separate lock screen & notification center
