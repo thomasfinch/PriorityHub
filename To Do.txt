@@ -2,13 +2,13 @@ Fixes
 -----
 Fix icons showing up wrong when polus is installed
 Fix theming of icons not working properly
-Fix icons sometimes not detecting taps when music is playing on lockscreen
+Fix icons sometimes not detecting taps
 Fix air drop icon not showing up correctly
 Fix system alert icon not showing up correctly
 
 New Features
 -----------
-Make all notifications clearable? (hook function in SBAwayListItem)
+Make all notifications clearable? (hook function in SBAwayListItem) (doesn't work)
 External pull to clear (see github)
 Notificaion center support?
     Would need to decouple PH views etc. from the lock screen
@@ -23,6 +23,9 @@ Option for icons on the side?
 
 Changelog
 ---------
+Version 1.5.3
+- Actually fixed iOS 9 alarm snooze crash
+
 Version 1.5.2
 - Fixed crash on iOS 9 when alarms are snoozed
 - Removed custom PH only theme support

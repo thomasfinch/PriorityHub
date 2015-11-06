@@ -10,7 +10,6 @@ static PHPullToClearView *pullToClearView;
 BBServer *bbServer;
 PHContainerView *phContainerView;
 NSUserDefaults *defaults;
-
 UITableView *notificationsTableView;
 SBLockScreenNotificationListView *notificationListView;
 SBLockScreenNotificationListController *notificationListController;
@@ -48,14 +47,12 @@ void printAllListItemSubclasses() {
 }
 
 NSString* identifierForListItem(SBAwayListItem *listItem) {
-	if ([listItem isKindOfClass:%c(SBSnoozedAlarmListItem)] || [listItem isKindOfClass:%c(SBSnoozedAlarmBulletinListItem)])
-		return @"com.apple.mobiletimer";
-	if ([listItem isKindOfClass:%c(SBAwayBulletinListItem)])
+	if ([listItem isKindOfClass:%c(SBAwayBulletinListItem)] || [listItem isKindOfClass:%c(SBSnoozedAlarmListItem)] || [listItem isKindOfClass:%c(SBSnoozedAlarmBulletinListItem)])
 		return [[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID];
 	else if ([listItem isKindOfClass:%c(SBAwayCardListItem)])
 		return [[(SBAwayCardListItem*)listItem cardItem] identifier];
 	else if ([listItem isKindOfClass:%c(SBAwaySystemAlertItem)])
-		return [(SBAwaySystemAlertItem*)listItem title];
+		return @"systemAlert";
 	else
 		return @"noIdentifier";
 }
@@ -141,166 +138,153 @@ void showTestNotification() {
 }
 
 %hook BBServer
-- (id)init {
-	bbServer = %orig;
-	return bbServer;
-}
+	- (id)init {
+		bbServer = %orig;
+		return bbServer;
+	}
 %end
 
 %hook SBLockScreenNotificationListView
 
-- (id)initWithFrame:(struct CGRect)frame {
-	self = %orig;
+	- (id)initWithFrame:(struct CGRect)frame {
+		self = %orig;
 
-	if (![defaults boolForKey:@"enabled"])
+		if (![defaults boolForKey:@"enabled"])
+			return self;
+
+		//Save important views to variables
+		UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
+		notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
+		notificationListView = self;
+
+		[containerView addSubview:phContainerView];
+
+		//Remove notification cell separators if the option is on		
+		if (![defaults boolForKey:@"showSeparators"]) {
+			UIView *topSeparator = ((UIView*)[containerView subviews][1]), *bottomSeparator = ((UIView*)[containerView subviews][2]);
+			topSeparator.hidden = YES;
+			bottomSeparator.hidden = YES;
+			notificationsTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+		}
+
+		//Add pull to clear view if the option is on
+		if ([defaults boolForKey:@"enablePullToClear"]) {
+			if (pullToClearView)
+				[pullToClearView removeFromSuperview];
+			pullToClearView = [[PHPullToClearView alloc] initWithFrame:CGRectZero];
+			[notificationsTableView addSubview:pullToClearView];
+		}
+
 		return self;
-
-	//Save important views to variables
-	UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
-	notificationsTableView = MSHookIvar<UITableView*>(self, "_tableView");
-	notificationListView = self;
-
-	[containerView addSubview:phContainerView];
-
-	//Remove notification cell separators if the option is on		
-	if (![defaults boolForKey:@"showSeparators"]) {
-		UIView *topSeparator = ((UIView*)[containerView subviews][1]), *bottomSeparator = ((UIView*)[containerView subviews][2]);
-		topSeparator.hidden = YES;
-		bottomSeparator.hidden = YES;
-		notificationsTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
 	}
 
-	//Add pull to clear view if the option is on
-	if ([defaults boolForKey:@"enablePullToClear"]) {
+	- (void)layoutSubviews {
+		%orig;
+
+		CGRect phContainerViewFrame = CGRectZero;
+		CGRect tableViewFrame = CGRectZero;
+		UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
+
+		//Change the container view's frame depending on the vertical adjustments set
+		CGFloat verticalAdjustmentTop = [defaults floatForKey:@"verticalAdjustmentTop"];
+		CGFloat verticalAdjustmentBottom = [defaults floatForKey:@"verticalAdjustmentBottom"];
+		containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + verticalAdjustmentTop, containerView.frame.size.width, containerView.frame.size.height - verticalAdjustmentTop + verticalAdjustmentBottom);
+
+		//Layout PHContainerView and notifications table view
+		if ([defaults integerForKey:@"iconLocation"] == 0) //App icons at top
+			CGRectDivide(containerView.bounds, &phContainerViewFrame, &tableViewFrame, [phContainerView appViewSize].height, CGRectMinYEdge);
+		else //App icons at bottom
+			CGRectDivide(containerView.bounds, &phContainerViewFrame, &tableViewFrame, [phContainerView appViewSize].height, CGRectMaxYEdge);
+
+		phContainerView.frame = phContainerViewFrame;
+		notificationsTableView.frame = tableViewFrame;
+
+		//Layout pull to clear view
 		if (pullToClearView)
-			[pullToClearView removeFromSuperview];
-		pullToClearView = [[PHPullToClearView alloc] initWithFrame:CGRectZero];
-		[notificationsTableView addSubview:pullToClearView];
+			pullToClearView.frame = CGRectMake(0, -pullToClearSize, notificationsTableView.bounds.size.width, pullToClearSize);
 	}
 
-	return self;
-}
+	%new
+	- (BOOL)shouldDisplayIndexPath:(NSIndexPath*)indexPath {
+		//If no app is selected
+		if (!phContainerView.selectedAppID) {
+			return !([defaults integerForKey:@"showAllWhenNotSelected"] == 0 || [defaults boolForKey:@"privacyMode"]);
+		}
 
-- (void)layoutSubviews {
-	%orig;
-
-	CGRect phContainerViewFrame = CGRectZero;
-	CGRect tableViewFrame = CGRectZero;
-	UIView *containerView = MSHookIvar<UIView*>(self, "_containerView");
-
-	//Change the container view's frame depending on the vertical adjustments set
-	CGFloat verticalAdjustmentTop = [defaults floatForKey:@"verticalAdjustmentTop"];
-	CGFloat verticalAdjustmentBottom = [defaults floatForKey:@"verticalAdjustmentBottom"];
-	containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + verticalAdjustmentTop, containerView.frame.size.width, containerView.frame.size.height - verticalAdjustmentTop + verticalAdjustmentBottom);
-
-	//Layout PHContainerView and notifications table view
-	if ([defaults integerForKey:@"iconLocation"] == 0) //App icons at top
-		CGRectDivide(containerView.bounds, &phContainerViewFrame, &tableViewFrame, [phContainerView appViewSize].height, CGRectMinYEdge);
-	else //App icons at bottom
-		CGRectDivide(containerView.bounds, &phContainerViewFrame, &tableViewFrame, [phContainerView appViewSize].height, CGRectMaxYEdge);
-
-	phContainerView.frame = phContainerViewFrame;
-	notificationsTableView.frame = tableViewFrame;
-
-	//Layout pull to clear view
-	if (pullToClearView)
-		pullToClearView.frame = CGRectMake(0, -pullToClearSize, notificationsTableView.bounds.size.width, pullToClearSize);
-}
-
-%new
-- (BOOL)shouldDisplayIndexPath:(NSIndexPath*)indexPath {
-	SBAwayListItem *listItem = [MSHookIvar<SBLockScreenNotificationModel*>(self, "_model") listItemAtIndexPath:indexPath];
-
-	//If the item is not a notification (system alert or passbook pass)
-	if (![listItem isKindOfClass:%c(SBAwayBulletinListItem)])
-		return YES;
-
-	//If no app is selected
-	if (!phContainerView.selectedAppID) {
-		if ([defaults integerForKey:@"showAllWhenNotSelected"] == 0 || [defaults boolForKey:@"privacyMode"]) //If all notifications are hidden when not selected
-			return 0;
-		else
-			return YES;
+		//Only show the cell if it's equal to the selected app ID
+		return [phContainerView.selectedAppID isEqualToString:identifierForListItem([self.model listItemAtIndexPath:indexPath])];
 	}
 
-	//Only show the cell if it's equal to the selected app ID
-	return [phContainerView.selectedAppID isEqualToString:[[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID]];
-}
-
-// Used to hide notifications that aren't for the selected app
-- (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath {
-	if (![defaults boolForKey:@"enabled"] || [self shouldDisplayIndexPath:indexPath])
-		return %orig;
-	else
-		return 0;
-}
-
-//All scroll view methods are used for pull to clear control
-- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-	if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"] && scrollView.contentOffset.y <= 0)
-		[pullToClearView setXVisible:(scrollView.contentOffset.y <= pullToClearThreshold)];
-
-	%orig;
-}
-
-//All scroll view methods are used for pull to clear control
-- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView willDecelerate:(_Bool)arg2 {
-	if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"] && phContainerView.selectedAppID != nil && scrollView.contentOffset.y <= pullToClearThreshold &&  (scrollView.dragging || scrollView.tracking)) {
-		[bulletinObserver clearSection:phContainerView.selectedAppID];
-		notificationsTableView.alpha = 0;
-		[pullToClearView setXVisible:NO];
+	// Used to hide notifications that aren't for the selected app
+	- (double)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath {
+		return (![defaults boolForKey:@"enabled"] || [self shouldDisplayIndexPath:indexPath]) ? %orig : 0;
 	}
 
-	%orig;
-}
+	//All scroll view methods are used for pull to clear control
+	- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+		if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"] && scrollView.contentOffset.y <= 0)
+			[pullToClearView setXVisible:(scrollView.contentOffset.y <= pullToClearThreshold)];
+
+		%orig;
+	}
+
+	//All scroll view methods are used for pull to clear control
+	- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView willDecelerate:(_Bool)arg2 {
+		if ([defaults boolForKey:@"enabled"] && [defaults boolForKey:@"enablePullToClear"] && phContainerView.selectedAppID != nil && scrollView.contentOffset.y <= pullToClearThreshold &&  (scrollView.dragging || scrollView.tracking)) {
+			[bulletinObserver clearSection:phContainerView.selectedAppID];
+			notificationsTableView.alpha = 0;
+			[pullToClearView setXVisible:NO];
+		}
+
+		%orig;
+	}
 
 %end
 
 
 %hook SBLockScreenNotificationListController
 
-- (void)loadView {
-	%orig;
-	bulletinObserver = MSHookIvar<BBObserver*>(self, "_observer");
-	notificationListController = self;
-	phContainerView.listController = self;
-}
+	- (void)loadView {
+		%orig;
+		bulletinObserver = MSHookIvar<BBObserver*>(self, "_observer");
+		notificationListController = self;
+		phContainerView.listController = self;
+	}
 
-//Called when a new notification is added to the notification list
-- (void)_updateModelAndViewForAdditionOfItem:(SBAwayListItem*)item {
-	%orig;
-	if (![defaults boolForKey:@"enabled"])
-		return;
+	//Called when a new notification is added to the notification list
+	- (void)_updateModelAndViewForAdditionOfItem:(SBAwayListItem*)item {
+		%orig;
+		if (![defaults boolForKey:@"enabled"])
+			return;
 
-	[phContainerView updateView];
-
-	if (![defaults boolForKey:@"privacyMode"])
-		[phContainerView selectAppID:identifierForListItem(item) newNotification:YES];
-}
-
-//Called when a notification is removed from the list
-- (void)_updateModelForRemovalOfItem:(SBAwayListItem*)item updateView:(BOOL)update {
-	%orig;
-	if (![defaults boolForKey:@"enabled"])
-		return;
-
-	[phContainerView updateView];
-}
-
-//Called when device is unlocked, clear all app views.
-- (void)prepareForTeardown {
-	%orig;
-
-	if ([defaults boolForKey:@"enabled"])
 		[phContainerView updateView];
-}
 
-//Called when the screen turns on or off, used to deselect any selected app when the screen turns off.
-- (void)setInScreenOffMode:(BOOL)off {
-	%orig;
-	
-	if(off && [defaults boolForKey:@"enabled"] && [defaults boolForKey:@"collapseOnLock"] && phContainerView && phContainerView.selectedAppID)
-		[phContainerView selectAppID:phContainerView.selectedAppID newNotification:NO];
-}
+		if (![defaults boolForKey:@"privacyMode"])
+			[phContainerView selectAppID:identifierForListItem(item) newNotification:YES];
+	}
+
+	//Called when a notification is removed from the list
+	- (void)_updateModelForRemovalOfItem:(SBAwayListItem*)item updateView:(BOOL)update {
+		%orig;
+
+		if ([defaults boolForKey:@"enabled"])
+			[phContainerView updateView];
+	}
+
+	//Called when device is unlocked, clear all app views.
+	- (void)prepareForTeardown {
+		%orig;
+
+		if ([defaults boolForKey:@"enabled"])
+			[phContainerView updateView];
+	}
+
+	//Called when the screen turns on or off, used to deselect any selected app when the screen turns off.
+	- (void)setInScreenOffMode:(BOOL)off {
+		%orig;
+		
+		if(off && [defaults boolForKey:@"enabled"] && [defaults boolForKey:@"collapseOnLock"] && phContainerView && phContainerView.selectedAppID)
+			[phContainerView selectAppID:phContainerView.selectedAppID newNotification:NO];
+	}
 
 %end

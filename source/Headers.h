@@ -185,3 +185,7 @@
 +(instancetype)sharedInstance;
 -(BOOL)hasActiveCall;
 @end
+
+@interface BBBulletin (SBUtilities)
+- (UIImage*)sectionIconImageWithFormat:(int)arg1;
+@end

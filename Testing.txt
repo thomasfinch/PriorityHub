@@ -1,0 +1,11 @@
+Testing (Cycript)
+-----------------
+
+Bulletin items:
+Use "send test notification" in settings
+
+System alert items:
+a = [[SBSoftwareUpdateUnableToInstallAlertItem alloc] init]
+[[SBAlertItemsController sharedInstance] activateAlertItem:a]
+
+Apple pay notification:
