@@ -67,11 +67,15 @@ items = (
     label = "Icon Location";
     validValues = (
       0,
-      1
+      1,
+      2,
+      3
     );
     validTitles = (
       "Top",
-      "Bottom"
+      "Bottom",
+      "Left",
+      "Right"
     );
   },
   {

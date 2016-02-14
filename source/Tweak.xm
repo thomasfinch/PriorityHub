@@ -191,10 +191,15 @@ void showTestNotification() {
 		containerView.frame = CGRectMake(containerView.frame.origin.x, containerView.frame.origin.y + verticalAdjustmentTop, containerView.frame.size.width, containerView.frame.size.height - verticalAdjustmentTop + verticalAdjustmentBottom);
 
 		//Layout PHContainerView and notifications table view
-		if ([defaults integerForKey:@"iconLocation"] == 0) //App icons at top
+		int iconLocation = [defaults integerForKey:@"iconLocation"];
+		if (iconLocation == 0) //App icons at top
 			CGRectDivide(containerView.bounds, &phContainerViewFrame, &tableViewFrame, [phContainerView appViewSize].height, CGRectMinYEdge);
-		else //App icons at bottom
+		else if (iconLocation == 1)//App icons at bottom
 			CGRectDivide(containerView.bounds, &phContainerViewFrame, &tableViewFrame, [phContainerView appViewSize].height, CGRectMaxYEdge);
+		else if (iconLocation == 2)//App icons at left
+			CGRectDivide(containerView.bounds, &phContainerViewFrame, &tableViewFrame, [phContainerView appViewSize].width, CGRectMinXEdge);
+ 		else //App icons at right
+			CGRectDivide(containerView.bounds, &phContainerViewFrame, &tableViewFrame, [phContainerView appViewSize].width, CGRectMaxXEdge);
 
 		phContainerView.frame = phContainerViewFrame;
 		notificationsTableView.frame = tableViewFrame;
