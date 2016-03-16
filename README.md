@@ -7,4 +7,4 @@ Sort lockscreen notifications on your iPhone by app! Inspired by the Blackberry 
 
 
 ### Building
-Priority Hub is built with [Ryan Petrich's theos fork](https://github.com/rpetrich/theos) and uses [the HashBang header repository](https://github.com/hbang/headers) for headers. To install, clone the theos repo, then cd into that directory and clone the headers repo into "include". Make sure that the environment variables THEOS and THEOS_MAKE_PATH are set correctly (usually in ~/.bash_profile).
+Priority Hub is built with [the official Theos branch](https://github.com/theos/theos). Follow the instructions on the GitHub wiki for the project to install and configure it correctly.
