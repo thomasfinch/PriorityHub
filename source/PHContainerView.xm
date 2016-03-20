@@ -54,16 +54,29 @@
     }
 
     //Layout all app views
-	CGFloat totalWidth = [[appViews allKeys] count] * [self appViewSize].width;
-	self.contentSize = CGSizeMake(totalWidth, [self appViewSize].height);
-	CGFloat startX = (CGRectGetWidth(self.frame) - totalWidth)/2;
-	if (startX < 0)
-		startX = 0;
+    if ( [defaults integerForKey:@"iconLocation"] < 2) {
+    	CGFloat totalWidth = [[appViews allKeys] count] * [self appViewSize].width;
+    	self.contentSize = CGSizeMake(totalWidth, [self appViewSize].height);
+    	CGFloat startX = (CGRectGetWidth(self.frame) - totalWidth)/2;
+    	if (startX < 0)
+    		startX = 0;
 
-	for (PHAppView *appView in [appViews allValues]) {
-		appView.frame = CGRectMake(startX, 0, [self appViewSize].width, [self appViewSize].height);
-		startX += [self appViewSize].width;
-	}
+    	for (PHAppView *appView in [appViews allValues]) {
+    		appView.frame = CGRectMake(startX, 0, [self appViewSize].width, [self appViewSize].height);
+    		startX += [self appViewSize].width;
+    	}
+    } else {
+    	CGFloat totalHeight = [[appViews allKeys] count] * [self appViewSize].height;
+    	self.contentSize = CGSizeMake([self appViewSize].width, totalHeight);
+    	CGFloat startY = (CGRectGetHeight(self.frame) - totalHeight)/2;
+    	if (startY < 0)
+    		startY = 0;
+
+    	for (PHAppView *appView in [appViews allValues]) {
+    		appView.frame = CGRectMake(0, startY, [self appViewSize].width, [self appViewSize].height);
+    		startY += [self appViewSize].height;
+    	}
+    }
 
 	//Update selected view location
 	if (selectedView.alpha == 1 && selectedAppID && [appViews objectForKey:selectedAppID])
