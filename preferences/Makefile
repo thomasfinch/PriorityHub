@@ -1,9 +1,10 @@
 ARCHS = armv7 arm64
+TARGET_IPHONEOS_DEPLOYMENT_VERSION = 7.0
 
 include $(THEOS)/makefiles/common.mk
 
 BUNDLE_NAME = PriorityHub
-PriorityHub_FILES = PriorityHub.mm
+PriorityHub_FILES = PHRoot.mm PHLockScreenPrefs.mm PHNCPrefs.mm PHVerticalAdjustmentTableCell.m PHSubtitleSwitchTableCell.m PHPrefsHeaderCell.m
 PriorityHub_INSTALL_PATH = /Library/PreferenceBundles
 PriorityHub_FRAMEWORKS = UIKit
 PriorityHub_PRIVATE_FRAMEWORKS = Preferences

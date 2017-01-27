@@ -9,3 +9,38 @@ a = [[SBSoftwareUpdateUnableToInstallAlertItem alloc] init]
 [[SBAlertItemsController sharedInstance] activateAlertItem:a]
 
 Apple pay notification:
+????
+
+
+Find all banner items:
+
+//Internal use, helper function for printAllListItemSubclasses
+BOOL classDescendsFromClass(Class classA, Class classB) {
+    while(classA) {
+        if (classA == classB) return YES;
+        classA = class_getSuperclass(classA);
+    }
+    return NO;
+}
+
+//Internal use only! Used to find all classes in SpringBoard that inherit from SBAwayListItem, so they can be easily
+// found and tracked between iOS versions.
+//I tried doing this in cycript but ran into too many problems smh
+void printAllListItemSubclasses() {
+	NSLog(@"Finding all SBAwayListItem subclasses.");
+	int numClasses = objc_getClassList(NULL, 0);
+	Class * classes = NULL;
+	Class listItemClass = objc_getClass("SBAwayListItem");
+
+	if (numClasses > 0 ) {
+	    classes = (__unsafe_unretained Class *)malloc(sizeof(Class) * numClasses);
+	    numClasses = objc_getClassList(classes, numClasses);
+	    for (int i = 0; i < numClasses; i++) {
+	        Class c = classes[i];
+	        if (classDescendsFromClass(c, listItemClass))
+				NSLog(@"SBAWAYLISTITEM SUBCLASS: %s", class_getName(c));
+	    }
+	    free(classes);
+	}
+	NSLog(@"Done finding SBAwayListItem subclasses.");
+}

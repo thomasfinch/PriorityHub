@@ -1,17 +1,15 @@
 ARCHS = armv7 arm64
 TARGET_IPHONEOS_DEPLOYMENT_VERSION = 7.0
-ADDITIONAL_OBJCFLAGS = -fobjc-arc
 THEOS_BUILD_DIR = debs
+ADDITIONAL_OBJCFLAGS = -fobjc-arc
 
 include $(THEOS)/makefiles/common.mk
 
-SOURCE_FILES=$(wildcard source/*.m source/*.mm source/*.x source/*.xm)
+SOURCE_FILES=$(wildcard tweak/*.m tweak/*.mm tweak/*.x tweak/*.xm)
 
 TWEAK_NAME = PriorityHub
 PriorityHub_FILES = $(SOURCE_FILES)
 PriorityHub_FRAMEWORKS = UIKit CoreGraphics CoreTelephony QuartzCore
-PriorityHub_PRIVATE_FRAMEWORKS = IMAVCore
-# PriorityHub_CFLAGS = -include source/Prefix.pch
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 SUBPROJECTS += preferences

@@ -1,16 +1,27 @@
+Notification center support
+	Fix updates 
+Redo settings
+	New icon/at least @3x icon
+	Make icon iOS 7 mask style
+	Change vertical adjustment to say "X points up" or down
+Get rid of bbserver hook?
+Add option to hide app icons etc. when there are notifications from only one app
+Add option to dim icons when not selected vs. showing highlight view
+CHANGE PHCONTAINERVIEW UPDATEVIEW METHOD SO IT DOESNT REMOVE ALL VIEWS EVERY SINGLE TIME WTF
+Change hide notification separators option so it doesn't show very top separator
+
+
 Fixes
 -----
 Fix icons showing up wrong when polus is installed
-Fix theming of icons not working properly
 Fix icons sometimes not detecting taps
 Fix air drop icon not showing up correctly
-Fix system alert icon not showing up correctly
 
 New Features
 -----------
 Make all notifications clearable? (hook function in SBAwayListItem) (doesn't work)
 External pull to clear (see github)
-Notificaion center support?
+Notification center support?
     Would need to decouple PH views etc. from the lock screen
     Would need to restructure settings pane to separate lock screen & notification center
     Add option to auto-clear notifs from an app when it's launched - notifications are mostly irrelevant after an app has been opened
@@ -23,6 +34,14 @@ Option for icons on the side?
 
 Changelog
 ---------
+Version 2.0
+- Completely redesigned settings
+- Spacing of app icons and numbers is much nicer
+- Icons for low power mode, airdrop, etc. now show up correctly
+- Fix for app views sometimes not detecting taps
+- Lots of small fixes and improvements
+
+
 Version 1.5.3
 - Actually fixed iOS 9 alarm snooze crash
 
