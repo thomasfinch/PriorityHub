@@ -1,0 +1,85 @@
+title = "Notification Center";
+items = (
+	{
+		cell = PSGroupCell;
+	},
+	{
+		cell = PSSwitchCell;
+		default = 1;
+		defaults = "com.thomasfinch.priorityhub";
+		key = ncEnabled;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Enabled";
+	},
+	{
+		cell = PSGroupCell;
+	},
+	{
+		cell = PSButtonCell;
+		action = sendTestNotification;
+		label = "Send Test Notification";
+	},
+	{
+		cell = PSGroupCell;
+		label = "Icons";
+	},
+	{
+		cell = PSSegmentCell;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = ncIconLocation;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Icon Location";
+		validValues = (
+			0,
+			1
+		);
+		validTitles = (
+			"Top",
+			"Bottom"
+		);
+	},
+	{
+		cell = PSLinkListCell;
+		detail = PSListItemsController;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = ncIconSize;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Icon Size";
+		validValues = (
+			0,
+			1,
+			2,
+			3
+		);
+		validTitles = (
+			"Small",
+			"Medium",
+			"Large",
+			"Full Size"
+		);
+	},
+	{
+		cell = PSGroupCell;
+		label = "Number Style";
+	},
+	{
+		cell = PSSegmentCell;
+		default = 1;
+		defaults = "com.thomasfinch.priorityhub";
+		key = ncNumberStyle;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Number Style";
+		validValues = (
+			0,
+			1,
+			2
+		);
+		validTitles = (
+			"None",
+			"Below Icon",
+			"Badge"
+		);
+	}
+);

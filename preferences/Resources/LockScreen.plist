@@ -1,0 +1,189 @@
+title = "Lock Screen";
+items = (
+	{
+		cell = PSGroupCell;
+	},
+	{
+		cell = PSSwitchCell;
+		default = 1;
+		defaults = "com.thomasfinch.priorityhub";
+		key = enabled;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Enabled";
+	},
+	{
+		cell = PSGroupCell;
+	},
+	{
+		cell = PSButtonCell;
+		action = sendTestNotification;
+		label = "Send Test Notification";
+	},
+	{
+		cell = PSGroupCell;
+		label = "Icons";
+	},
+	{
+		cell = PSSegmentCell;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = iconLocation;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Icon Location";
+		validValues = (
+			0,
+			1
+		);
+		validTitles = (
+			"Top",
+			"Bottom"
+		);
+	},
+	{
+		cell = PSLinkListCell;
+		detail = PSListItemsController;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = iconSize;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Icon Size";
+		validValues = (
+			0,
+			1,
+			2,
+			3
+		);
+		validTitles = (
+			"Small",
+			"Medium",
+			"Large",
+			"Full Size"
+		);
+	},
+	{
+		cell = PSGroupCell;
+		label = "Number Style";
+	},
+	{
+		cell = PSSegmentCell;
+		default = 1;
+		defaults = "com.thomasfinch.priorityhub";
+		key = numberStyle;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Number Style";
+		validValues = (
+			0,
+			1,
+			2
+		);
+		validTitles = (
+			"None",
+			"Below Icon",
+			"Badge"
+		);
+	},
+	{
+		cell = PSGroupCell;
+	},
+	{
+		cell = PSSwitchCell;
+		cellClass = PHSubtitleSwitchTableCell;
+		default = 1;
+		defaults = "com.thomasfinch.priorityhub";
+		key = enablePullToClear;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Enable Pull To Clear";
+		sublabel = "Clears all notifications for the selected app";
+	},
+	{
+		cell = PSSwitchCell;
+		cellClass = PHSubtitleSwitchTableCell;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = privacyMode;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Privacy Mode";
+		sublabel = "Hide notifications when they arrive";
+	},
+	{
+		cell = PSSwitchCell;
+		cellClass = PHSubtitleSwitchTableCell;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = collapseOnLock;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Deselect On Lock";
+	},
+	{
+		cell = PSLinkListCell;
+		detail = PSListItemsController;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = showAllWhenNotSelected;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "When No App Is Selected";
+		validValues = (
+			0,
+			1
+		);
+		validTitles = (
+			"Hide All Notifications",
+			"Show All Notifications"
+		);
+		shortTitles = (
+			"Hide All",
+			"Show All"
+		);
+	},
+	{
+		cell = PSGroupCell;
+		label = "Vertical Adjustment";
+		footerText = "Use this setting to manually adjust the notification area up or down if it's blocked by other tweaks.";
+	},
+	{
+		cellClass = PHVerticalAdjustmentTableCell;
+		defaults = "com.thomasfinch.priorityhub";
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		key = verticalAdjustmentTop;
+		label = "Top";
+		default = 0;
+	},
+	{
+		cell = PSSegmentCell;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = verticalAdjustmentTopDirection;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		validValues = (
+			0,
+			1
+		);
+		validTitles = (
+			"Up",
+			"Down"
+		);
+	},
+	{
+		cellClass = PHVerticalAdjustmentTableCell;
+		defaults = "com.thomasfinch.priorityhub";
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		key = verticalAdjustmentBottom;
+		label = "Bottom";
+		default = 0;
+	},
+	{
+		cell = PSSegmentCell;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = verticalAdjustmentBottomDirection;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		validValues = (
+			0,
+			1
+		);
+		validTitles = (
+			"Up",
+			"Down"
+		);
+	}
+);

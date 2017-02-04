@@ -1,0 +1,46 @@
+title = "Priority Hub";
+items = (
+	{
+		cell = PSGroupCell;
+		headerCellClass = PHPrefsHeaderCell;
+	},
+	{
+		cell = PSLinkCell;
+		detail = PriorityHubLockScreenListController;
+		isController = 1;
+		label = "Lock Screen";
+		height = 64;
+	},
+	{
+		cell = PSGroupCell;
+	},
+	{
+		cell = PSLinkCell;
+		detail = PriorityHubNotificationCenterListController;
+		isController = 1;
+		label = "Notification Center";
+		height = 64;
+	},
+	{
+		cell = PSGroupCell;
+		footerText = "© 2016 Thomas Finch";
+	},
+	{
+		cell = PSButtonCell;
+		action = TFTwitterButtonTapped;
+		icon = "Twitter.png";
+		label = "Developed by Thomas Finch";
+	},
+	{
+		cell = PSButtonCell;
+		action = JGTwitterButtonTapped;
+		icon = "Twitter.png";
+		label = "Icon by Jérémy Goulet";
+	},
+	{
+		cell = PSButtonCell;
+		action = GithubButtonTapped;
+		icon = "Github.png";
+		label = "View Source on GitHub";
+	}
+);
