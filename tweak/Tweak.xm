@@ -6,14 +6,19 @@
 #import "PHContainerView.h"
 #import "PHPullToClearView.h"
 
+#define inLS [self isKindOfClass:%c(NCNotificationPriorityListViewController)]
+#define enabled ((inLS && [defaults boolForKey:@"enabled"]) || (!inLS && [defaults boolForKey:@"ncEnabled"]))
+
 NSUserDefaults *defaults = nil;
-// BBServer *bbServer;
+// BBServer *bbServer = nil;
+PHContainerView *lsPhContainerView = nil;
+PHContainerView *ncPhContainerView = nil;
 
-PHContainerView *phContainerView = nil;
-
-CGSize appViewSize() {
+CGSize appViewSize(BOOL lockscreen) {
 	CGFloat width = 0;
-	switch ([defaults integerForKey:@"iconSize"]) {
+	NSInteger iconSize = (lockscreen) ? [defaults integerForKey:@"iconSize"] : [defaults integerForKey:@"ncIconSize"];
+	
+	switch (iconSize) {
 		default:
 		case 0:
 			width = 40;
@@ -29,41 +34,17 @@ CGSize appViewSize() {
 			break;
 	}
 
-	CGFloat height = ([defaults boolForKey:@"numberStyle"] == 1) ? width * 1.4 : width;
+	BOOL numberStyleBelow = (lockscreen) ? [defaults boolForKey:@"numberStyle"] : [defaults boolForKey:@"ncNumberStyle"];
+	CGFloat height = (numberStyleBelow) ? width * 1.4 : width;
 	return CGSizeMake(width, height);
 }
-
-// NSString* identifierForListItem(SBAwayListItem *listItem) {
-// 	if ([listItem isKindOfClass:%c(SBAwayBulletinListItem)] || [listItem isKindOfClass:%c(SBSnoozedAlarmListItem)] || [listItem isKindOfClass:%c(SBSnoozedAlarmBulletinListItem)]) {
-// 		return [[(SBAwayBulletinListItem*)listItem activeBulletin] sectionID];
-// 	}
-// 	else if ([listItem isKindOfClass:%c(SBAwayCardListItem)]) {
-// 		return [[(SBAwayCardListItem*)listItem cardItem] identifier];
-// 	}
-// 	else if ([listItem isKindOfClass:%c(SBAwaySystemAlertItem)]) {
-// 		return @"systemAlert";
-// 	}
-
-// 	return @"noIdentifier";
-// }
-
-// UIImage* iconForListItem(SBAwayListItem* listItem) {
-// 	UIImage *icon = nil;
-
-// 	if ([listItem isKindOfClass:%c(SBSnoozedAlarmListItem)] || [listItem isKindOfClass:%c(SBSnoozedAlarmBulletinListItem)] || [listItem isKindOfClass:%c(SBAwayBulletinListItem)])
-// 		icon = [UIImage _applicationIconImageForBundleIdentifier:identifierForListItem(listItem) format:2 scale:[UIScreen mainScreen].scale];
-// 	else if ([listItem respondsToSelector:@selector(iconImage)])
-// 		icon = [listItem iconImage];
-// 	else
-// 		icon = [[UIImage alloc] init]; //Handle the case where somehow an icon still hasn't been found yet
-
-// 	return icon;
-// }
 
 UIImage* iconForIdentifier(NSString* identifier) {
 	NSLog(@"ICON FOR IDENTIFIER: %@", identifier);
 
 	return [[ALApplicationList sharedApplicationList] iconOfSize:ALApplicationIconSizeLarge forDisplayIdentifier:identifier];
+
+	// Apple 2FA identifier: com.apple.springboard.SBUserNotificationAlert
 
 	// return [UIImage _applicationIconImageForBundleIdentifier:identifier format:0 scale:[UIScreen mainScreen].scale];
 }
@@ -123,151 +104,61 @@ void showTestNotification() {
 NCNotificationListViewController is the superclass for NCNotificationPriorityListViewController (lock screen) and NCNotificationSectionListViewController (notification center)
 Both subclasses have insert, modify, remove notification request methods in common
 Has scrollViewDidScroll and finishedScrolling methods for pull to clear
-NCNotificationListContainerViewController might be nice to put phcontainerview in
 NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (used in notification center)
-
-
 */
 
-
-%hook NCNotificationPriorityList
-
--(id)requestAtIndex:(unsigned long long)arg1 {
-	NSLog(@"REQUEST AT INDEX: %llu", arg1);
-	return %orig;
-}
-
--(NSMutableOrderedSet *)requests {
-	NSLog(@"REQUESTS");
-	NSMutableOrderedSet *orig = %orig;
-	NSMutableOrderedSet *newRequests = [NSMutableOrderedSet new];
-	NSLog(@"ORIGINAL: %@", orig);
-
-	for (int i = 0; i < [orig count]; i++) {
-		NCNotificationRequest* request = [orig objectAtIndex:i];
-		if (!phContainerView.selectedAppID || [[request sectionIdentifier] isEqualToString:phContainerView.selectedAppID]) {
-			[newRequests addObject:request];
-		}
-	}
-
-	return newRequests;
-}
-
--(void)setRequests:(NSMutableOrderedSet *)arg1 {
-	NSLog(@"SET REQUESTS: %@", arg1);
-	%orig;
-}
-
-%end
-
-
-// %hook NCNotificationListCollectionViewFlowLayout
-
-// - (UICollectionViewLayoutAttributes *)layoutAttributesForItemAtIndexPath:(NSIndexPath *)indexPath {
-// 	NSLog(@"LAYOUT ATTRIBUTES FOR ROW: %ld ARE: %@", (long)indexPath.row, %orig);
-// 	return %orig;
-// 	// UICollectionViewLayoutAttributes *attributes = %orig;
-
-// 	// if (indexPath.row % 2 == 0) {
-// 	// 	attributes.hidden = YES;
-// 	// 	attributes.size = CGSizeZero;
-// 	// 	attributes.frame = attributes.bounds = CGRectZero;
-// 	// }
-
-// 	// return nil;
-// }
-
-// - (NSArray*)layoutAttributesForElementsInRect:(CGRect)rect {
-// 	NSLog(@"LAYOUT ATTRIBUTES FOR RECT: %@ ARE: %@", NSStringFromCGRect(rect), %orig);
-// 	NSArray *orig = %orig;
-// 	for (int i = 0; i < [orig count]; i++) {
-// 		if (i % 2 == 0) {
-// 			((UICollectionViewLayoutAttributes*)[orig objectAtIndex:i]).hidden = YES;
-// 			((UICollectionViewLayoutAttributes*)[orig objectAtIndex:i]).frame = CGRectZero;
-// 			((UICollectionViewLayoutAttributes*)[orig objectAtIndex:i]).bounds = CGRectZero;
-// 			((UICollectionViewLayoutAttributes*)[orig objectAtIndex:i]).size = CGSizeZero;
-// 		}
-// 		else if (i != 0) {
-// 			((UICollectionViewLayoutAttributes*)[orig objectAtIndex:i]).frame = CGRectMake(((UICollectionViewLayoutAttributes*)[orig objectAtIndex:i-1]).frame.origin.x, ((UICollectionViewLayoutAttributes*)[orig objectAtIndex:i-1]).frame.origin.y, ((UICollectionViewLayoutAttributes*)[orig objectAtIndex:i]).frame.size.width, ((UICollectionViewLayoutAttributes*)[orig objectAtIndex:i]).frame.size.height);
-// 		}
-// 	}
-// 	return orig;
-// }
-
-// %end
-
-
-// These functions are called for both LS and NC notifications
-%hook NCBulletinNotificationSource
-
--(void)observer:(id)observer addBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)arg3 playLightsAndSirens:(BOOL)arg4 withReply:(/*^block*/id)arg5 {
-	NSLog(@"OBSERVER ADD BULLETIN: %@ FOR FEED:%llu", bulletin, arg2);
-	// if (!phContainerView) {
-	// 	phContainerView = [PHContainerView new];
-	// }
-	// phContainerView.selectedAppID = bulletin.sectionID;
-	%orig;
-	// delay calling orig until correct app id is selected
-}
-
--(void)observer:(id)observer removeBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)arg3 {
-	NSLog(@"OBSERVER REMOVE BULLETIN: %@", bulletin);
-	%orig;
-}
-
--(void)observer:(id)observer modifyBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)arg3 {
-	NSLog(@"OBSERVER MODIFY BULLETIN: %@", bulletin);
-	%orig;
-}
-
-%end
-
-%hook NCNotificationPriorityListViewController
-
-// %new
-// - (NSUInteger)filteredNumNotifications {
-// 	return 3;
-// }
-
-// %new
-// - (NSUInteger)filteredIndexForRealIndex:(NSUInteger)realIndex {
-
-// }
+%hook NCNotificationListViewController
 
 %new
 - (NSUInteger)numNotifications {
-	return [[self allNotificationRequests] count];
+	if (inLS)
+		return [[(NCNotificationPriorityListViewController*)self allNotificationRequests] count];
+	else {
+		NSUInteger numNotifications = 0;
+		unsigned numSections = [(NCNotificationSectionListViewController*)self numberOfSectionsInCollectionView:self.collectionView];
+		for (unsigned i = 0 ; i < numSections; i++) {
+			numNotifications += [(NCNotificationSectionListViewController*)self collectionView:self.collectionView numberOfItemsInSection:i];
+		}
+		return numNotifications;
+	}
 }
 
 %new
 - (NSString*)notificationIdentifierAtIndex:(NSUInteger)index {
-	return [[self notificationRequestAtIndexPath:[NSIndexPath indexPathForRow:index inSection:0]] sectionIdentifier];
+	if (inLS)
+		return [[self notificationRequestAtIndexPath:[NSIndexPath indexPathForRow:index inSection:0]] sectionIdentifier];
+	else {
+		return @""; // TODO
+	}
 }
 
-// -(id)notificationRequestAtIndexPath:(NSIndexPath*)arg1 {
-// 	NSLog(@"NOTIFICATION REQUEST AT INDEX %ld IS %@", (long)arg1.row, %orig);
-// 	return nil;
-// }
+%new
+- (BOOL)isNotificationHiddenAtIndex:(NSUInteger)index {
+	NSString *identifier = [self notificationIdentifierAtIndex:index];
+	PHContainerView **phContainerView = (inLS) ? &lsPhContainerView : &ncPhContainerView;
 
-- (void)viewDidLoad {
+	// TODO: settings with whether all notifications are hidden when not selected
+
+	if ([(*phContainerView).selectedAppID isEqualToString:identifier] || !(*phContainerView).selectedAppID) {
+		return NO;
+	}
+	return YES;
+}
+
+-(void)viewDidLoad {
 	%orig;
 
-	if (![defaults boolForKey:@"enabled"])
-		return;
+	// It's a little gross using a double pointer but it lets LS & NC use the same code
+	PHContainerView **phContainerView = (inLS) ? &lsPhContainerView : &ncPhContainerView;
 
 	// Create the PHContainerView
-	if (!phContainerView) {
-		phContainerView = [PHContainerView new];
-		// phContainerView.backgroundColor = [UIColor blueColor];
-	}
-	if (![phContainerView superview]) {
-		[self.view addSubview:phContainerView];
+	if (!*phContainerView) {
+		*phContainerView = [[PHContainerView alloc] init:(inLS)];
+		[self.view addSubview:*phContainerView];
 	}
 
-	// self.view.backgroundColor = [UIColor redColor];
-
-	// Setup notification fetching block
-	phContainerView.getCurrentNotifications = ^NSDictionary*() {
+	// Set up notification fetching block
+	(*phContainerView).getCurrentNotifications = ^NSDictionary*() {
 		NSMutableDictionary *notificationsDict = [NSMutableDictionary new];
 
 		for (int i = 0; i < [self numNotifications]; i++) {
@@ -283,103 +174,128 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 	};
 
 	// Set up table view update block
-	phContainerView.updateNotificationTableView = ^void() {
-		NSLog(@"UPDATING NOTIFICATION TABLE VIEW");
-		// [self.collectionView reloadData];
-		// [self.collectionView layoutSubviews];
+	(*phContainerView).updateNotificationTableView = ^void() {
+		[self.collectionView reloadData];
 	};	
 }
 
 - (void)viewDidLayoutSubviews {
 	%orig;
-	
-	if (![defaults boolForKey:@"enabled"])
+
+ 	if (!enabled)
 		return;
 
-	UIView *scrollView = [self.view subviews][0];
-	phContainerView.frame = CGRectMake(0, 0, scrollView.frame.size.width, appViewSize().height);
-	scrollView.frame = CGRectMake(0, appViewSize().height, scrollView.frame.size.width, [scrollView superview].bounds.size.height - appViewSize().height);
+	PHContainerView **phContainerView = (inLS) ? &lsPhContainerView : &ncPhContainerView;
+	self.collectionView.clipsToBounds = YES;
+
+	CGRect phContainerViewFrame = CGRectZero;
+	CGRect collectionViewFrame = CGRectZero;
+	CGRectEdge edge = ((inLS && [defaults integerForKey:@"iconLocation"] == 0) || (!inLS && [defaults integerForKey:@"ncIconLocation"] == 0)) ? CGRectMinYEdge : CGRectMaxYEdge;
+	CGRectDivide(self.view.bounds, &phContainerViewFrame, &collectionViewFrame, appViewSize(inLS).height, edge);
+
+	(*phContainerView).frame = phContainerViewFrame;
+	self.collectionView.frame = collectionViewFrame;
 }
+
+%new
+- (void)insertOrModifyNotification:(NCNotificationRequest*)request {
+	if (!enabled)
+		return;
+
+	PHContainerView **phContainerView = (inLS) ? &lsPhContainerView : &ncPhContainerView;
+	[*phContainerView updateView];
+	[*phContainerView selectAppID:[request sectionIdentifier] newNotification:YES];
+}
+
+%new
+- (void)removeNotification:(NCNotificationRequest*)request {
+	if (!enabled)
+		return;
+
+	(inLS) ? [lsPhContainerView updateView] : [ncPhContainerView updateView];
+}
+
+%end
+
+
+// Customized hooks for LS, hooking same methods in super class doesn't work
+%hook NCNotificationPriorityListViewController
 
 - (void)insertNotificationRequest:(NCNotificationRequest*)request forCoalescedNotification:(id)notification {
 	%orig;
-	NSLog(@"INSERT NOTIFICTION REQUEST");
-	if (![defaults boolForKey:@"enabled"])
-		return;
-	[phContainerView updateView];
-	[phContainerView selectAppID:[request sectionIdentifier] newNotification:YES];
-
-	// Maybe wait to call %orig until after section has changed
+	[(NCNotificationListViewController*)self insertOrModifyNotification:request];
 }
 
 - (void)modifyNotificationRequest:(NCNotificationRequest*)request forCoalescedNotification:(id)notification {
 	%orig;
-	if (![defaults boolForKey:@"enabled"])
-		return;
-	[phContainerView updateView];
-	[phContainerView selectAppID:[request sectionIdentifier] newNotification:YES];
+	[(NCNotificationListViewController*)self insertOrModifyNotification:request];
 }
 
 - (void)removeNotificationRequest:(NCNotificationRequest*)request forCoalescedNotification:(id)notification {
 	%orig;
-	if (![defaults boolForKey:@"enabled"])
-		return;
-	[phContainerView updateView];
+	[(NCNotificationListViewController*)self removeNotification:request];
 }
 
-// // Doesn't really work... icon & garbled text still show up on left side of screen
-// - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
-// 	NSLog(@"LKASHDFLKHASLKDHF SIZE FOR ITEM AT INDEX PATH");
-// 	if (indexPath.row % 2 == 0)
-// 		return CGSizeZero;
-// 	return %orig;
-// }
+%end
 
-// -(void)hideRequestsForNotificationSectionIdentifier:(id)arg1 subSectionIdentifier:(id)arg2 {
-// 	%orig;
-// 	NSLog(@"HIDE REQUESTS FOR SECTION IDENTIFIER: %@", arg1);
-// }
-// -(void)showRequestsForNotificationSectionIdentifier:(id)arg1 subSectionIdentifier:(id)arg2 {
-// 	%orig;
-// 	NSLog(@"SHOW REQUESTS FOR SECTION IDENTIFIER: %@", arg1);
-// }
 
-// -(void)collectionView:(id)arg1 willDisplayCell:(UICollectionViewCell*)cell forItemAtIndexPath:(NSIndexPath*)indexPath {
-// 	%orig;
-// 	if (cell.bounds.size.height == 0)
-// 		cell.hidden = YES;
-// 	else
-// 		cell.hidden = NO;
-// }
+// Used to hide notifications that aren't for the selected app
+%hook NCNotificationListCollectionViewFlowLayout
 
-// -(id)collectionView:(id)arg1 cellForItemAtIndexPath:(NSIndexPath*)arg2 {
-// 	NSLog(@"CELL FOR ITEM AT INDEX PATH: %@", arg2);
-// 	if (arg2.row > 0) {
-// 		return %orig(arg1, [NSIndexPath indexPathForRow:arg2.row-1 inSection:0]);
-// 	}
-// 	return %orig;
-// }
+- (NSArray*)layoutAttributesForElementsInRect:(CGRect)rect {
+	const CGFloat PADDING = 8; // For iOS 10. Hope this doesn't change!
+	CGFloat curVerticalOffset = 0;
+	NSArray *attributes = %orig;
+	NCNotificationListViewController* controller = (NCNotificationListViewController*)self.collectionView.delegate;
 
-// -(long long)collectionView:(id)arg1 numberOfItemsInSection:(long long)arg2 {
-// 	NSLog(@"NUMBER OF ITEMS IN SECTION");
+	NSLog(@"LAYOUT ATTRIBUTES FOR RECT: %@ ARE: %@", NSStringFromCGRect(rect), attributes);
 
-// 	return %orig;
-// 	// if (phContainerView.selectedAppID)
-// 	// 	return %orig;
-// 	// return 0;
-// }
+	for (unsigned i = 0; i < [attributes count]; i++) {
+		UICollectionViewLayoutAttributes* curAttributes = ((UICollectionViewLayoutAttributes*)[attributes objectAtIndex:i]);
+		if ([controller isNotificationHiddenAtIndex:i]) {
+			curAttributes.hidden = YES;
+		}
+		else {
+			curAttributes.frame = CGRectMake(PADDING, curVerticalOffset + PADDING, curAttributes.frame.size.width, curAttributes.frame.size.height);
+			curVerticalOffset += curAttributes.frame.size.height + PADDING;
+		}
+	}
+	return attributes;
+}
 
-// -(long long)numberOfSectionsInCollectionView:(id)arg1 {
-// 	NSLog(@"NUMBER OF SECTIONS");
-// 	return 1;
-// }
+%end
 
-// - (void)dealloc {
-// 	%orig;
-// 	if (phContainerView) {
-// 		[phContainerView release];
-// 		phContainerView = nil;
-// 	}
-// }
+
+// These functions are called for both LS and NC notifications
+%hook NCBulletinNotificationSource
+
+-(void)observer:(id)observer addBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)arg3 playLightsAndSirens:(BOOL)arg4 withReply:(/*^block*/id)arg5 {
+	NSLog(@"OBSERVER ADD BULLETIN: %@ FOR FEED:%llu", bulletin, arg3);
+	if (lsPhContainerView)
+		lsPhContainerView.selectedAppID = bulletin.sectionID;
+	if (ncPhContainerView)
+		ncPhContainerView.selectedAppID = bulletin.sectionID;
+	%orig;
+}
+
+-(void)observer:(id)observer removeBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)arg3 {
+	NSLog(@"OBSERVER REMOVE BULLETIN: %@", bulletin);
+	%orig;
+}
+
+-(void)observer:(id)observer modifyBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)arg3 {
+	NSLog(@"OBSERVER MODIFY BULLETIN: %@", bulletin);
+	%orig;
+}
+
+%end
+
+
+// Get rid of section headers in notification center
+%hook NCNotificationSectionListViewController
+
+-(CGSize)collectionView:(id)arg1 layout:(id)arg2 referenceSizeForHeaderInSection:(long long)arg3 {
+	return ([defaults boolForKey:@"ncEnabled"]) ? CGSizeZero : %orig; //TODO: give them some size otherwise spacing is thrown off (8? cell padding)
+}
 
 %end

@@ -1,4 +1,20 @@
 
+@interface NCNotificationListCollectionViewFlowLayout : UICollectionViewFlowLayout
+@end
+
+@interface NCNotificationRequest : NSObject
+- (NSString*)sectionIdentifier;
+@end
+
+@interface NCNotificationListViewController : UICollectionViewController
+- (NSString*)notificationIdentifierAtIndex:(NSUInteger)index;
+- (NSUInteger)numNotifications;
+- (NCNotificationRequest*)notificationRequestAtIndexPath:(NSIndexPath*)path;
+- (BOOL)isNotificationHiddenAtIndex:(NSUInteger)index;
+- (void)removeNotification:(NCNotificationRequest*)request;
+- (void)insertOrModifyNotification:(NCNotificationRequest*)request;
+@end
+
 @interface BBBulletin
 @property(copy, nonatomic) NSString *sectionID; // @dynamic sectionID;
 @property(copy, nonatomic) NSString *title; // @dynamic title;
@@ -23,18 +39,19 @@
 + (UIImage*)_applicationIconImageForBundleIdentifier:(NSString*)identifier roleIdentifier:(id)id format:(int)format scale:(float)scale;
 @end
 
-@interface NCNotificationRequest : NSObject
-- (NSString*)sectionIdentifier;
-@end
 
-@interface NCNotificationPriorityListViewController : UICollectionViewController
+
+@interface NCNotificationPriorityListViewController : NCNotificationListViewController
 - (NSOrderedSet*)allNotificationRequests;
 - (NCNotificationRequest*)notificationRequestAtIndexPath:(NSIndexPath*)path;
-- (NSString*)notificationIdentifierAtIndex:(NSUInteger)index;
-- (NSUInteger)numNotifications;
 - (void)insertNotificationRequest:(NCNotificationRequest*)request forCoalescedNotification:(id)notification;
 - (void)modifyNotificationRequest:(NCNotificationRequest*)request forCoalescedNotification:(id)notification;
 - (void)removeNotificationRequest:(NCNotificationRequest*)request forCoalescedNotification:(id)notification;
+@end
+
+@interface NCNotificationSectionListViewController : NCNotificationListViewController
+-(long long)collectionView:(id)arg1 numberOfItemsInSection:(long long)arg2;
+-(long long)numberOfSectionsInCollectionView:(id)arg1;
 @end
 
 @interface NCNotificationListCollectionView : UICollectionView

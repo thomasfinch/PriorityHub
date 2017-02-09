@@ -5,9 +5,10 @@
 
 @synthesize selectedAppID;
 
-- (id)init {
+- (id)init:(BOOL)onLockscreen {
 	if (self = [super init]) {
 		self.directionalLockEnabled = YES;
+		lockscreen = onLockscreen;
 
 		//Create the selected view
 		if (%c(NCMaterialView)) {
@@ -38,7 +39,7 @@
 	[appViews removeAllObjects];
 	[self addSubview:selectedView];
 	for (NSString *appID in [notificationDict allKeys]) {
-		PHAppView *appView = [[PHAppView alloc] initWithFrame:CGRectMake(0, 0, appViewSize().width, appViewSize().height) icon:iconForIdentifier(appID) identifier:appID numberStyle:[defaults integerForKey:@"numberStyle"]];
+		PHAppView *appView = [[PHAppView alloc] initWithFrame:CGRectMake(0, 0, appViewSize(lockscreen).width, appViewSize(lockscreen).height) icon:iconForIdentifier(appID) identifier:appID numberStyle:[defaults integerForKey:@"numberStyle"]];
 		[appView addTarget:self action:@selector(appViewTapped:) forControlEvents:UIControlEventTouchUpInside];
 		[appView setNumNotifications:[[notificationDict objectForKey:appID] unsignedIntegerValue]];
 		[appViews setObject:appView forKey:appID];
@@ -46,7 +47,7 @@
 	}
 
 	//Layout all app views
-	CGSize appViewSizeVar = appViewSize();
+	CGSize appViewSizeVar = appViewSize(lockscreen);
 	CGFloat totalWidth = [[appViews allKeys] count] * appViewSizeVar.width;
 	self.contentSize = CGSizeMake(totalWidth, appViewSizeVar.height);
 	CGFloat startX = (CGRectGetWidth(self.frame) - totalWidth)/2;
@@ -66,7 +67,7 @@
 		selectedView.alpha = 0;
 	}
 
-	selectedView.layer.cornerRadius = appViewSize().width / 5; // Just in case settings have changed
+	selectedView.layer.cornerRadius = appViewSize(lockscreen).width / 5; // Just in case settings have changed
 }
 
 - (void)appViewTapped:(PHAppView*)appView {

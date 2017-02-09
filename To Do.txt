@@ -1,14 +1,17 @@
-Notification center support
-	Fix updates 
-Redo settings
-	New icon/at least @3x icon
-	Make icon iOS 7 mask style
-	Change vertical adjustment to say "X points up" or down
-Get rid of bbserver hook?
-Add option to hide app icons etc. when there are notifications from only one app
-Add option to dim icons when not selected vs. showing highlight view
-CHANGE PHCONTAINERVIEW UPDATEVIEW METHOD SO IT DOESNT REMOVE ALL VIEWS EVERY SINGLE TIME WTF
-Change hide notification separators option so it doesn't show very top separator
+Settings
+	New icon, iOS 7 mask style
+	@3x icon
+Notification Center
+	Add empty space for section separators 
+Lock Screen
+	Make sure bottom text & page dots aren't shown if view is at the bottom
+	Hide line at top when notifications are scrolled up
+All
+	Make app view match new style
+	Send test notification
+	Vertical adjustment setting
+	Filter notifications
+	Pull to clear
 
 
 Fixes

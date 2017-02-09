@@ -1,10 +1,11 @@
 #import "Headers.h"
 #import "PHAppView.h"
 
-extern CGSize appViewSize();
+extern CGSize appViewSize(BOOL lockscreen);
 extern UIImage* iconForIdentifier(NSString* identifier);
 
 @interface PHContainerView : UIScrollView {
+	BOOL lockscreen;
 	UIView *selectedView;
 	NSUserDefaults *defaults;
 	NSMutableDictionary *appViews;
@@ -14,6 +15,7 @@ extern UIImage* iconForIdentifier(NSString* identifier);
 @property (nonatomic, copy) void (^updateNotificationTableView)();
 @property (nonatomic, copy) NSDictionary* (^getCurrentNotifications)();
 
+- (id)init:(BOOL)onLockscreen;
 - (void)selectAppID:(NSString*)appID newNotification:(BOOL)newNotif;
 - (void)updateView;
 
