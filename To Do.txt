@@ -1,39 +1,34 @@
 Settings
-	New icon, iOS 7 mask style
+	New icon, modern mask style
 	@3x icon
 Notification Center
-	Add empty space for section separators 
+	Add empty space for section separators
+	Settings to implement:
+		Pull to clear
+		Deselect on close
 Lock Screen
-	Make sure bottom text & page dots aren't shown if view is at the bottom
-	Hide line at top when notifications are scrolled up
+	Settings to implement:
+		Vertical adjustment
+		Pull to clear
+		Privacy mode
 All
-	Make app view match new style
 	Send test notification
-	Vertical adjustment setting
-	Filter notifications
-	Pull to clear
-
+	Clean up animations when adding new notifications, selecting & deselecting
+	Support for notifications with icons that aren't apps (2FA etc.)
+Optional
+	Copy icon getting code from applist into PH?
 
 Fixes
 -----
-Fix icons showing up wrong when polus is installed
-Fix icons sometimes not detecting taps
-Fix air drop icon not showing up correctly
+
 
 New Features
 -----------
-Make all notifications clearable? (hook function in SBAwayListItem) (doesn't work)
 External pull to clear (see github)
-Notification center support?
-    Would need to decouple PH views etc. from the lock screen
-    Would need to restructure settings pane to separate lock screen & notification center
-    Add option to auto-clear notifs from an app when it's launched - notifications are mostly irrelevant after an app has been opened
 Add setting to use native pull to refresh view
 Add setting to clear app badges when clearing from lockscreen? (see markasread7 source code on github)
 Add option to open to currently selected app?
-Add setting to hide app icon if only one notification/notifications from one app are present? (probably no, code would be messy)
-Add help section in settings with detailed descriptions of each setting
-Option for icons on the side?
+Add setting to hide app icon if only one notification/notifications from one app are present?
 
 Changelog
 ---------

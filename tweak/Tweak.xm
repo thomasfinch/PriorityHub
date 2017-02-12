@@ -6,17 +6,18 @@
 #import "PHContainerView.h"
 #import "PHPullToClearView.h"
 
-#define inLS [self isKindOfClass:%c(NCNotificationPriorityListViewController)]
-#define enabled ((inLS && [defaults boolForKey:@"enabled"]) || (!inLS && [defaults boolForKey:@"ncEnabled"]))
+#define IN_LS [self isKindOfClass:%c(NCNotificationPriorityListViewController)]
+#define ENABLED ((IN_LS && [prefs boolForKey:@"enabled"]) || (!IN_LS && [prefs boolForKey:@"ncEnabled"]))
 
-NSUserDefaults *defaults = nil;
-// BBServer *bbServer = nil;
+NSUserDefaults *prefs = nil;
+BBServer *bbServer = nil;
+BBBulletin *bulletin = nil;
 PHContainerView *lsPhContainerView = nil;
 PHContainerView *ncPhContainerView = nil;
 
 CGSize appViewSize(BOOL lockscreen) {
 	CGFloat width = 0;
-	NSInteger iconSize = (lockscreen) ? [defaults integerForKey:@"iconSize"] : [defaults integerForKey:@"ncIconSize"];
+	NSInteger iconSize = (lockscreen) ? [prefs integerForKey:@"iconSize"] : [prefs integerForKey:@"ncIconSize"];
 	
 	switch (iconSize) {
 		default:
@@ -34,15 +35,20 @@ CGSize appViewSize(BOOL lockscreen) {
 			break;
 	}
 
-	BOOL numberStyleBelow = (lockscreen) ? [defaults boolForKey:@"numberStyle"] : [defaults boolForKey:@"ncNumberStyle"];
-	CGFloat height = (numberStyleBelow) ? width * 1.4 : width;
+	BOOL numberStyleBelow = (lockscreen) ? [prefs boolForKey:@"numberStyle"] : [prefs boolForKey:@"ncNumberStyle"];
+	CGFloat height = (numberStyleBelow) ? width * 1.45 : width;
 	return CGSizeMake(width, height);
 }
 
 UIImage* iconForIdentifier(NSString* identifier) {
-	NSLog(@"ICON FOR IDENTIFIER: %@", identifier);
+	UIImage *icon = [[ALApplicationList sharedApplicationList] iconOfSize:ALApplicationIconSizeLarge forDisplayIdentifier:identifier];
 
-	return [[ALApplicationList sharedApplicationList] iconOfSize:ALApplicationIconSizeLarge forDisplayIdentifier:identifier];
+	if (!icon) {
+		NSLog(@"NIL ICON");
+		// TODO: fallback get it another way
+	}
+
+	return icon;
 
 	// Apple 2FA identifier: com.apple.springboard.SBUserNotificationAlert
 
@@ -52,20 +58,20 @@ UIImage* iconForIdentifier(NSString* identifier) {
 void showTestNotification() {
 	[[%c(SBLockScreenManager) sharedInstance] lockUIFromSource:1 withOptions:nil];
 
-	// dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-	// 	BBBulletin *bulletin = [[%c(BBBulletin) alloc] init];
-	// 	bulletin.title = @"Priority Hub";
-	// 	bulletin.sectionID = @"com.apple.MobileSMS";
-	// 	bulletin.message = @"This is a test notification!";
-	// 	bulletin.bulletinID = @"PriorityHubTest";
-	// 	bulletin.defaultAction = nil;
-	// 	bulletin.date = [NSDate date];
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.7 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+		// BBBulletin *bulletin = [[%c(BBBulletin) alloc] init];
+		// bulletin.title = @"Priority Hub";
+		// bulletin.sectionID = @"com.apple.MobileSMS";
+		// bulletin.message = @"This is a test notification!";
+		// bulletin.bulletinID = @"PriorityHubTest";
+		// bulletin.defaultAction = nil;
+		// bulletin.date = [NSDate date];
 
-	// 	NSLog(@"BB SERVER: %@", bbServer);
+		NSLog(@"BB SERVER: %@", bbServer);
 
-	// 	if (bbServer)
-	// 		[bbServer publishBulletin:bulletin destinations:4 alwaysToLockScreen:YES];
-	// });
+		if (bbServer && bulletin)
+			[bbServer publishBulletin:bulletin destinations:14 alwaysToLockScreen:NO];
+	});
 }
 
 
@@ -78,8 +84,9 @@ void showTestNotification() {
 
     CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)showTestNotification, CFSTR("com.thomasfinch.priorityhub-testnotification"), NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
 
-    defaults = [[NSUserDefaults alloc] initWithSuiteName:@"com.thomasfinch.priorityhub"];
-    [defaults registerDefaults:@{
+    prefs = [[NSUserDefaults alloc] initWithSuiteName:@"com.thomasfinch.priorityhub"];
+    [prefs registerDefaults:@{
+    	// Lockscreen settings
         @"enabled": @YES,
         @"collapseOnLock": @YES,
         @"enablePullToClear": @YES,
@@ -89,13 +96,18 @@ void showTestNotification() {
         @"numberStyle": [NSNumber numberWithInt:1],
         @"verticalAdjustmentTop": [NSNumber numberWithFloat:0],
         @"verticalAdjustmentBottom": [NSNumber numberWithFloat:0],
+        @"verticalAdjustmentTopDirection": [NSNumber numberWithInt:0],
+        @"verticalAdjustmentBottomDirection": [NSNumber numberWithInt:0],
         @"showAllWhenNotSelected": [NSNumber numberWithInt:0],
 
+        // Notification center settings
         @"ncEnabled": @YES,
         @"ncIconLocation": [NSNumber numberWithInt:0],
         @"ncIconSize": [NSNumber numberWithInt:0],
         @"ncNumberStyle": [NSNumber numberWithInt:1],
-        @"ncShowAllWhenNotSelected": [NSNumber numberWithInt:0]
+        @"ncEnablePullToClear": @YES,
+        @"ncShowAllWhenNotSelected": [NSNumber numberWithInt:0],
+        @"ncCollapseOnLock": @YES
     }];
 }
 
@@ -107,11 +119,23 @@ Has scrollViewDidScroll and finishedScrolling methods for pull to clear
 NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (used in notification center)
 */
 
+%hook NCNotificationDispatcher
+
+-(void)postNotificationWithRequest:(NCNotificationRequest*)arg1 {
+	NSLog(@"POST NOTIFICATION WITH REQUEST: %@", arg1);
+	NSLog(@"SOUND: %@", [arg1 sound]);
+	NSLog(@"CLEAR: %@", [arg1 clearAction]);
+	NSLog(@"DEFAULT: %@", [arg1 defaultAction]);
+	%orig;
+}
+
+%end
+
 %hook NCNotificationListViewController
 
 %new
 - (NSUInteger)numNotifications {
-	if (inLS)
+	if (IN_LS)
 		return [[(NCNotificationPriorityListViewController*)self allNotificationRequests] count];
 	else {
 		NSUInteger numNotifications = 0;
@@ -125,7 +149,7 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 
 %new
 - (NSString*)notificationIdentifierAtIndex:(NSUInteger)index {
-	if (inLS)
+	if (IN_LS)
 		return [[self notificationRequestAtIndexPath:[NSIndexPath indexPathForRow:index inSection:0]] sectionIdentifier];
 	else {
 		return @""; // TODO
@@ -133,27 +157,31 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 }
 
 %new
-- (BOOL)isNotificationHiddenAtIndex:(NSUInteger)index {
+- (BOOL)shouldShowNotificationAtIndex:(NSUInteger)index {
 	NSString *identifier = [self notificationIdentifierAtIndex:index];
-	PHContainerView **phContainerView = (inLS) ? &lsPhContainerView : &ncPhContainerView;
+	PHContainerView **phContainerView = (IN_LS) ? &lsPhContainerView : &ncPhContainerView;
 
-	// TODO: settings with whether all notifications are hidden when not selected
+	BOOL showAllWhenNotSelected = (IN_LS && [prefs integerForKey:@"showAllWhenNotSelected"] == 1) || (!IN_LS && [prefs integerForKey:@"ncShowAllWhenNotSelected"] == 1);
 
-	if ([(*phContainerView).selectedAppID isEqualToString:identifier] || !(*phContainerView).selectedAppID) {
-		return NO;
+	if (!(*phContainerView).selectedAppID) {
+		return showAllWhenNotSelected;
 	}
-	return YES;
+	else {
+		return [(*phContainerView).selectedAppID isEqualToString:identifier];
+	}
 }
 
 -(void)viewDidLoad {
 	%orig;
 
+	NSLog(@"VIEW DID LOAD");
+
 	// It's a little gross using a double pointer but it lets LS & NC use the same code
-	PHContainerView **phContainerView = (inLS) ? &lsPhContainerView : &ncPhContainerView;
+	PHContainerView **phContainerView = (IN_LS) ? &lsPhContainerView : &ncPhContainerView;
 
 	// Create the PHContainerView
 	if (!*phContainerView) {
-		*phContainerView = [[PHContainerView alloc] init:(inLS)];
+		*phContainerView = [[PHContainerView alloc] init:(IN_LS)];
 		[self.view addSubview:*phContainerView];
 	}
 
@@ -174,7 +202,8 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 	};
 
 	// Set up table view update block
-	(*phContainerView).updateNotificationTableView = ^void() {
+	(*phContainerView).updateNotificationView = ^void() {
+		NSLog(@"UPDATING TABLE VIEW");
 		[self.collectionView reloadData];
 	};	
 }
@@ -182,16 +211,16 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 - (void)viewDidLayoutSubviews {
 	%orig;
 
- 	if (!enabled)
+ 	if (!ENABLED)
 		return;
 
-	PHContainerView **phContainerView = (inLS) ? &lsPhContainerView : &ncPhContainerView;
+	PHContainerView **phContainerView = (IN_LS) ? &lsPhContainerView : &ncPhContainerView;
 	self.collectionView.clipsToBounds = YES;
 
 	CGRect phContainerViewFrame = CGRectZero;
 	CGRect collectionViewFrame = CGRectZero;
-	CGRectEdge edge = ((inLS && [defaults integerForKey:@"iconLocation"] == 0) || (!inLS && [defaults integerForKey:@"ncIconLocation"] == 0)) ? CGRectMinYEdge : CGRectMaxYEdge;
-	CGRectDivide(self.view.bounds, &phContainerViewFrame, &collectionViewFrame, appViewSize(inLS).height, edge);
+	CGRectEdge edge = ((IN_LS && [prefs integerForKey:@"iconLocation"] == 0) || (!IN_LS && [prefs integerForKey:@"ncIconLocation"] == 0)) ? CGRectMinYEdge : CGRectMaxYEdge;
+	CGRectDivide(self.view.bounds, &phContainerViewFrame, &collectionViewFrame, appViewSize(IN_LS).height, edge);
 
 	(*phContainerView).frame = phContainerViewFrame;
 	self.collectionView.frame = collectionViewFrame;
@@ -199,20 +228,20 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 
 %new
 - (void)insertOrModifyNotification:(NCNotificationRequest*)request {
-	if (!enabled)
+	if (!ENABLED)
 		return;
 
-	PHContainerView **phContainerView = (inLS) ? &lsPhContainerView : &ncPhContainerView;
+	PHContainerView **phContainerView = (IN_LS) ? &lsPhContainerView : &ncPhContainerView;
 	[*phContainerView updateView];
 	[*phContainerView selectAppID:[request sectionIdentifier] newNotification:YES];
 }
 
 %new
 - (void)removeNotification:(NCNotificationRequest*)request {
-	if (!enabled)
+	if (!ENABLED)
 		return;
 
-	(inLS) ? [lsPhContainerView updateView] : [ncPhContainerView updateView];
+	(IN_LS) ? [lsPhContainerView updateView] : [ncPhContainerView updateView];
 }
 
 %end
@@ -223,6 +252,7 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 
 - (void)insertNotificationRequest:(NCNotificationRequest*)request forCoalescedNotification:(id)notification {
 	%orig;
+	NSLog(@"INSERT NOTIFICATION REQUEST: %@ FOR COALESCED NOTIFICATION: %@", request, notification);
 	[(NCNotificationListViewController*)self insertOrModifyNotification:request];
 }
 
@@ -243,21 +273,25 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 %hook NCNotificationListCollectionViewFlowLayout
 
 - (NSArray*)layoutAttributesForElementsInRect:(CGRect)rect {
+	NCNotificationListViewController* controller = (NCNotificationListViewController*)self.collectionView.delegate;
+	BOOL inLS = [controller isKindOfClass:%c(NCNotificationPriorityListViewController)];
+	if (!((inLS && [prefs boolForKey:@"enabled"]) || (!inLS && [prefs boolForKey:@"ncEnabled"])))
+		return %orig;
+
 	const CGFloat PADDING = 8; // For iOS 10. Hope this doesn't change!
 	CGFloat curVerticalOffset = 0;
 	NSArray *attributes = %orig;
-	NCNotificationListViewController* controller = (NCNotificationListViewController*)self.collectionView.delegate;
 
 	NSLog(@"LAYOUT ATTRIBUTES FOR RECT: %@ ARE: %@", NSStringFromCGRect(rect), attributes);
 
 	for (unsigned i = 0; i < [attributes count]; i++) {
 		UICollectionViewLayoutAttributes* curAttributes = ((UICollectionViewLayoutAttributes*)[attributes objectAtIndex:i]);
-		if ([controller isNotificationHiddenAtIndex:i]) {
-			curAttributes.hidden = YES;
-		}
-		else {
+		if ([controller shouldShowNotificationAtIndex:i]) {
 			curAttributes.frame = CGRectMake(PADDING, curVerticalOffset + PADDING, curAttributes.frame.size.width, curAttributes.frame.size.height);
 			curVerticalOffset += curAttributes.frame.size.height + PADDING;
+		}
+		else {
+			curAttributes.hidden = YES;
 		}
 	}
 	return attributes;
@@ -291,11 +325,57 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 %end
 
 
-// Get rid of section headers in notification center
+// Hide section headers in notification center
 %hook NCNotificationSectionListViewController
 
 -(CGSize)collectionView:(id)arg1 layout:(id)arg2 referenceSizeForHeaderInSection:(long long)arg3 {
-	return ([defaults boolForKey:@"ncEnabled"]) ? CGSizeZero : %orig; //TODO: give them some size otherwise spacing is thrown off (8? cell padding)
+	return ([prefs boolForKey:@"ncEnabled"]) ? CGSizeZero : %orig; //TODO: give them some size otherwise spacing is thrown off (8? cell padding)
+}
+
+%end
+
+
+// Hide line that shows when scrolling up on lock screen
+%hook SBDashBoardClippingLine
+
+- (void)layoutSubviews {
+	%orig;
+	self.hidden = YES;
+}
+
+%end
+
+
+// Hide "Press home to unlock" label on lock screen if PH is at the bottom
+%hook SBDashBoardMainPageView
+
+- (void)_layoutCallToActionLabel {
+	%orig;
+	self.callToActionLabel.hidden = ([prefs boolForKey:@"enabled"] && [prefs integerForKey:@"iconLocation"] == 1);
+}
+
+%end
+
+
+// Hide lock screen page indicators if PH is at the bottom
+%hook SBDashBoardPageControl
+
+- (void)layoutSubviews {
+	%orig;
+	self.hidden = ([prefs boolForKey:@"enabled"] && [prefs integerForKey:@"iconLocation"] == 1);
+}
+
+%end
+
+
+// For the deselect on lock feature on lock screen
+%hook SBLockScreenViewControllerBase
+
+- (void)setInScreenOffMode:(BOOL)arg1 {
+	%orig;
+	if ([prefs boolForKey:@"enabled"] && [prefs boolForKey:@"collapseOnLock"] && lsPhContainerView) {
+		[lsPhContainerView selectAppID:lsPhContainerView.selectedAppID newNotification:NO];
+	}
 }
 
 %end

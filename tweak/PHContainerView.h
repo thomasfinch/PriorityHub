@@ -12,7 +12,7 @@ extern UIImage* iconForIdentifier(NSString* identifier);
 }
 
 @property (nonatomic, copy) NSString* selectedAppID;
-@property (nonatomic, copy) void (^updateNotificationTableView)();
+@property (nonatomic, copy) void (^updateNotificationView)();
 @property (nonatomic, copy) NSDictionary* (^getCurrentNotifications)();
 
 - (id)init:(BOOL)onLockscreen;

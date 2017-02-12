@@ -1,8 +1,29 @@
 
+@interface SBDashBoardPageControl : UIPageControl
+@end
+
+@interface SBDashBoardMainPageView : UIView
+@property(retain, nonatomic) UILabel *callToActionLabel;
+@end
+
+@interface SBDashBoardClippingLine : UIView
+@end
+
 @interface NCNotificationListCollectionViewFlowLayout : UICollectionViewFlowLayout
 @end
 
+@interface NCNotificationAction : NSObject
+@end
+
+@interface NCNotificationSound : NSObject
+@end
+
 @interface NCNotificationRequest : NSObject
+@property (nonatomic,copy,readonly) NSSet * requestDestinations;
+@property (nonatomic,readonly) NCNotificationSound * sound;
+@property (nonatomic,readonly) NCNotificationAction * clearAction;
+@property (nonatomic,readonly) NCNotificationAction * closeAction;
+@property (nonatomic,readonly) NCNotificationAction * defaultAction;
 - (NSString*)sectionIdentifier;
 @end
 
@@ -10,9 +31,13 @@
 - (NSString*)notificationIdentifierAtIndex:(NSUInteger)index;
 - (NSUInteger)numNotifications;
 - (NCNotificationRequest*)notificationRequestAtIndexPath:(NSIndexPath*)path;
-- (BOOL)isNotificationHiddenAtIndex:(NSUInteger)index;
+- (BOOL)shouldShowNotificationAtIndex:(NSUInteger)index;
 - (void)removeNotification:(NCNotificationRequest*)request;
 - (void)insertOrModifyNotification:(NCNotificationRequest*)request;
+@end
+
+@interface BBServer : NSObject
+- (void)publishBulletin:(id)arg1 destinations:(unsigned long long)arg2 alwaysToLockScreen:(bool)arg3;
 @end
 
 @interface BBBulletin

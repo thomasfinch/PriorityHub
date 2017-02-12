@@ -31,13 +31,14 @@
 
 - (void)updateView {
 	NSDictionary *notificationDict = self.getCurrentNotifications();
-	// NSDictionary *notificationCountDict = [notificationDict objectForKey:@"notificationCountDict"];
-	// NSDictionary *iconDict = [notificationDict objectForKey:@"iconDict"];
 
-	//Create or update app views from the current bulletin list
-	[[self subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+	//Create or update app views from the current notification list
+	for (PHAppView* appView in [appViews allValues]) {
+		[appView removeFromSuperview];
+		[appView release];
+	}
 	[appViews removeAllObjects];
-	[self addSubview:selectedView];
+
 	for (NSString *appID in [notificationDict allKeys]) {
 		PHAppView *appView = [[PHAppView alloc] initWithFrame:CGRectMake(0, 0, appViewSize(lockscreen).width, appViewSize(lockscreen).height) icon:iconForIdentifier(appID) identifier:appID numberStyle:[defaults integerForKey:@"numberStyle"]];
 		[appView addTarget:self action:@selector(appViewTapped:) forControlEvents:UIControlEventTouchUpInside];
@@ -83,18 +84,22 @@
 
 	[UIView animateWithDuration:animationDuration animations:^(){
 		if ([selectedAppID isEqualToString:appID] && !newNotif) {
+			[(PHAppView*)[appViews objectForKey:selectedAppID] animateBadge:NO duration:animationDuration];
 			selectedAppID = nil;
 			selectedView.alpha = 0;
 		}
 		else {
+			[(PHAppView*)[appViews objectForKey:selectedAppID] animateBadge:NO duration:animationDuration];
 			selectedAppID = appID;
 			selectedView.alpha = 1;
-			selectedView.frame = ((PHAppView*)[appViews objectForKey:selectedAppID]).frame;
+			PHAppView *appView = (PHAppView*)[appViews objectForKey:selectedAppID];
+			selectedView.frame = appView.frame;
+			[appView animateBadge:YES duration:animationDuration];
 		}
 	}];
 
-	if (self.updateNotificationTableView)
-		self.updateNotificationTableView();
+	if (self.updateNotificationView)
+		self.updateNotificationView();
 	UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, nil);
 }
 

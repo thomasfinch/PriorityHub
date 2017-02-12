@@ -81,5 +81,48 @@ items = (
 			"Below Icon",
 			"Badge"
 		);
+	},
+	{
+		cell = PSGroupCell;
+	},
+	{
+		cell = PSSwitchCell;
+		cellClass = PHSubtitleSwitchTableCell;
+		default = 1;
+		defaults = "com.thomasfinch.priorityhub";
+		key = ncEnablePullToClear;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Enable Pull To Clear";
+		sublabel = "Clears all notifications for the selected app";
+	},
+	{
+		cell = PSSwitchCell;
+		cellClass = PHSubtitleSwitchTableCell;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = ncCollapseOnLock;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "Deselect On Close";
+	},
+	{
+		cell = PSLinkListCell;
+		detail = PSListItemsController;
+		default = 0;
+		defaults = "com.thomasfinch.priorityhub";
+		key = ncShowAllWhenNotSelected;
+		PostNotification = com.thomasfinch.priorityhub-prefschanged;
+		label = "When No App Is Selected";
+		validValues = (
+			0,
+			1
+		);
+		validTitles = (
+			"Hide All Notifications",
+			"Show All Notifications"
+		);
+		shortTitles = (
+			"Hide All",
+			"Show All"
+		);
 	}
 );
