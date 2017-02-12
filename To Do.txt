@@ -2,6 +2,7 @@ Settings
 	New icon, modern mask style
 	@3x icon
 Notification Center
+	Get it working lol
 	Add empty space for section separators
 	Settings to implement:
 		Pull to clear
@@ -10,13 +11,12 @@ Lock Screen
 	Settings to implement:
 		Vertical adjustment
 		Pull to clear
-		Privacy mode
 All
 	Send test notification
-	Clean up animations when adding new notifications, selecting & deselecting
-	Support for notifications with icons that aren't apps (2FA etc.)
+	Support for notifications with icons that aren't apps (2FA, low power, etc.)
 Optional
 	Copy icon getting code from applist into PH?
+	Clean up animations when adding new notifications, selecting & deselecting
 
 Fixes
 -----
@@ -24,6 +24,7 @@ Fixes
 
 New Features
 -----------
+Option to not highlight currently selected app badge in red?
 External pull to clear (see github)
 Add setting to use native pull to refresh view
 Add setting to clear app badges when clearing from lockscreen? (see markasread7 source code on github)
@@ -33,10 +34,9 @@ Add setting to hide app icon if only one notification/notifications from one app
 Changelog
 ---------
 Version 2.0
+- Notification center support
 - Completely redesigned settings
-- Spacing of app icons and numbers is much nicer
-- Icons for low power mode, airdrop, etc. now show up correctly
-- Fix for app views sometimes not detecting taps
+- New icon
 - Lots of small fixes and improvements
 
 

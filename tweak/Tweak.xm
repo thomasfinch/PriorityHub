@@ -11,9 +11,12 @@
 
 NSUserDefaults *prefs = nil;
 BBServer *bbServer = nil;
-BBBulletin *bulletin = nil;
 PHContainerView *lsPhContainerView = nil;
 PHContainerView *ncPhContainerView = nil;
+
+/*
+	Utility functions
+*/
 
 CGSize appViewSize(BOOL lockscreen) {
 	CGFloat width = 0;
@@ -44,13 +47,17 @@ UIImage* iconForIdentifier(NSString* identifier) {
 	UIImage *icon = [[ALApplicationList sharedApplicationList] iconOfSize:ALApplicationIconSizeLarge forDisplayIdentifier:identifier];
 
 	if (!icon) {
+		// somehow get an NCNotificationRequest for this identifier
+		// then get NCNotificationContent with request.content
+		// then get icon with content.icon (20 x 20 but better than nothing)
+
 		NSLog(@"NIL ICON");
-		// TODO: fallback get it another way
 	}
 
 	return icon;
 
 	// Apple 2FA identifier: com.apple.springboard.SBUserNotificationAlert
+	// Low power mode identifier (maybe): com.apple.DuetHeuristic-BM
 
 	// return [UIImage _applicationIconImageForBundleIdentifier:identifier format:0 scale:[UIScreen mainScreen].scale];
 }
@@ -69,8 +76,8 @@ void showTestNotification() {
 
 		NSLog(@"BB SERVER: %@", bbServer);
 
-		if (bbServer && bulletin)
-			[bbServer publishBulletin:bulletin destinations:14 alwaysToLockScreen:NO];
+		// if (bbServer && bulletin)
+		// 	[bbServer publishBulletin:bulletin destinations:14 alwaysToLockScreen:NO];
 	});
 }
 
@@ -117,6 +124,11 @@ NCNotificationListViewController is the superclass for NCNotificationPriorityLis
 Both subclasses have insert, modify, remove notification request methods in common
 Has scrollViewDidScroll and finishedScrolling methods for pull to clear
 NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (used in notification center)
+*/
+
+
+/*
+	Main hooks
 */
 
 %hook NCNotificationDispatcher
@@ -174,8 +186,6 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 -(void)viewDidLoad {
 	%orig;
 
-	NSLog(@"VIEW DID LOAD");
-
 	// It's a little gross using a double pointer but it lets LS & NC use the same code
 	PHContainerView **phContainerView = (IN_LS) ? &lsPhContainerView : &ncPhContainerView;
 
@@ -203,7 +213,6 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 
 	// Set up table view update block
 	(*phContainerView).updateNotificationView = ^void() {
-		NSLog(@"UPDATING TABLE VIEW");
 		[self.collectionView reloadData];
 	};	
 }
@@ -233,7 +242,8 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 
 	PHContainerView **phContainerView = (IN_LS) ? &lsPhContainerView : &ncPhContainerView;
 	[*phContainerView updateView];
-	[*phContainerView selectAppID:[request sectionIdentifier] newNotification:YES];
+	if (!(IN_LS && [prefs boolForKey:@"privacyMode"]))
+		[*phContainerView selectAppID:[request sectionIdentifier] newNotification:YES];
 }
 
 %new
@@ -282,8 +292,6 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 	CGFloat curVerticalOffset = 0;
 	NSArray *attributes = %orig;
 
-	NSLog(@"LAYOUT ATTRIBUTES FOR RECT: %@ ARE: %@", NSStringFromCGRect(rect), attributes);
-
 	for (unsigned i = 0; i < [attributes count]; i++) {
 		UICollectionViewLayoutAttributes* curAttributes = ((UICollectionViewLayoutAttributes*)[attributes objectAtIndex:i]);
 		if ([controller shouldShowNotificationAtIndex:i]) {
@@ -300,25 +308,18 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 %end
 
 
-// These functions are called for both LS and NC notifications
+/*
+	Small hooks for small visual fixes/improvements
+*/
+
+// These functions are called for both LS and NC notifications, help a bit with new notification animations
 %hook NCBulletinNotificationSource
 
 -(void)observer:(id)observer addBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)arg3 playLightsAndSirens:(BOOL)arg4 withReply:(/*^block*/id)arg5 {
-	NSLog(@"OBSERVER ADD BULLETIN: %@ FOR FEED:%llu", bulletin, arg3);
 	if (lsPhContainerView)
 		lsPhContainerView.selectedAppID = bulletin.sectionID;
 	if (ncPhContainerView)
 		ncPhContainerView.selectedAppID = bulletin.sectionID;
-	%orig;
-}
-
--(void)observer:(id)observer removeBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)arg3 {
-	NSLog(@"OBSERVER REMOVE BULLETIN: %@", bulletin);
-	%orig;
-}
-
--(void)observer:(id)observer modifyBulletin:(BBBulletin*)bulletin forFeed:(unsigned long long)arg3 {
-	NSLog(@"OBSERVER MODIFY BULLETIN: %@", bulletin);
 	%orig;
 }
 
@@ -371,9 +372,9 @@ NCNotificationChronologicalList & NCNotificationHiddenRequestsList seem useful (
 // For the deselect on lock feature on lock screen
 %hook SBLockScreenViewControllerBase
 
-- (void)setInScreenOffMode:(BOOL)arg1 {
+- (void)setInScreenOffMode:(BOOL)locked {
 	%orig;
-	if ([prefs boolForKey:@"enabled"] && [prefs boolForKey:@"collapseOnLock"] && lsPhContainerView) {
+	if (locked && [prefs boolForKey:@"enabled"] && [prefs boolForKey:@"collapseOnLock"] && lsPhContainerView) {
 		[lsPhContainerView selectAppID:lsPhContainerView.selectedAppID newNotification:NO];
 	}
 }

@@ -91,18 +91,18 @@
 	if (numberStyle == 2) // Only animate for below icon style
 			return;
 
-	[UIView animateWithDuration:animationDuration animations:^(){
-		if (selected) {
-			badgeView.backgroundColor = [UIColor redColor];
-			[badgeView subviews][0].alpha = 0;
-			numberLabel.textColor = [UIColor whiteColor];
-		}
-		else {
-			badgeView.backgroundColor = [UIColor clearColor];
-			[badgeView subviews][0].alpha = 1;
-			numberLabel.textColor = [UIColor blackColor];
-		}
-	}];
+	// [UIView animateWithDuration:animationDuration animations:^(){
+	// 	if (selected) {
+	// 		badgeView.backgroundColor = [UIColor redColor];
+	// 		[badgeView subviews][0].alpha = 0;
+	// 		numberLabel.textColor = [UIColor whiteColor];
+	// 	}
+	// 	else {
+	// 		badgeView.backgroundColor = [UIColor clearColor];
+	// 		[badgeView subviews][0].alpha = 1;
+	// 		numberLabel.textColor = [UIColor blackColor];
+	// 	}
+	// }];
 }
 
 - (void)dealloc {
