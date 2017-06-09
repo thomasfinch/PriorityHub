@@ -1,9 +1,9 @@
 Priority Hub
 ============
 
-Sort lockscreen notifications on your iPhone by app! Inspired by the Blackberry 10 priority hub feature. It's available on Cydia in the BigBoss repo, depiction here: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=priorityhubDp
+Sort lockscreen notifications on your iPhone by app! Inspired by the Blackberry 10 priority hub feature. It's available on Cydia in the BigBoss repo: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=priorityhubDp
 
-![screen1](https://raw.githubusercontent.com/thomasfinch/Priority-Hub/master/screenshots\ &\ icon/screenshot%201.png)
+<img src="https://raw.githubusercontent.com/thomasfinch/PriorityHub/master/images/old%20screenshots/screenshot%201.png" alt="Priority Hub screenshot" width="30%">
 
 
 ### Building
