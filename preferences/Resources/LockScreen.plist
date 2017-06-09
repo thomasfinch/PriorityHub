@@ -16,7 +16,7 @@ items = (
 	},
 	{
 		cell = PSButtonCell;
-		action = sendTestNotification;
+		action = showTestLockScreenNotification;
 		label = "Send Test Notification";
 	},
 	{

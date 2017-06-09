@@ -107,7 +107,7 @@
 
 - (void)dealloc {
 	[super dealloc];
-	NSLog(@"DEALLOC CALLED IN PH APP VIEW");
+	// NSLog(@"DEALLOC CALLED IN PH APP VIEW");
 	// [appIconView release];
 	// [numberLabel release];
 	// [badgeView release];

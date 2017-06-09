@@ -1,6 +1,6 @@
-Package: com.thomasfinch.priorityhub
-Name: Priority Hub
-Depends: mobilesubstrate, preferenceloader, applist
+Package: me.thomasfinch.priorityhub
+Name: Priority Hub 2 BETA
+Depends: firmware (>= 10), mobilesubstrate, preferenceloader, applist
 Version: 2.0
 Architecture: iphoneos-arm
 Description: Organize your notifications!

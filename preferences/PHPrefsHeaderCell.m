@@ -40,7 +40,7 @@
 - (void)layoutSubviews {
 	[super layoutSubviews];
 
-	CGFloat iconSize = CGRectGetHeight(self.bounds) / 3;
+	CGFloat iconSize = CGRectGetHeight(self.bounds) / 2.5;
 	CGFloat padding = 15;
 	CGFloat xBorderPoint = CGRectGetWidth(self.bounds) / 2.9;
 	iconView.frame = CGRectMake(xBorderPoint - iconSize, CGRectGetMidY(self.bounds) - iconSize/2, iconSize, iconSize);

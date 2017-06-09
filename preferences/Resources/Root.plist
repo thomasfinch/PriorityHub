@@ -35,7 +35,7 @@ items = (
 		cell = PSButtonCell;
 		action = JGTwitterButtonTapped;
 		icon = "Twitter.png";
-		label = "Icon by Jérémy Goulet";
+		label = "Designed by Jérémy Goulet";
 	},
 	{
 		cell = PSButtonCell;

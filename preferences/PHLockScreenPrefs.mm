@@ -6,8 +6,8 @@
 
 @implementation PriorityHubLockScreenListController
 
-- (void)sendTestNotification {
-    CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR("com.thomasfinch.priorityhub-testnotification"), nil, nil, true);
+- (void)showTestLockScreenNotification {
+	CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), CFSTR("com.thomasfinch.priorityhub-testnotification-ls"), nil, nil, true);
 }
 
 - (id)specifiers {

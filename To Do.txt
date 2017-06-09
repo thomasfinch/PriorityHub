@@ -1,22 +1,12 @@
-Settings
-	New icon, modern mask style
-	@3x icon
 Notification Center
-	Get it working lol
-	Add empty space for section separators
-	Settings to implement:
-		Pull to clear
-		Deselect on close
+	Pull to clear
 Lock Screen
-	Settings to implement:
-		Vertical adjustment
-		Pull to clear
-All
-	Send test notification
+	Vertical adjustment
+	Pull to clear
+Future
+	Noctis support
 	Support for notifications with icons that aren't apps (2FA, low power, etc.)
-Optional
 	Copy icon getting code from applist into PH?
-	Clean up animations when adding new notifications, selecting & deselecting
 
 Fixes
 -----

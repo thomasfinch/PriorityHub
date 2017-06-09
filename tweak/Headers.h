@@ -1,4 +1,21 @@
 
+
+@interface NCNotificationListCollectionViewFlowLayout : UICollectionViewFlowLayout
+@end
+
+@interface NCNotificationListClearButton : UIControl
+@end
+
+@interface SBNotificationCenterController : NSObject
+- (BOOL)isVisible;
+- (void)presentAnimated:(BOOL)arg1 completion:(id)arg2;
+- (void)presentAnimated:(BOOL)arg1;
+@end
+
+@interface BBAction : NSObject
++ (id)actionWithLaunchURL:(NSURL*)url;
+@end
+
 @interface SBDashBoardPageControl : UIPageControl
 @end
 
@@ -7,9 +24,6 @@
 @end
 
 @interface SBDashBoardClippingLine : UIView
-@end
-
-@interface NCNotificationListCollectionViewFlowLayout : UICollectionViewFlowLayout
 @end
 
 @interface NCNotificationAction : NSObject
@@ -27,17 +41,22 @@
 - (NSString*)sectionIdentifier;
 @end
 
-@interface NCNotificationListViewController : UICollectionViewController
+@interface NCNotificationListViewController : UICollectionViewController <UICollectionViewDelegateFlowLayout>
+-(long long)collectionView:(id)arg1 numberOfItemsInSection:(long long)arg2;
+-(long long)numberOfSectionsInCollectionView:(id)arg1;
 - (NSString*)notificationIdentifierAtIndex:(NSUInteger)index;
 - (NSUInteger)numNotifications;
 - (NCNotificationRequest*)notificationRequestAtIndexPath:(NSIndexPath*)path;
-- (BOOL)shouldShowNotificationAtIndex:(NSUInteger)index;
+- (BOOL)shouldShowNotificationAtIndexPath:(NSIndexPath*)indexPath;
 - (void)removeNotification:(NCNotificationRequest*)request;
 - (void)insertOrModifyNotification:(NCNotificationRequest*)request;
+-(void)setNeedsReloadData:(BOOL)arg1;
+
 @end
 
 @interface BBServer : NSObject
 - (void)publishBulletin:(id)arg1 destinations:(unsigned long long)arg2 alwaysToLockScreen:(bool)arg3;
+- (void)publishBulletinRequest:(id)arg1 destinations:(unsigned long long)arg2 alwaysToLockScreen:(bool)arg3;
 @end
 
 @interface BBBulletin
@@ -47,15 +66,24 @@
 @property(copy, nonatomic) id defaultAction; // @dynamic defaultAction;
 @property(retain, nonatomic) NSDate *date;
 @property(copy, nonatomic) NSString *bulletinID;
+@property(copy, nonatomic) NSString *publisherBulletinID;
 @property(retain, nonatomic) NSDate *publicationDate;
 @property(retain, nonatomic) NSDate *lastInterruptDate;
 @property(nonatomic) BOOL showsMessagePreview;
 @property(nonatomic) BOOL clearable;
+@property(retain, nonatomic) NSString* subtitle;
+@property(retain, nonatomic) NSString* recordID;
+@end
+
+@interface BBBulletinRequest : BBBulletin
 @end
 
 @interface NCNotificationPriorityList : NSObject {
 	NSMutableOrderedSet* _requests;
 }
+@property (nonatomic,retain) NSMutableOrderedSet * requests;
+-(unsigned long long)count;
+-(id)_identifierForNotificationRequest:(id)arg1;
 @end
 
 @interface UIImage (Private)
@@ -68,15 +96,16 @@
 
 @interface NCNotificationPriorityListViewController : NCNotificationListViewController
 - (NSOrderedSet*)allNotificationRequests;
+-(NCNotificationPriorityList *)notificationRequestList;
 - (NCNotificationRequest*)notificationRequestAtIndexPath:(NSIndexPath*)path;
 - (void)insertNotificationRequest:(NCNotificationRequest*)request forCoalescedNotification:(id)notification;
 - (void)modifyNotificationRequest:(NCNotificationRequest*)request forCoalescedNotification:(id)notification;
 - (void)removeNotificationRequest:(NCNotificationRequest*)request forCoalescedNotification:(id)notification;
+-(void)_reloadNotificationViewControllerForHintTextAtIndexPaths:(id)arg1;
+-(void)_reloadNotificationViewControllerForHintTextAtIndexPath:(id)arg1;
 @end
 
 @interface NCNotificationSectionListViewController : NCNotificationListViewController
--(long long)collectionView:(id)arg1 numberOfItemsInSection:(long long)arg2;
--(long long)numberOfSectionsInCollectionView:(id)arg1;
 @end
 
 @interface NCNotificationListCollectionView : UICollectionView

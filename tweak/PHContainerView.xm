@@ -82,15 +82,20 @@
 	if (!selectedAppID && appID)
 		selectedView.frame = ((PHAppView*)[appViews objectForKey:appID]).frame;
 
+	NSString *oldSelectedAppID = selectedAppID;
+
+	if ([selectedAppID isEqualToString:appID] && !newNotif)
+		selectedAppID = nil;
+	else
+		selectedAppID = appID;
+
 	[UIView animateWithDuration:animationDuration animations:^(){
-		if ([selectedAppID isEqualToString:appID] && !newNotif) {
-			[(PHAppView*)[appViews objectForKey:selectedAppID] animateBadge:NO duration:animationDuration];
-			selectedAppID = nil;
+		if ([oldSelectedAppID isEqualToString:appID] && !newNotif) {
+			[(PHAppView*)[appViews objectForKey:oldSelectedAppID] animateBadge:NO duration:animationDuration];
 			selectedView.alpha = 0;
 		}
 		else {
-			[(PHAppView*)[appViews objectForKey:selectedAppID] animateBadge:NO duration:animationDuration];
-			selectedAppID = appID;
+			[(PHAppView*)[appViews objectForKey:oldSelectedAppID] animateBadge:NO duration:animationDuration];
 			selectedView.alpha = 1;
 			PHAppView *appView = (PHAppView*)[appViews objectForKey:selectedAppID];
 			selectedView.frame = appView.frame;
